@@ -1,5 +1,7 @@
 name: Deploy Godot Web to Home Server
 
+env:
+  GODOT_VERSION: "4.3-stable"
 on:
   push:
     branches:
