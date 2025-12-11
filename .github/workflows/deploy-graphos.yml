@@ -35,7 +35,8 @@ jobs:
 
       - name: Download Godot export templates
         run: |
-          mkdir -p "${HOME}/.local/share/godot/export_templates/${GODOT_TEMPLATES_DIR}"
+          TEMPL_DIR="${HOME}/.local/share/godot/export_templates/${GODOT_TEMPLATES_DIR}"
+          mkdir -p "$TEMPL_DIR"
 
           URL_TEMPLATES="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION_TAG}/Godot_v${GODOT_VERSION_TAG}_export_templates.tpz"
           echo "Downloading Godot export templates from: $URL_TEMPLATES"
@@ -47,25 +48,31 @@ jobs:
             -o templates.tpz \
             "$URL_TEMPLATES"
 
-          unzip templates.tpz -d "${HOME}/.local/share/godot/export_templates/${GODOT_TEMPLATES_DIR}"
+          unzip templates.tpz -d "$TEMPL_DIR"
 
-          echo "Contents of export_templates directory:"
-          ls -1 "${HOME}/.local/share/godot/export_templates/${GODOT_TEMPLATES_DIR}"
+          echo "==== export_templates tree BEFORE fix ===="
+          ls -R "$TEMPL_DIR" || true
 
-          cd "${HOME}/.local/share/godot/export_templates/${GODOT_TEMPLATES_DIR}"
+          cd "$TEMPL_DIR"
 
-          # Work around Godot 4.3 web_nothreads naming bug:
-          # If web_debug/web_release exist, rename them to web_nothreads_*
-          if [ -f "web_debug.zip" ] && [ ! -f "web_nothreads_debug.zip" ]; then
-            mv web_debug.zip web_nothreads_debug.zip
+          # Try to locate any web *debug* and *release* templates in the tree
+          DEBUG_SRC="$(find . -maxdepth 3 -type f -name 'web*debug*.zip' | head -n 1 || true)"
+          RELEASE_SRC="$(find . -maxdepth 3 -type f -name 'web*release*.zip' | head -n 1 || true)"
+
+          echo "Found DEBUG_SRC=$DEBUG_SRC"
+          echo "Found RELEASE_SRC=$RELEASE_SRC"
+
+          if [ -z "$DEBUG_SRC" ] || [ -z "$RELEASE_SRC" ]; then
+            echo "ERROR: Could not find web debug/release templates inside templates.tpz"
+            exit 1
           fi
 
-          if [ -f "web_release.zip" ] && [ ! -f "web_nothreads_release.zip" ]; then
-            mv web_release.zip web_nothreads_release.zip
-          fi
+          # Copy to exactly the names Godot 4.3 expects:
+          cp "$DEBUG_SRC" "$TEMPL_DIR/web_nothreads_debug.zip"
+          cp "$RELEASE_SRC" "$TEMPL_DIR/web_nothreads_release.zip"
 
-          echo "After renaming:"
-          ls -1
+          echo "==== export_templates tree AFTER fix ===="
+          ls -R "$TEMPL_DIR"
 
       - name: Export Web
         run: |
