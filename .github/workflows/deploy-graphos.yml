@@ -1,0 +1,47 @@
+name: Deploy Godot Web to Home Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Godot
+        run: |
+          # Set this to your exact Godot version
+          GODOT_VERSION=4.3
+          wget https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip -O godot.zip
+          unzip godot.zip -d godot-bin
+          mv godot-bin/Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot
+          chmod +x godot
+
+      - name: Export Web
+        run: |
+          ./godot --headless --quiet --path . \
+            --export-release "Web"
+
+          # After this, the exported files should be in:
+          #   graphos-export/Graphos.html
+          #   graphos-export/Graphos.pck
+          #   graphos-export/Graphos.wasm
+          #   graphos-export/Graphos.js
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy via rsync
+        run: |
+          rsync -avz --delete \
+            graphos-export/ \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/
