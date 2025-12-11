@@ -76,7 +76,9 @@ jobs:
 
       - name: Export Web
         run: |
-          # Uses your preset name "Web" and the export_path from export_presets.cfg
+          # Ensure export directory exists
+          mkdir -p graphos-export
+
           ./godot --headless --quiet --path . \
             --export-release "Web"
 
