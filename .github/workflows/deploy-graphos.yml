@@ -49,6 +49,24 @@ jobs:
 
           unzip templates.tpz -d "${HOME}/.local/share/godot/export_templates/${GODOT_TEMPLATES_DIR}"
 
+          echo "Contents of export_templates directory:"
+          ls -1 "${HOME}/.local/share/godot/export_templates/${GODOT_TEMPLATES_DIR}"
+
+          cd "${HOME}/.local/share/godot/export_templates/${GODOT_TEMPLATES_DIR}"
+
+          # Work around Godot 4.3 web_nothreads naming bug:
+          # If web_debug/web_release exist, rename them to web_nothreads_*
+          if [ -f "web_debug.zip" ] && [ ! -f "web_nothreads_debug.zip" ]; then
+            mv web_debug.zip web_nothreads_debug.zip
+          fi
+
+          if [ -f "web_release.zip" ] && [ ! -f "web_nothreads_release.zip" ]; then
+            mv web_release.zip web_nothreads_release.zip
+          fi
+
+          echo "After renaming:"
+          ls -1
+
       - name: Export Web
         run: |
           # Uses your preset name "Web" and the export_path from export_presets.cfg
