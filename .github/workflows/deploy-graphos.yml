@@ -17,7 +17,7 @@ jobs:
         run: |
           # Set this to your exact Godot version
           GODOT_VERSION=4.3
-          wget https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip -O godot.zip
+          wget "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip" -O godot.zip
           unzip godot.zip -d godot-bin
           mv godot-bin/Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot
           chmod +x godot
