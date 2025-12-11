@@ -9,29 +9,51 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      GODOT_VERSION_TAG: "4.3-stable" # GitHub release tag
+      GODOT_TEMPLATES_DIR: "4.3.stable" # Directory name Godot uses
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download Godot
+      - name: Download Godot editor
         run: |
-          # Set this to your exact Godot version
-          GODOT_VERSION=4.3
-          wget "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip" -O godot.zip
-          unzip godot.zip -d godot-bin
-          mv godot-bin/Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot
+          URL_EDITOR="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION_TAG}/Godot_v${GODOT_VERSION_TAG}_linux.x86_64.zip"
+          echo "Downloading Godot editor from: $URL_EDITOR"
+
+          curl -L \
+            --retry 5 \
+            --retry-delay 10 \
+            --retry-all-errors \
+            -o godot.zip \
+            "$URL_EDITOR"
+
+          unzip godot.zip
+          mv Godot_v${GODOT_VERSION_TAG}_linux.x86_64 godot
           chmod +x godot
+
+      - name: Download Godot export templates
+        run: |
+          mkdir -p "${HOME}/.local/share/godot/export_templates/${GODOT_TEMPLATES_DIR}"
+
+          URL_TEMPLATES="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION_TAG}/Godot_v${GODOT_VERSION_TAG}_export_templates.tpz"
+          echo "Downloading Godot export templates from: $URL_TEMPLATES"
+
+          curl -L \
+            --retry 5 \
+            --retry-delay 10 \
+            --retry-all-errors \
+            -o templates.tpz \
+            "$URL_TEMPLATES"
+
+          unzip templates.tpz -d "${HOME}/.local/share/godot/export_templates/${GODOT_TEMPLATES_DIR}"
 
       - name: Export Web
         run: |
+          # Uses your preset name "Web" and the export_path from export_presets.cfg
           ./godot --headless --quiet --path . \
             --export-release "Web"
-
-          # After this, the exported files should be in:
-          #   graphos-export/Graphos.html
-          #   graphos-export/Graphos.pck
-          #   graphos-export/Graphos.wasm
-          #   graphos-export/Graphos.js
 
       - name: Setup SSH
         run: |
@@ -42,6 +64,7 @@ jobs:
 
       - name: Deploy via rsync
         run: |
+          # Adjust if you changed export_path; with your config it’s graphos-export/Graphos.html
           rsync -avz --delete \
             graphos-export/ \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/
