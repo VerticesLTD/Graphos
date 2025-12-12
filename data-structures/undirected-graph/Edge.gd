@@ -1,11 +1,7 @@
-##
-# Represents a directed edge in a graph adjacency list.
-#
-# Each edge stores a reference to its source vertex, destination vertex,
-# and the next edge in the adjacency list. This forms a singly-linked list.
-#
-# Undirected graphs store each logical edge twice (once per endpoint).
-#
+## Represents a directed edge in a graph adjacency list.
+## Each edge stores a reference to its source vertex, destination vertex,
+## and the next edge in the adjacency list. This forms a singly-linked list.
+## Undirected graphs store each logical edge twice (once per endpoint).
 class_name Edge
 
 ## Weight of the edge (used by MST / shortest-path algorithms).
@@ -24,15 +20,12 @@ var next: Edge = null
 ## Optional color metadata (useful for visualization).
 var color: Color = Color.WHITE
 
-##
-# Constructs a new Edge.
-#
-# @param _weight Weight of the edge.
-# @param _src    Source vertex.
-# @param _dst    Destination vertex.
-# @param _next   Next edge in the adjacency list (nullable).
-# @param _color  Optional color metadata.
-#
+## Constructs a new Edge.
+## @param _weight Weight of the edge.
+## @param _src    Source vertex.
+## @param _dst    Destination vertex.
+## @param _next   Next edge in the adjacency list (nullable).
+## @param _color  Optional color metadata.
 func _init(
 	_weight: int = 1,
 	_src: Vertex = null,

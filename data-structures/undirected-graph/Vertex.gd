@@ -1,9 +1,6 @@
-##
-# Represents a vertex (node) in a graph.
-#
-# Stores adjacency information and algorithm metadata.
-# This class is data-oriented and intentionally not a Node.
-#
+## Represents a vertex (node) in a graph.
+## Stores adjacency information and algorithm metadata.
+## This class is data-oriented and intentionally not a Node.
 class_name Vertex
 
 ## Constant used to represent infinity in graph algorithms.
@@ -36,16 +33,13 @@ var x: float = 0.0
 ## Optional y-coordinate (layout / visualization).
 var y: float = 0.0
 
-##
-# Constructs a new Vertex.
-#
-# @param _id        Unique vertex identifier.
-# @param _color     Optional color.
-# @param _distance  Initial distance value.
-# @param _key       Initial key value.
-# @param _x         Optional x-coordinate.
-# @param _y         Optional y-coordinate.
-#
+## Constructs a new Vertex.
+## @param _id        Unique vertex identifier.
+## @param _color     Optional color.
+## @param _distance  Initial distance value.
+## @param _key       Initial key value.
+## @param _x         Optional x-coordinate.
+## @param _y         Optional y-coordinate.
 func _init(
 	_id: int,
 	_color: Color = Color.WHITE,
@@ -63,9 +57,7 @@ func _init(
 
 
 ## Adds an outgoing edge from this vertex to the destination vertex.
-##
 ## If an edge already exists, no modification is performed.
-##
 ## @param dest   Destination vertex.
 ## @param weight Weight assigned to the edge.
 func connect_vertices(dest: Vertex, weight: int = 1) -> void:
@@ -80,7 +72,6 @@ func connect_vertices(dest: Vertex, weight: int = 1) -> void:
 	degree += 1
 
 ## Removes the outgoing edge to the given destination vertex.
-##
 ## @param dest Destination vertex.
 ## @return true if an edge was removed, false otherwise.
 func delete_edge(dest: Vertex) -> bool:
@@ -102,12 +93,9 @@ func delete_edge(dest: Vertex) -> bool:
 
 	return false
 
-##
-# Returns all outgoing edges as an Array.
-#
-# NOTE:
-# Godot does not support Array[Edge] typing.
-#
+## Returns all outgoing edges as an Array.
+## NOTE:
+## Godot does not support Array[Edge] typing.
 func get_neighbors_edges() -> Array:
 	var out: Array = []
 	var e: Edge = edges
