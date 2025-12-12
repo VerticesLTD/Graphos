@@ -21,6 +21,7 @@ var CIRCLES = [
 	Circle.new(Vector2(300,300),20,Color.YELLOW),
 	Circle.new(Vector2(300,400),20,Color.BLUE),
 	Circle.new(Vector2(200,300),20,Color.GREEN),
+	Circle.new(Vector2(200,300),20,Color.GREEN),
 	]
 
 # Called when the node enters the scene tree for the first time.
