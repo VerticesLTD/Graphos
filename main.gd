@@ -39,9 +39,9 @@ func _ready() -> void:
 	
 	# 2. Create events:
 	# Event A: Change Node 1 from White to Red
-	var event_a = EventChangeColor.new(1, Color.RED, Color.WHITE)
+	var event_a = EventChangeVertexColor.new(1, Color.RED, Color.WHITE)
 	# Event B: Change Node 2 from White to Blue
-	var event_b = EventChangeColor.new(2, Color.BLUE, Color.WHITE)
+	var event_b = EventChangeVertexColor.new(2, Color.BLUE, Color.WHITE)
 	
 	# 3. Record them to the timeline
 	manager.add_event(event_a)

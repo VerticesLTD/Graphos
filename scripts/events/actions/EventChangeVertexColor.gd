@@ -1,6 +1,6 @@
 ## Represents a specific graph modification event where a vertex changes its visual color.
 ## This class captures the state required to apply and revert a color change operation.
-class_name EventChangeColor
+class_name EventChangeVertexColor
 extends GraphEvent
 
 ## The unique identifier of the target vertex.
