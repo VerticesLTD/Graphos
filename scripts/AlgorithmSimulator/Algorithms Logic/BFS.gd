@@ -9,10 +9,10 @@ const COLOR_FINISHED = Color.GREEN
 
 ## Initialize the graph.
 ## @param gtaph    The graph to run the algorithm on.
-func _init(gtaph: UndirectedGraph):
+func _init(graph: UndirectedGraph):
 	# This passes gtaph up to GraphAlgorithm's _init
 	# Fixed: using the parameter name 'gtaph'
-	super(gtaph) 
+	super(graph) 
 
 ## run function for the algorithm
 ## @param _start_vertex    The vertex the algorithm starts from
@@ -23,6 +23,13 @@ func run(_start_vertex: Vertex) -> Array[Action]:
 		# Oprional - add this color change as an action
 		# timeline.append(ChangeEdgeColorAction(vertex, COLOR_NOT_DISCOVERED, vertex.color))
 		vertex.parent = null
+		
+	# initialize the start vertex color
+	var start_color_before_change = _start_vertex.color
+	# log the color change
+	timeline.append(ChangeVertexColorAction.new(_start_vertex, COLOR_VISITING, start_color_before_change))
+	# Change the color
+	_start_vertex.color = COLOR_VISITING
 		
 	# Step 2: Initialize the queue
 	var Q = []
