@@ -26,42 +26,8 @@ var CIRCLES = [
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	# TEST:
-# 	1. Setup the Components
-	# We create the visualizer and add it to the scene tree so it "exists".
-	var my_visualizer = GraphVisualizer.new()
-	add_child(my_visualizer)
-	
-	# We create the manager and give it the visualizer
-	var manager = EventManager.new(my_visualizer)
-	
-	print("1. Components Created Successfully.")
-	
-	# 2. Create events:
-	# Event A: Change Node 1 from White to Red
-	var event_a = EventChangeVertexColor.new(1, Color.RED, Color.WHITE)
-	# Event B: Change Node 2 from White to Blue
-	var event_b = EventChangeVertexColor.new(2, Color.BLUE, Color.WHITE)
-	
-	# 3. Record them to the timeline
-	manager.add_event(event_a)
-	manager.add_event(event_b)
-	
-	print("2. Recorded 2 Events. Timeline size: ", manager.timeline.size())
-	
-	# 4. Test Playback (Forward)
-	print("\n--- Testing Step Forward ---")
-	manager.step_forward() # Should make Node 1 RED
-	manager.step_forward() # Should make Node 2 BLUE
-	
-	# 5. Test Undo (Backward)
-	print("\n--- Testing Step Backward ---")
-	manager.step_backward() # Should make Node 2 WHITE (Undo)
-	
-	# 6. Test Reset
-	print("\n--- Testing Reset ---")
-	manager.reset_to_start() # Should make Node 1 WHITE
-
+	pass
+			
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
 	# Every frame we ask the engine to redraw.
