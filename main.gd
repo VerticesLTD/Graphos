@@ -1,5 +1,7 @@
 extends Node2D
 
+var graph = UndirectedGraph.new()
+
 func _ready() -> void:
 	test_bfs()
 
@@ -31,7 +33,7 @@ func test_bfs():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
 	# Every frame we ask the engine to redraw.
-	queue_redraw()
+	pass
 
 # Called by the engine for each `queue_redraw()`.
 # `queue_redraw()` may be called manually (by us), but also by the engine.

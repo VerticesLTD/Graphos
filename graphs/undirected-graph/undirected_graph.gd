@@ -2,6 +2,14 @@
 ## Each undirected edge is stored internally as two directed edges.
 ## The edge counter tracks logical undirected edges.
 class_name UndirectedGraph
+extends Node2D
+
+## Radius of circle drawn for each vertex
+const VERTEX_RADIUS = 20.0
+
+## Edge appearance
+const EDGE_COLOR = Color.RED
+const EDGE_WIDTH = 5.0
 
 ## Dictionary[int -> Vertex]
 ## Godot does not support generic typing for dictionaries.
@@ -24,9 +32,9 @@ func clear() -> void:
 ## @param x     Optional x-coordinate.
 ## @param y     Optional y-coordinate.
 ## @param color Optional color.
-func add_vertex(id: int, x: float = 0.0, y: float = 0.0, color: Color = Color.WHITE) -> void:
+func add_vertex(id: int, pos:Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> void:
 	if not vertices.has(id):
-		var v: Vertex = Vertex.new(id, color, Vertex.INF, Vertex.INF, x, y)
+		var v: Vertex = Vertex.new(id, color, Vertex.INF, Vertex.INF, pos)
 		vertices[id] = v
 		num_vertices += 1
 
