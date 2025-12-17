@@ -4,9 +4,9 @@ extends GraphAlgorithm
 
 ## Initialize the graph.
 ## @param gtaph    The graph to run the algorithm on.
-func _init(graph: UndirectedGraph):
+func _init(g: UndirectedGraph):
 	# This passes graph up to GraphAlgorithm's _init
-	super(graph) 
+	super(g) 
 
 ## run function for the algorithm
 ## @param _start_vertex    The vertex the algorithm starts from
