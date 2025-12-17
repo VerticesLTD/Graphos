@@ -38,3 +38,13 @@ func _init(
 	dst = _dst
 	next = _next
 	color = _color
+
+
+## Helper function to fetch the other vertex, 
+## used when we have an edge and want to get its dst
+## @param v		Returns the vertex at the opposite end of this edge relative to v.
+func get_other_vertex(v: Vertex) -> Vertex:
+	if v == src:
+		return dst
+	else:
+		return src

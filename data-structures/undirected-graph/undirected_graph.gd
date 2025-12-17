@@ -40,6 +40,15 @@ func add_vertex(id: int, x: float = 0.0, y: float = 0.0, color: Color = Color.WH
 func get_vertex(id: int):
 	return vertices.get(id)
 
+## Returns the edge connecting u and v, or null if none exists.
+func get_edge(u: Vertex, v: Vertex) -> Edge:
+	var e = u.edges
+	while e:
+		if e.dst == v:
+			return e
+		e = e.next
+	return null
+	
 ## Adds an undirected edge between two existing vertices.
 ## @param src_id Source vertex ID.
 ## @param dst_id Destination vertex ID.
@@ -120,3 +129,13 @@ func reset_parents() -> void:
 func reset_keys(value: float = Vertex.INF) -> void:
 	for v: Vertex in vertices.values():
 		v.key = value
+
+## Reset the WHOLE graph for a clean algorithm start
+func reset_for_algorithm() -> void:
+	reset_distances()
+	reset_parents()
+	reset_keys()
+	
+	# Additionally, reset all the colors to white 
+	for v in vertices.values():
+		v.color = Color.WHITE
