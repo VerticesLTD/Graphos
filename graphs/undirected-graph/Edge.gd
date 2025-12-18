@@ -18,7 +18,7 @@ var dst: Vertex
 var next: Edge = null
 
 ## Optional color metadata (useful for visualization).
-var color: Color = Color.WHITE
+var color: Color = Color.RED
 
 ## Constructs a new Edge.
 ## @param _weight Weight of the edge.
@@ -31,7 +31,7 @@ func _init(
 	_src: Vertex = null,
 	_dst: Vertex = null,
 	_next: Edge = null,
-	_color: Color = Color.WHITE
+	_color: Color = Color.RED
 ) -> void:
 	weight = _weight
 	src = _src

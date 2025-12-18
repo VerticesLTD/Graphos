@@ -1,34 +1,15 @@
 extends Node2D
 
-var graph = UndirectedGraph.new()
-
 func _ready() -> void:
-	test_bfs()
-
-
-# In Main.gd
-func test_bfs():
 	var graph = UndirectedGraph.new()
+	add_child(graph)
 
-	# 1. Create 5 vertices
-	for i in range(1, 6):
-		graph.add_vertex(i)
+	graph.add_vertex(0,Vector2(200,200),Color.GREEN)
+	graph.add_vertex(1,Vector2(350,200),Color.GREEN)
+	graph.add_vertex(2,Vector2(200,350),Color.GREEN)
 
-	# 2. Create connections
-	graph.add_edge(1, 2)
-	graph.add_edge(1, 3)
-	graph.add_edge(2, 4)
-	graph.add_edge(3, 5)
-
-	# 3. Run the algorithm
-	var bfs = BFS.new(graph)
-	var start_node = graph.get_vertex(1)
-	
-	if start_node:
-		var tape = bfs.run(start_node)
-		
-		# 4. Print the array as is
-		print(tape)
+	graph.add_edge(0,1)
+	graph.add_edge(1,2)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:

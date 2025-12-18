@@ -9,7 +9,7 @@ const VERTEX_RADIUS = 20.0
 
 ## Edge appearance
 const EDGE_COLOR = Color.RED
-const EDGE_WIDTH = 5.0
+const EDGE_WIDTH = 10.0
 
 ## Dictionary[int -> Vertex]
 ## Godot does not support generic typing for dictionaries.
@@ -147,3 +147,18 @@ func reset_for_algorithm() -> void:
 	# Additionally, reset all the colors to white 
 	for v in vertices.values():
 		v.color = Color.WHITE
+
+## To draw the graph, we first iterate over all edges and draw them using `draw_line`.
+## Then we draw vertices using `draw_circle`. Doing edges first allows the vertices to
+## appear on top of edges.
+func _draw() -> void:
+	for v:Vertex in vertices.values():
+		var e = v.edges
+
+		while e:
+			if e.src.id < e.dst.id:
+				draw_line(e.src.pos,e.dst.pos,e.color,EDGE_WIDTH)
+			e = e.next
+
+	for v:Vertex in vertices.values():
+		draw_circle(v.pos,VERTEX_RADIUS,v.color,true,-1.0,true)
