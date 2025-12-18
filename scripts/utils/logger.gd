@@ -1,7 +1,7 @@
 class_name GLogger
 
 ## Enable when debugging for info output
-static var enabled := false
+static var enabled := true
 
 static var log_level = "INFO"
 

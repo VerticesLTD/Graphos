@@ -11,4 +11,4 @@ const EVNT_TAG = "EVENT"
 # ------------
 # ID
 # ------------
-const START_ID = 0
+var vertex_id = 0

@@ -25,7 +25,7 @@ var subscribers:Dictionary[INTENTION_TYPE,Array] = {
 	}
 
 func subscribe_to_intention(intention:INTENTION_TYPE,object:Object) -> void:
-	if not INTENTION_TYPE.has(intention):
+	if not INTENTION_TYPE.values().has(intention):
 		push_warning("Attempted subscription with invalid intention type")
 		return
 
@@ -35,7 +35,6 @@ func subscribe_to_intention(intention:INTENTION_TYPE,object:Object) -> void:
 			)
 		return
 	subscribers[intention].append(object)
-	GLogger.debug("Subscribed object:" + object.to_string(),Globals.INPT_TAG)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:

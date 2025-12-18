@@ -21,6 +21,13 @@ var num_vertices: int = 0
 ## Total number of undirected edges in the graph.
 var num_edges: int = 0
 
+func _ready() -> void:
+	# Requesting handler to notify us about mouse clicks
+	InputHandler.subscribe_to_intention(
+			InputHandler.INTENTION_TYPE.MOUSE_CLICK,
+			self
+		)
+
 ## Removes all vertices and edges from the graph.
 func clear() -> void:
 	vertices.clear()
@@ -33,6 +40,9 @@ func clear() -> void:
 ## @param y     Optional y-coordinate.
 ## @param color Optional color.
 func add_vertex(id: int, pos:Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> void:
+	# TODO: Having the id as an arguments exposes potential problems.
+	# id should be inside `Globals`, and the responsibility to increment the id should
+	# be under the function doing the adding, not the caller.
 	if not vertices.has(id):
 		var v: Vertex = Vertex.new(id, color, Vertex.INF, Vertex.INF, pos)
 		vertices[id] = v
@@ -147,6 +157,19 @@ func reset_for_algorithm() -> void:
 	# Additionally, reset all the colors to white 
 	for v in vertices.values():
 		v.color = Color.WHITE
+
+## This function is executed by InputHandler for the subscribed intentions.
+func execute_intention(intention:InputHandler.Intention) -> void:
+	var event:InputEvent = intention.event
+
+	# Currently only executing mouse clicks
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+			var pos:Vector2 = get_global_mouse_position()
+			self.add_vertex(Globals.vertex_id,pos,Color.GREEN)
+			Globals.vertex_id += 1
+			queue_redraw()
+	
 
 ## To draw the graph, we first iterate over all edges and draw them using `draw_line`.
 ## Then we draw vertices using `draw_circle`. Doing edges first allows the vertices to
