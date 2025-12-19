@@ -3,7 +3,7 @@ class_name GLogger
 ## Enable when debugging for info output
 static var enabled := true
 
-static var log_level = "INFO"
+static var log_level = "DEBUG"
 
 ## Tags to filter by. If filter is none empty, only logs
 ## with tags inside the filter list will be printed

@@ -21,6 +21,9 @@ var num_vertices: int = 0
 ## Total number of undirected edges in the graph.
 var num_edges: int = 0
 
+## Used to remember the first vertex of 2 vertices to link an edge between
+var vertex_to_link:int = Globals.NOT_FOUND
+
 func _ready() -> void:
 	# Requesting handler to notify us about mouse clicks
 	InputHandler.subscribe_to_intention(
@@ -158,6 +161,14 @@ func reset_for_algorithm() -> void:
 	for v in vertices.values():
 		v.color = Color.WHITE
 
+## Iterates over vertices to check if position is colliding with one
+## of them.
+func get_vertex_collision(pos: Vector2) -> int:
+	for v: Vertex in vertices.values():
+		if v.pos.distance_to(pos) <= VERTEX_RADIUS:
+			return v.id
+	return Globals.NOT_FOUND
+
 ## This function is executed by InputHandler for the subscribed intentions.
 func execute_intention(intention:InputHandler.Intention) -> void:
 	var event:InputEvent = intention.event
@@ -166,11 +177,41 @@ func execute_intention(intention:InputHandler.Intention) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 			var pos:Vector2 = get_global_mouse_position()
-			self.add_vertex(Globals.vertex_id,pos,Color.GREEN)
-			Globals.vertex_id += 1
-			queue_redraw()
-	
+			_handle_left_click(pos)
+		elif event.button_index == MOUSE_BUTTON_RIGHT and event.is_pressed():
+			var pos:Vector2 = get_global_mouse_position()
+			_handle_right_click(pos)
 
+
+## Handles user left click.
+## Creates a vertex at posistion.
+func _handle_left_click(pos:Vector2) -> void:
+	self.add_vertex(Globals.vertex_id,pos,Color.GREEN)
+	Globals.vertex_id += 1
+	queue_redraw()
+
+## Handles user right click.
+## If user clicked on a vertex, it's ID is remembered.
+## When 2 different vertices have been clicked, add an edge between them.
+func _handle_right_click(pos: Vector2) -> void:
+	var id = get_vertex_collision(pos)
+	if id == Globals.NOT_FOUND:
+		return
+	GLogger.debug("Rightclick on ID: " + str(id),"GRAPH_RIGHT_CLICK")
+
+	if vertex_to_link == Globals.NOT_FOUND:
+		vertex_to_link = id
+		GLogger.debug("First node to link remembered","GRAPH_RIGHT_CLICK")
+		return
+
+	if vertex_to_link == id:
+		GLogger.debug("Clicked twice on the same vertex. Skipping.","GRAPH_RIGHT_CLICK")
+
+	self.add_edge(vertex_to_link,id)
+	vertex_to_link = Globals.NOT_FOUND
+
+	queue_redraw()
+	
 ## To draw the graph, we first iterate over all edges and draw them using `draw_line`.
 ## Then we draw vertices using `draw_circle`. Doing edges first allows the vertices to
 ## appear on top of edges.

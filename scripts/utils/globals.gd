@@ -12,3 +12,8 @@ const EVNT_TAG = "EVENT"
 # ID
 # ------------
 var vertex_id = 0
+
+# ------------
+# IDENTIFIRES
+# ------------
+const NOT_FOUND = -1
