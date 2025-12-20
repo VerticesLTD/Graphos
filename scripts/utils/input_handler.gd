@@ -18,7 +18,7 @@ class Intention:
 		self.event = input_event 
 
 # Type is: Dictionary[INTENTION_TYPE,Array[Object]]
-var subscribers:Dictionary[INTENTION_TYPE,Array] = {
+var subscribers:Dictionary = {
 	INTENTION_TYPE.MOUSE_CLICK : [],
 	INTENTION_TYPE.MOUSE_MOTION : [],
 	INTENTION_TYPE.KEYBOARD_CLICK : [],

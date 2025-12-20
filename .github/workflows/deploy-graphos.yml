@@ -1,109 +1,116 @@
-# name: Deploy Godot Web to Home Server
+name: Deploy Godot Web to Home Server
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   build-and-deploy:
-#     runs-on: ubuntu-latest
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-#     env:
-#       GODOT_VERSION_TAG: "4.3-stable" # GitHub release tag
-#       GODOT_TEMPLATES_DIR: "4.3.stable" # Directory name Godot uses
+    env:
+      GODOT_VERSION_TAG: "4.5-stable" # GitHub release tag
+      GODOT_TEMPLATES_DIR: "4.5.stable" # Directory name Godot uses
 
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-#       # - name: Download Godot editor
-#       #   run: |
-#       #     URL_EDITOR="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION_TAG}/Godot_v${GODOT_VERSION_TAG}_linux.x86_64.zip"
-#       #     echo "Downloading Godot editor from: $URL_EDITOR"
+      - name: Download Godot editor
+        run: |
+          URL_EDITOR="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION_TAG}/Godot_v${GODOT_VERSION_TAG}_linux.x86_64.zip"
+          echo "Downloading Godot editor from: $URL_EDITOR"
 
-#       #     curl -L \
-#       #       --retry 5 \
-#       #       --retry-delay 10 \
-#       #       --retry-all-errors \
-#       #       -o godot.zip \
-#       #       "$URL_EDITOR"
+          curl -L \
+            --retry 5 \
+            --retry-delay 10 \
+            --retry-all-errors \
+            -o godot.zip \
+            "$URL_EDITOR"
 
-#       #     unzip godot.zip
-#       #     mv Godot_v${GODOT_VERSION_TAG}_linux.x86_64 godot
-#       #     chmod +x godot
+          unzip godot.zip
+          mv Godot_v${GODOT_VERSION_TAG}_linux.x86_64 godot
+          chmod +x godot
 
-#       # - name: Download Godot export templates
-#       #   run: |
-#       #     TEMPL_DIR="${HOME}/.local/share/godot/export_templates/${GODOT_TEMPLATES_DIR}"
-#       #     mkdir -p "$TEMPL_DIR"
+      - name: Download Godot export templates
+        run: |
+          TEMPL_DIR="${HOME}/.local/share/godot/export_templates/${GODOT_TEMPLATES_DIR}"
+          mkdir -p "$TEMPL_DIR"
 
-#       #     URL_TEMPLATES="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION_TAG}/Godot_v${GODOT_VERSION_TAG}_export_templates.tpz"
-#       #     echo "Downloading Godot export templates from: $URL_TEMPLATES"
+          URL_TEMPLATES="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION_TAG}/Godot_v${GODOT_VERSION_TAG}_export_templates.tpz"
+          echo "Downloading Godot export templates from: $URL_TEMPLATES"
 
-#       #     curl -L \
-#       #       --retry 5 \
-#       #       --retry-delay 10 \
-#       #       --retry-all-errors \
-#       #       -o templates.tpz \
-#       #       "$URL_TEMPLATES"
+          curl -L \
+            --retry 5 \
+            --retry-delay 10 \
+            --retry-all-errors \
+            -o templates.tpz \
+            "$URL_TEMPLATES"
 
-#       #     unzip templates.tpz -d "$TEMPL_DIR"
+          unzip templates.tpz -d "$TEMPL_DIR"
 
-#       #     echo "==== export_templates tree BEFORE fix ===="
-#       #     ls -R "$TEMPL_DIR" || true
+          echo "==== export_templates tree BEFORE fix ===="
+          ls -R "$TEMPL_DIR" || true
 
-#       #     cd "$TEMPL_DIR"
+          cd "$TEMPL_DIR"
 
-#       #     # Try to locate any web *debug* and *release* templates in the tree
-#       #     DEBUG_SRC="$(find . -maxdepth 3 -type f -name 'web*debug*.zip' | head -n 1 || true)"
-#       #     RELEASE_SRC="$(find . -maxdepth 3 -type f -name 'web*release*.zip' | head -n 1 || true)"
+          # Try to locate any web *debug* and *release* templates in the tree
+          DEBUG_SRC="$(find . -maxdepth 3 -type f -name 'web*debug*.zip' | head -n 1 || true)"
+          RELEASE_SRC="$(find . -maxdepth 3 -type f -name 'web*release*.zip' | head -n 1 || true)"
 
-#       #     echo "Found DEBUG_SRC=$DEBUG_SRC"
-#       #     echo "Found RELEASE_SRC=$RELEASE_SRC"
+          echo "Found DEBUG_SRC=$DEBUG_SRC"
+          echo "Found RELEASE_SRC=$RELEASE_SRC"
 
-#       #     if [ -z "$DEBUG_SRC" ] || [ -z "$RELEASE_SRC" ]; then
-#       #       echo "ERROR: Could not find web debug/release templates inside templates.tpz"
-#       #       exit 1
-#       #     fi
+          if [ -z "$DEBUG_SRC" ] || [ -z "$RELEASE_SRC" ]; then
+            echo "ERROR: Could not find web debug/release templates inside templates.tpz"
+            exit 1
+          fi
 
-#       #     # Copy to exactly the names Godot 4.3 expects:
-#       #     cp "$DEBUG_SRC" "$TEMPL_DIR/web_nothreads_debug.zip"
-#       #     cp "$RELEASE_SRC" "$TEMPL_DIR/web_nothreads_release.zip"
+          # Copy to exactly the names Godot 4.3 expects:
+          cp "$DEBUG_SRC" "$TEMPL_DIR/web_nothreads_debug.zip"
+          cp "$RELEASE_SRC" "$TEMPL_DIR/web_nothreads_release.zip"
 
-#       #     echo "==== export_templates tree AFTER fix ===="
-#       #     ls -R "$TEMPL_DIR"
+          echo "==== export_templates tree AFTER fix ===="
+          ls -R "$TEMPL_DIR"
 
-#       # - name: Export Web
-#       #   run: |
-#       #     # Ensure export directory exists
-#       #     mkdir -p graphos-export
+      - name: Export Web
+        run: |
+          # Ensure export directory exists
+          mkdir -p export
 
-#       #     ./godot --headless --quiet --path . \
-#       #       --export-release "Web"
+          ./godot --headless --quiet --path . \
+            --export-debug "Web"
 
-#       # - name: Setup SSH
-#       #   run: |
-#       #     mkdir -p ~/.ssh
-#       #     echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-#       #     chmod 600 ~/.ssh/id_ed25519
-#       #     ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
 
-#       - name: Setup SSH and test
-#         run: |
-#           mkdir -p ~/.ssh
-#           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-#           chmod 600 ~/.ssh/id_ed25519
-#           ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+      - name: Setup SSH and test
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
 
-#           echo "Testing SSH connectivity..."
-#           ssh -vvv -i ~/.ssh/id_ed25519 \
-#             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-#             'echo "Connected from GitHub Actions"'
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
 
-#       # - name: Deploy via rsync
-#       #   run: |
-#       #     # Adjust if you changed export_path; with your config it’s graphos-export/Graphos.html
-#       #     rsync -avz --delete \
-#       #       graphos-export/ \
-#       #       ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/
+          echo "Testing SSH connectivity..."
+          ssh -vvv -i ~/.ssh/id_ed25519 \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            'echo "Connected from GitHub Actions"'
+
+      - name: Install rsync locally
+        if: ${{ env.ACT }}
+        run: |
+          apt-get update && apt-get install -y rsync
+
+      - name: Deploy via rsync
+        run: |
+          # Adjust if you changed export_path; with your config it’s graphos-export/Graphos.html
+          rsync -avz --delete \
+            --chmod=D755,F644 \
+            export/ \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/
