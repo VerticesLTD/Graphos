@@ -27,11 +27,7 @@ var parent: Vertex = null
 ## Key value (used by Prim’s algorithm).
 var key: float = INF
 
-## Optional x-coordinate (layout / visualization).
-var x: float = 0.0
-
-## Optional y-coordinate (layout / visualization).
-var y: float = 0.0
+var pos: Vector2 = Vector2.ZERO
 
 ## Constructs a new Vertex.
 ## @param _id        Unique vertex identifier.
@@ -45,15 +41,13 @@ func _init(
 	_color: Color = Color.WHITE,
 	_distance: float = INF,
 	_key: float = INF,
-	_x: float = 0.0,
-	_y: float = 0.0
+	_pos: Vector2 = Vector2.ZERO,
 ) -> void:
-	id = _id
-	color = _color
-	distance = _distance
-	key = _key
-	x = _x
-	y = _y
+	self.id = _id
+	self.color = _color
+	self.distance = _distance
+	self.key = _key
+	self.pos = _pos
 
 
 ## Adds an outgoing edge from this vertex to the destination vertex.
@@ -67,8 +61,8 @@ func connect_vertices(dest: Vertex, weight: int = 1) -> void:
 			return
 		curr = curr.next
 
-	var e: Edge = Edge.new(weight, self, dest, edges)
-	edges = e
+	var new_edge: Edge = Edge.new(weight, self, dest, edges)
+	edges = new_edge
 	degree += 1
 
 ## Removes the outgoing edge to the given destination vertex.
