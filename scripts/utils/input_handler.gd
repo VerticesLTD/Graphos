@@ -13,7 +13,8 @@ enum INTENTION_TYPE {
 ## Inner class representing an intention
 class Intention:
 	var event:InputEvent
-	var position: Vector2 # position of the click
+	# position of the click, helps make sure EVERY function subscribed to this click gets the exact same one.
+	var position: Vector2 
 	
 	func _init(input_event:InputEvent) -> void:
 		self.event = input_event 

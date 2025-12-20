@@ -15,7 +15,14 @@ func _ready() -> void:
 		refresh()		
 		
 func refresh() -> void:
-	# Set the two points of the line based on the vertices
-	points = [data.src.pos, data.dst.pos]
-	default_color = data.color
-	width = 10.0 # Can use a const also
+	# Clear the old points 
+	clear_points()
+	
+	# Create the new points
+	add_point(data.src.pos)
+	add_point(data.dst.pos)
+
+	# We use 'modulate' as a reactive color filter. 
+	# It tints the entire puppet (Sprite + Label) based on the Brain's data,
+	# allowing for easy transparency (Alpha) and preserving art details.	
+	self.modulate = data.color

@@ -1,6 +1,26 @@
-[gd_scene load_steps=2 format=3 uid="uid://yxcr5kwlindq"]
+[gd_scene load_steps=5 format=3 uid="uid://yxcr5kwlindq"]
 
-[ext_resource type="Script" uid="uid://cko720m554wq4" path="res://main.gd" id="1_ig7tw"]
+[ext_resource type="Script" uid="uid://c2yhxp7188k8k" path="res://graphs/undirected-graph/UndirectedGraph.gd" id="1_0xm2m"]
+[ext_resource type="Script" uid="uid://bi4h7vrxw31jb" path="res://controllers/GraphController.gd" id="2_0xm2m"]
+[ext_resource type="PackedScene" uid="uid://cxt6f2vgtos0c" path="res://ui/vertex/VertexView.tscn" id="3_h2yge"]
+[ext_resource type="Texture2D" uid="uid://c1dse1q8mj3fm" path="res://icon.svg" id="4_1bvp3"]
 
 [node name="Main" type="Node2D"]
-script = ExtResource("1_ig7tw")
+script = ExtResource("1_0xm2m")
+
+[node name="UndirectedGraph" type="Node2D" parent="."]
+script = ExtResource("1_0xm2m")
+metadata/_custom_type_script = "uid://c2yhxp7188k8k"
+
+[node name="GraphController" type="Node" parent="." node_paths=PackedStringArray("graph")]
+script = ExtResource("2_0xm2m")
+graph = NodePath("../UndirectedGraph")
+
+[node name="PlacementPreview" parent="." instance=ExtResource("3_h2yge")]
+modulate = Color(0.98039216, 0.98039216, 0.98039216, 0.39215687)
+
+[node name="Sprite2D" parent="PlacementPreview" index="1"]
+modulate = Color(1, 1, 1, 0.39215687)
+texture = ExtResource("4_1bvp3")
+
+[editable path="PlacementPreview"]

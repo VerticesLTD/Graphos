@@ -31,4 +31,3 @@ static func info(msg, tag=""):
 		
 	if enabled:
 		print_rich("[color=yellow][INFO][/color]","[color=cyan][",tag,"][/color] - ",msg)
-
