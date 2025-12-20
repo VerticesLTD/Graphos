@@ -103,3 +103,12 @@ func get_neighbors_edges() -> Array:
 		out.append(e)
 		e = e.next
 	return out
+
+## Returns all vertices neighbors as an Array.
+func get_neighbor_vertices() -> Array:
+	var neighbors: Array = []
+	var e: Edge = edges # The head of your linked list
+	while e:
+		neighbors.append(e.dst) # dst is the Vertex on the other side
+		e = e.next
+	return neighbors

@@ -1,35 +1,30 @@
-## Manages the recording and playback of graph algorithm visualizations.
-## Maintains a linear timeline of GraphEvents, allowing for step-by-step navigation.
+## Manages the recording and playback of algorithms.
+## Maintains a linear timeline of Actions, allowing for step-by-step navigation.
 ## Allows jumping a spesific state (e.g "move to state 50) - allows jumping to "critical states" of the algorithm.
 
-class_name EventManager
+class_name AlgorithmPlayer
 extends RefCounted ## Acts similar to java's garbage collector
 
-## The visual interface this manager controls.
-## Events executed by this manager will modify this specific visualizer instance.
-var visualizer: GraphVisualizer
-
 ## Stores the events by order of the algorithm's execution.
-var timeline: Array[GraphEvent] = []
+var timeline: Array[Action] = []
 
 # The Pointer: Tracks where we are in time.
 # -1 = Initial State (Before the first event).
 # 0 = After the first event.
 var current_step_index: int = -1
 
+## Initialize the Algorithm Player.
+## @patam actions_array used to set the timeline.
+func _init(actions_array: Array[Action]):
+	timeline = actions_array
 
-## Constructor for the visualizer.
-## @param _visualizer graph visualizer.
-func _init(_visualizer: GraphVisualizer):
-	visualizer = _visualizer
-	
 ## 1. RECORDING (Building the Timeline)
 ## IMPORTANT:
 ## We do NOT execute it immediately here, 
 ## because we want to let the user "debug" and go backwards and forwards
 ## So we prepare it for the playback.
 ## @param event The event we add to the timeline
-func add_event(event: GraphEvent) -> void:
+func add_event(event: Action) -> void:
 	timeline.append(event)
 
 
@@ -46,7 +41,7 @@ func step_forward() -> void:
 	
 	# Execute the event at the new pointer
 	var event = timeline[current_step_index]
-	event.execute(visualizer)
+	event.execute()
 
 ## 3. STEP BACKWARD (Previous)
 ## The function "undoes" the last action we had done.
@@ -60,7 +55,7 @@ func step_backward() -> void:
 	var event = timeline[current_step_index]
 	
 	# Undo it
-	event.undo(visualizer)
+	event.undo()
 	
 	# Move pointer backward
 	current_step_index -= 1
@@ -81,7 +76,7 @@ func go_to_step(target_index: int) -> void:
 	while current_step_index > target_index:
 		step_backward()
 
-# 5. RESET (Back to Initial State)
+## 5. RESET (Back to Initial State)
 func reset_to_start() -> void:
 	go_to_step(-1)
 
