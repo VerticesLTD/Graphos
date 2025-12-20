@@ -1,0 +1,42 @@
+name: Test that the Godot project compiles
+
+on:
+  pull_request: # Triggers on any PR open or update
+  workflow_dispatch: # Allows you to manually click "Run" in GitHub UI
+
+jobs:
+  check-compilation:
+    runs-on: ubuntu-latest
+
+    env:
+      GODOT_VERSION_TAG: "4.5-stable" 
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Godot editor
+        run: |
+          # Construct URL
+          URL_EDITOR="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION_TAG}/Godot_v${GODOT_VERSION_TAG}_linux.x86_64.zip"
+          echo "Downloading Godot editor from: $URL_EDITOR"
+
+          # Download
+          curl -L \
+            --retry 5 \
+            --retry-delay 10 \
+            --retry-all-errors \
+            -o godot.zip \
+            "$URL_EDITOR"
+
+          # Unzip and setup
+          unzip godot.zip
+          mv Godot_v${GODOT_VERSION_TAG}_linux.x86_64 godot
+          chmod +x godot
+
+      - name: Verify Project "Compiles" (Headless Import)
+        run: |
+          echo "Running Godot in headless mode to verify project integrity..."
+          # This command opens the project, imports all assets, checks scripts, and then exits.
+          # If the project is broken, this will often timeout or return an error code.
+          ./godot --headless --path . --editor --quit
