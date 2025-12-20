@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bmti1ysdlhopk"]
+
+[ext_resource type="Script" uid="uid://dvopiunu0awh3" path="res://ui/edge/EdgeView.gd" id="1_cct54"]
+
+[node name="EdgeView" type="Line2D"]
+script = ExtResource("1_cct54")

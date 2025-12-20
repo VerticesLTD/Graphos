@@ -9,6 +9,10 @@ extends Object # An edge is an object which means it has a brain without a body.
 ## The Sprite hears this and repaints itself.
 signal state_changed
 
+## Emitted when this edge is removed from the graph.
+## The Line2D hears this and calls queue_free().
+signal vanished
+
 ## Source vertex of the edge.
 var src: Vertex
 
@@ -74,3 +78,12 @@ func get_other_vertex(v: Vertex) -> Vertex:
 		return dst
 	else:
 		return src
+
+## This is called right before the object is removed from memory.
+## Disconnects edge from being callable(Object doesnt do it alone but its object is lighter and faster).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		if src and src.state_changed.is_connected(_on_vertex_changed):
+			src.state_changed.disconnect(_on_vertex_changed)
+		if dst and dst.state_changed.is_connected(_on_vertex_changed):
+			dst.state_changed.disconnect(_on_vertex_changed)

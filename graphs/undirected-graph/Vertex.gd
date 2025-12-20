@@ -111,32 +111,43 @@ func connect_vertices(dest: Vertex, weight: int = 1) -> void:
 	edge_added.emit(new_edge)
 
 ## Removes the outgoing edge to the given destination vertex.
-## @param dest Destination vertex.
-## @return true if an edge was removed, false otherwise.
-## @silent The param which tells us if we need to display the deletion or not(crucial for deleting both vertices)
+## @param dest  The vertex we are disconnecting from.
+## @param shout If true, signals will be sent to update the UI/Algorithms. 
+##              Set to false for the "second half" of undirected edge deletions.
+## @return      True if an edge was found and removed, false otherwise.
 func delete_edge(dest: Vertex, shout: bool = true) -> bool:
 	var prev: Edge = null
 	var curr: Edge = edges
 
+	# Traverse the linked list of edges
 	while curr:
 		if curr.dst == dest:
-
+			# If shouting is enabled, we notify the rest of the system
 			if shout:
-				edge_removed.emit(curr) # Only shout if not muted
+				## GLOBAL NOTIFICATION: Tells the Graph/Algorithms that the logic changed.
+				edge_removed.emit(curr) 
+				
+				## DIRECT COMMAND: Tells the specific EdgeView (Line2D) to delete itself.
+				## This triggers 'queue_free()' in the visual script.
+				curr.vanished.emit()			
 			
+			# Re-link the list to bypass the current edge (Standard Linked List removal)
 			if prev == null:
+				# We are removing the head of the list
 				edges = curr.next
 			else:
+				# We are removing a middle or tail element
 				prev.next = curr.next
 
+			# Update metadata
 			degree -= 1
 			return true
 
+		# Move to the next link in the chain
 		prev = curr
 		curr = curr.next
 
 	return false
-
 ## Returns all outgoing edges as an Array.
 ## NOTE:
 ## Godot does not support Array[Edge] typing.

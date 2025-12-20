@@ -1,56 +1,110 @@
 ## Represents an undirected graph using adjacency lists.
-## Each undirected edge is stored internally as two directed edges.
-## The edge counter tracks logical undirected edges.
+## The Graph acts as the "Stage Manager": it creates Brains (Data) 
+## and Puppets (Scenes) and connects them.
 class_name UndirectedGraph
 extends Node2D
 
-## Radius of circle drawn for each vertex
+# We load our "Blueprints" (Scenes) here
+const VERTEX_VIEW_SCENE = preload("res://vertex_view.tscn") 
+const EDGE_VIEW_SCENE = preload("res://edge_view.tscn")
+
+## Radius of vertex collision (should match VertexView's detection)
 const VERTEX_RADIUS = 20.0
+
+## Dictionary[int -> Vertex]
+var vertices: Dictionary = {}
 
 ## Edge appearance
 const EDGE_COLOR = Color.RED
 const EDGE_WIDTH = 10.0
 
-## Dictionary[int -> Vertex]
-## Godot does not support generic typing for dictionaries.
-var vertices: Dictionary = {}
-
-## Total number of vertices in the graph.
+## Metadata counters
 var num_vertices: int = 0
-
-## Total number of undirected edges in the graph.
 var num_edges: int = 0
 
-## Used to remember the first vertex of 2 vertices to link an edge between
-var vertex_to_link:int = Globals.NOT_FOUND
+## Used to remember the first vertex when linking an edge
+var vertex_to_link: int = Globals.NOT_FOUND
 
 func _ready() -> void:
-	# Requesting handler to notify us about mouse clicks
+	# Subscribe to global mouse clicks via our InputHandler
 	InputHandler.subscribe_to_intention(
 			InputHandler.INTENTION_TYPE.MOUSE_CLICK,
 			self
 		)
 
+## ------------------------------------------------------------------------------
+## SIGNAL REACTION: The Factory Logic
+## ------------------------------------------------------------------------------
+
+## This runs whenever a vertex emits 'edge_added'
+func _on_edge_shouted_to_graph(new_edge: Edge) -> void:
+	# to only add it once, add just if id.src is smaller
+	if new_edge.src.id > new_edge.dst.id:
+		return
+
+	# Create the visual Body
+	var line = EDGE_VIEW_SCENE.instantiate()
+	line.data = new_edge
+
+	# Add to scene and ensure it's drawn BEHIND the vertices
+	add_child(line)
+	move_child(line, 0)	
+	
+## ------------------------------------------------------------------------------
+## GRAPH OPERATIONS (The Brain Factory)
+## ------------------------------------------------------------------------------
+	
+## Adds a vertex to the graph if it does not already exist.
+## Connects the scenes and data connected to the vertex.
+## @param id    Unique vertex identifier.
+## @param x     Optional x-coordinate.
+## @param y     Optional y-coordinate.
+## @param color Optional color.
+func add_vertex(id: int, pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> void:
+	if not vertices.has(id):
+		# 1. Create the Brain (Data)
+		var v: Vertex = Vertex.new(id, color, Vertex.INF, Vertex.INF, pos)
+		vertices[id] = v
+		num_vertices += 1
+
+		# 2. Create the Body (The Scene)
+		var view = VERTEX_VIEW_SCENE.instantiate()
+
+		# 3. THE HANDSHAKE
+		view.data = v 
+
+		# 4. Show it on screen
+		add_child(view)
+		
+		# 5: Tell the graph to listen for edges from this brain
+		v.edge_added.connect(_on_edge_shouted_to_graph)
+
+
+## Adds an undirected edge between two existing vertices.
+## @param src_id Source vertex ID.
+## @param dst_id Destination vertex ID.
+## @param weight Edge weight.
+func add_edge(src_id: int, dst_id: int, weight: int = 1) -> void:
+	var src: Vertex = vertices[src_id]
+	var dst: Vertex = vertices[dst_id]
+
+	var before: int = src.degree
+	src.connect_vertices(dst, weight)
+	var after: int = src.degree
+
+	# Adds only once
+	if after > before:
+		dst.connect_vertices(src, weight)
+		num_edges += 1
+		
+		
 ## Removes all vertices and edges from the graph.
 func clear() -> void:
 	vertices.clear()
 	num_vertices = 0
 	num_edges = 0
 
-## Adds a vertex to the graph if it does not already exist.
-## @param id    Unique vertex identifier.
-## @param x     Optional x-coordinate.
-## @param y     Optional y-coordinate.
-## @param color Optional color.
-func add_vertex(id: int, pos:Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> void:
-	# TODO: Having the id as an arguments exposes potential problems.
-	# id should be inside `Globals`, and the responsibility to increment the id should
-	# be under the function doing the adding, not the caller.
-	if not vertices.has(id):
-		var v: Vertex = Vertex.new(id, color, Vertex.INF, Vertex.INF, pos)
-		vertices[id] = v
-		num_vertices += 1
-
+		
 ## Returns the vertex with the given ID.
 ## IMPORTANT:
 ## This function intentionally has NO return type annotation.
@@ -69,22 +123,7 @@ func get_edge(u: Vertex, v: Vertex) -> Edge:
 			return e
 		e = e.next
 	return null
-	
-## Adds an undirected edge between two existing vertices.
-## @param src_id Source vertex ID.
-## @param dst_id Destination vertex ID.
-## @param weight Edge weight.
-func add_edge(src_id: int, dst_id: int, weight: int = 1) -> void:
-	var src: Vertex = vertices[src_id]
-	var dst: Vertex = vertices[dst_id]
 
-	var before: int = src.degree
-	src.connect_vertices(dst, weight)
-	var after: int = src.degree
-
-	if after > before:
-		dst.connect_vertices(src, weight)
-		num_edges += 1
 
 ## Removes an undirected edge between two vertices.
 func delete_edge(src_id: int, dst_id: int) -> void:
@@ -165,13 +204,17 @@ func reset_for_algorithm() -> void:
 	for v in vertices.values():
 		v.color = Color.WHITE
 
-## Iterates over vertices to check if position is colliding with one
-## of them.
+## Iterates over vertices to check if position is colliding with one of them.
 func get_vertex_collision(pos: Vector2) -> int:
 	for v: Vertex in vertices.values():
 		if v.pos.distance_to(pos) <= VERTEX_RADIUS:
 			return v.id
 	return Globals.NOT_FOUND
+
+
+## ------------------------------------------------------------------------------
+## INPUT HANDLING (The Director)
+## ------------------------------------------------------------------------------
 
 ## This function is executed by InputHandler for the subscribed intentions.
 func execute_intention(intention:InputHandler.Intention) -> void:
@@ -215,18 +258,7 @@ func _handle_right_click(pos: Vector2) -> void:
 	vertex_to_link = Globals.NOT_FOUND
 
 	queue_redraw()
-	
-## To draw the graph, we first iterate over all edges and draw them using `draw_line`.
-## Then we draw vertices using `draw_circle`. Doing edges first allows the vertices to
-## appear on top of edges.
-func _draw() -> void:
-	for v:Vertex in vertices.values():
-		var e = v.edges
 
-		while e:
-			if e.src.id < e.dst.id:
-				draw_line(e.src.pos,e.dst.pos,e.color,EDGE_WIDTH)
-			e = e.next
 
-	for v:Vertex in vertices.values():
-		draw_circle(v.pos,VERTEX_RADIUS,v.color,true,-1.0,true)
+## NOTE: _draw() has been deleted.
+## The Node2D children (VertexView/EdgeView) handle their own rendering.
