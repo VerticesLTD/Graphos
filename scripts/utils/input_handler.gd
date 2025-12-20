@@ -13,9 +13,12 @@ enum INTENTION_TYPE {
 ## Inner class representing an intention
 class Intention:
 	var event:InputEvent
-
+	var position: Vector2 # position of the click
+	
 	func _init(input_event:InputEvent) -> void:
 		self.event = input_event 
+		if input_event is InputEventMouse:
+			self.position = input_event.position
 
 # Type is: Dictionary[INTENTION_TYPE,Array[Object]]
 var subscribers:Dictionary = {
@@ -37,9 +40,14 @@ func subscribe_to_intention(intention:INTENTION_TYPE,object:Object) -> void:
 	subscribers[intention].append(object)
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Notify mouse click
 	if event is InputEventMouseButton:
 		var intention = Intention.new(event)
 		for subscriber:Object in subscribers[INTENTION_TYPE.MOUSE_CLICK]:
-			subscriber.call_deferred("execute_intention",intention)
+			subscriber.call_deferred("execute_intention", intention)
 
-
+	# Notify mouse motion
+	elif event is InputEventMouseMotion:
+		var intention = Intention.new(event)
+		for subscriber:Object in subscribers[INTENTION_TYPE.MOUSE_MOTION]:
+			subscriber.call_deferred("execute_intention", intention)

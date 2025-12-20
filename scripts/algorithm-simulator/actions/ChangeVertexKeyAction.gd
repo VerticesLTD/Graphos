@@ -31,4 +31,3 @@ func execute() -> void:
 ## Restores the original key of the vertex.
 func undo() -> void:
 	target_vertex.key = old_key 
-	# draw

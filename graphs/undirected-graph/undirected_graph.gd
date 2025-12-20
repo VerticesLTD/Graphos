@@ -91,14 +91,18 @@ func delete_edge(src_id: int, dst_id: int) -> void:
 	if not vertices.has(src_id) or not vertices.has(dst_id):
 		return
 
-	var v1: Vertex = vertices[src_id]
-	var v2: Vertex = vertices[dst_id]
+	var src_node: Vertex = vertices[src_id]
+	var dst_node: Vertex = vertices[dst_id]
 
-	var d1: bool = v1.delete_edge(v2)
-	var d2: bool = v2.delete_edge(v1)
-
-	if d1 or d2:
-		num_edges -= 1
+	# To avoid duplicate deletion, we delete visually only edge with the lower id.
+	if src_id < dst_id:
+		src_node.delete_edge(dst_node, true) # This one shouts
+		dst_node.delete_edge(src_node, false) # This one is silent
+	else:
+		dst_node.delete_edge(src_node, true) # This one shouts
+		src_node.delete_edge(dst_node, false) # This one is silent
+		
+	num_edges -= 1 # Decrease num edges in the graph
 
 
 ## Removes a vertex and all incident edges.

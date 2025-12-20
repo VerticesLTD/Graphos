@@ -3,9 +3,11 @@
 ## and the next edge in the adjacency list. This forms a singly-linked list.
 ## Undirected graphs store each logical edge twice (once per endpoint).
 class_name Edge
+extends Object # An edge is an object which means it has a brain without a body. Pure logic.
 
-## Weight of the edge (used by MST / shortest-path algorithms).
-var weight: int = 1
+## Emitted when values like color or position change. 
+## The Sprite hears this and repaints itself.
+signal state_changed
 
 ## Source vertex of the edge.
 var src: Vertex
@@ -17,8 +19,6 @@ var dst: Vertex
 ## May be null if this is the last edge.
 var next: Edge = null
 
-## Optional color metadata (useful for visualization).
-var color: Color = Color.RED
 
 ## Constructs a new Edge.
 ## @param _weight Weight of the edge.
@@ -33,12 +33,38 @@ func _init(
 	_next: Edge = null,
 	_color: Color = Color.RED
 ) -> void:
-	weight = _weight
-	src = _src
-	dst = _dst
-	next = _next
-	color = _color
+	self.weight = _weight
+	self.src = _src
+	self.dst = _dst
+	self.next = _next
+	self.color = _color
 
+	# The Edge spyies on its vertices to know where to move(only if they exist)
+	if src:
+		src.state_changed.connect(_on_vertex_changed)
+	if dst:
+		dst.state_changed.connect(_on_vertex_changed)
+
+####################### SETTER FUNCTIONS & REACTION LOGIC #######################
+
+## Long explanation on why and how use setters in Vertex class
+
+var weight: int = 1:
+	set(value):
+		weight = value
+		state_changed.emit()
+		
+
+var color: Color = Color.RED:
+	set(value):
+		color = value
+		state_changed.emit()
+
+
+func _on_vertex_changed() -> void:
+	# If a vertex "shouts" that it moved, the Edge 
+	# shouts too so the Line Sprite knows to stretch.
+	state_changed.emit()
 
 ## Helper function to fetch the other vertex, 
 ## used when we have an edge and want to get its dst
