@@ -6,9 +6,6 @@ extends Node2D
 ## It is now a "Pure View": it draws its own circle and listens to the Brain.
 ## ==============================================================================
 
-## The circle's radius
-const RADIUS: float = 20.0
-
 ## This is the slot for our Brain. The Graph Manager fills this when we are born.
 var data: Vertex 
 
@@ -60,4 +57,4 @@ func _draw() -> void:
 	
 	# 2. DRAW THE CIRCLE
 	# Vector2.ZERO ensures it draws on the node'ss origin.
-	draw_circle(Vector2.ZERO, RADIUS, circle_color)
+	draw_circle(Vector2.ZERO, Globals.VERTEX_RADIUS, circle_color)

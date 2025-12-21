@@ -9,9 +9,10 @@ const MGR_TAG = "MANAGER"
 const EVNT_TAG = "EVENT"
 
 # ------------
-# ID
+# Vertex globals
 # ------------
 var vertex_id = 0
+const VERTEX_RADIUS = 20.0
 
 # ------------
 # IDENTIFIRES

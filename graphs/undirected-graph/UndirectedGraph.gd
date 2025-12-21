@@ -8,8 +8,6 @@ class_name UndirectedGraph
 const VERTEX_VIEW_SCENE = preload("res://ui/vertex/VertexView.tscn")
 const EDGE_VIEW_SCENE = preload("res://ui/edge/EdgeView.tscn")
 
-## Radius of vertex collision (should match VertexView's detection)
-const VERTEX_RADIUS = 20.0
 
 ## Dictionary[int -> Vertex]
 var vertices: Dictionary = {}
@@ -227,7 +225,7 @@ func reset_for_algorithm() -> void:
 ## Iterates over vertices to check if position is colliding with one of them.
 func get_vertex_collision(pos: Vector2) -> int:
 	for v: Vertex in vertices.values():
-		if v.pos.distance_to(pos) <= VERTEX_RADIUS:
+		if v.pos.distance_to(pos) <= Globals.VERTEX_RADIUS:
 			return v.id
 	return Globals.NOT_FOUND
 

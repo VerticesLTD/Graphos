@@ -7,7 +7,7 @@ extends Node
 enum INTENTION_TYPE {
 	MOUSE_CLICK,
 	MOUSE_MOTION,
-	KEYBOARD_CLICK
+	KEYBOARD
 	}
 
 ## Inner class representing an intention
@@ -25,7 +25,7 @@ class Intention:
 var subscribers:Dictionary = {
 	INTENTION_TYPE.MOUSE_CLICK : [],
 	INTENTION_TYPE.MOUSE_MOTION : [],
-	INTENTION_TYPE.KEYBOARD_CLICK : [],
+	INTENTION_TYPE.KEYBOARD : [],
 	}
 
 func subscribe_to_intention(intention:INTENTION_TYPE,object:Object) -> void:
@@ -51,4 +51,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseMotion:
 		var intention = Intention.new(event)
 		for subscriber:Object in subscribers[INTENTION_TYPE.MOUSE_MOTION]:
+			subscriber.call_deferred("execute_intention", intention)
+			
+	# Nofity keyboard
+	elif event is InputEventKey:
+		var intention = Intention.new(event)
+		for subscriber:Object in subscribers[INTENTION_TYPE.MOUSE_CLICK]:
 			subscriber.call_deferred("execute_intention", intention)
