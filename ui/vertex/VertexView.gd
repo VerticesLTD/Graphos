@@ -23,8 +23,8 @@ func _ready() -> void:
 		vertex_data.state_changed.connect(refresh)
 
 		# 2. Listen for "die" commands and clear
-		vertex_data.vanished.connect(queue_free)
-
+		vertex_data.vanished.connect(_on_vanished)
+		
 		# Initial draw
 		refresh()
 	else:
@@ -58,3 +58,7 @@ func _draw() -> void:
 	# 2. DRAW THE CIRCLE
 	# Vector2.ZERO ensures it draws on the node'ss origin.
 	draw_circle(Vector2.ZERO, Globals.VERTEX_RADIUS, circle_color)
+
+# Called when we delete the vertex
+func _on_vanished(_v: Vertex) -> void:
+	queue_free()

@@ -82,7 +82,10 @@ func get_other_vertex(v: Vertex) -> Vertex:
 ## Disconnects edge from being callable(Object doesnt do it alone but its object is lighter and faster).
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
-		if src and src.state_changed.is_connected(_on_vertex_changed):
-			src.state_changed.disconnect(_on_vertex_changed)
-		if dst and dst.state_changed.is_connected(_on_vertex_changed):
-			dst.state_changed.disconnect(_on_vertex_changed)
+		# Use a Callable to ensure the reference is stable
+		var cb = Callable(self, "_on_vertex_changed")
+
+		if is_instance_valid(src) and src.state_changed.is_connected(cb):
+			src.state_changed.disconnect(cb)
+		if is_instance_valid(dst) and dst.state_changed.is_connected(cb):
+			dst.state_changed.disconnect(cb)

@@ -164,28 +164,22 @@ func get_edge(u: Vertex, v: Vertex) -> Edge:
 func delete_edge(src_id: int, dst_id: int) -> void:
 	var src_node = vertices.get(src_id)
 	var dst_node = vertices.get(dst_id)
-	
+
 	if not src_node or not dst_node:
 		return
 
-	# Step 1: Remove the data from both internal adjacency lists.
-	# We capture the removed edge objects.
 	var edge_a = src_node.delete_edge(dst_node)
 	var edge_b = dst_node.delete_edge(src_node)
 
-	# Step 2: Pick the edge to trigger the UI cleanup.
-	# We use the one where src_id < dst_id to stay consistent with add_edge.
+	# Choose only the right edge to delete
 	var edge_to_signal = edge_a if src_id < dst_id else edge_b
 
 	if edge_to_signal:
-		# Notify any listeners (like the Graph or UI)
-		edge_to_signal.edge_removed.emit()
-		
-		# Tell the EdgeView Puppet to queue_free()
-		edge_to_signal.vanished.emit()
+		# 1. Manually trigger the graph's counter logic
+		_on_edge_removed(edge_to_signal)
 
-	# NOTE: num_edges -= 1 REMOVED FROM HERE. 
-	# It now happens inside _on_edge_removed.
+		# 2. Tell the EdgeView (Puppet) to delete itself
+		edge_to_signal.vanished.emit()
 
 ## Returns true if an edge exists between two vertices.
 func has_edge(src_id: int, dst_id: int) -> bool:
