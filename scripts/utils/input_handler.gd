@@ -13,13 +13,13 @@ enum INTENTION_TYPE {
 ## Inner class representing an intention
 class Intention:
 	var event:InputEvent
-	# position of the click, helps make sure EVERY function subscribed to this click gets the exact same one.
-	var position: Vector2 
+	# position of the click, gurentees sure EVERY function subscribed to this click gets the exact same one.
+	var mouse_global_pos: Vector2 
 	
 	func _init(input_event:InputEvent) -> void:
 		self.event = input_event 
 		if input_event is InputEventMouse:
-			self.position = input_event.position
+			self.mouse_global_pos = input_event.position
 
 # Type is: Dictionary[INTENTION_TYPE,Array[Object]]
 var subscribers:Dictionary = {
@@ -56,5 +56,5 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Nofity keyboard
 	elif event is InputEventKey:
 		var intention = Intention.new(event)
-		for subscriber:Object in subscribers[INTENTION_TYPE.MOUSE_CLICK]:
+		for subscriber:Object in subscribers[INTENTION_TYPE.KEYBOARD]:
 			subscriber.call_deferred("execute_intention", intention)

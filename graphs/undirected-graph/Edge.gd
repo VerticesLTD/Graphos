@@ -3,7 +3,6 @@
 ## and the next edge in the adjacency list. This forms a singly-linked list.
 ## Undirected graphs store each logical edge twice (once per endpoint).
 class_name Edge
-extends Object # An edge is an object which means it has a brain without a body. Pure logic.
 
 ## Emitted when values like color or position change. 
 ## The Sprite hears this and repaints itself.

@@ -28,25 +28,25 @@ func _ready() -> void:
 func execute_intention(intention: InputHandler.Intention) -> void:
 	# Grab the data from the intention 
 	var event: InputEvent = intention.event
-	var mouse_pos: Vector2 = intention.position
+	var mouse_global_pos: Vector2 = intention.mouse_global_pos
 
 	# 1. MOTION (Dragging)
 	# Handled first because its the most frequent one.
 	if event is InputEventMouseMotion:
-		_handle_mouse_movement(mouse_pos)
+		_handle_mouse_movement(mouse_global_pos)
 		return
 
 	# 2. LEFT_CLICKS & LEFT_RELEASES
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.is_pressed():
-			_handle_left_click(mouse_pos)
+			_handle_left_click(mouse_global_pos)
 		else:
 			_handle_left_release()
 			
 	# 3. RIGHT_CLICKS & RIGHT_RELEASES
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
 		if event.is_pressed():
-			_handle_right_click(mouse_pos)
+			_handle_right_click(mouse_global_pos)
 		else:
 			_handle_right_release()
 			
@@ -63,22 +63,22 @@ func execute_intention(intention: InputHandler.Intention) -> void:
 ## ------------------------------------------------------------------------------
 	
 ## Handle mouse movement
-func _handle_mouse_movement(mouse_pos: Vector2):
+func _handle_mouse_movement(mouse_global_pos: Vector2):
 	# LANE 1: PASSIVE (Hovering)
 	# This runs every time the mouse moves, regardless of dragging.
-	_handle_hover(mouse_pos)
+	_handle_hover(mouse_global_pos)
 
 	# LANE 2: ACTIVE (Dragging)
 	# We only proceed here if a drag is actually in progress.
 	if is_dragging:
-		_handle_dragging(mouse_pos)
+		_handle_dragging(mouse_global_pos)
 		
 		
-func _handle_hover(mouse_pos: Vector2):
+func _handle_hover(mouse_global_pos: Vector2):
 	# Idea: make the vertex glow
 	pass
 
-func _handle_dragging(mouse_pos: Vector2):
+func _handle_dragging(mouse_global_pos: Vector2):
 	# 1. Get the actual vertex using the ID
 	var v = graph.get_vertex(dragged_vertex_id)
 	
@@ -86,7 +86,7 @@ func _handle_dragging(mouse_pos: Vector2):
 	# THE MAGIC: Because we used a 'set(value)' in the Vertex class, 
 	# this will automatically tell the Puppet to move!
 	if v:
-		v.pos = mouse_pos
+		v.pos = mouse_global_pos
 	
 
 ## Starts dragging a node
@@ -103,24 +103,24 @@ func _stop_dragging() -> void:
 ## ------------------------------------------------------------------------------
 ## LEFT_CLICKS & LEFT_RELEASES 
 ## ------------------------------------------------------------------------------
-func _handle_left_click(mouse_pos: Vector2):
+func _handle_left_click(mouse_global_pos: Vector2):
 	# Get the vertex in the position of the mouse(or not found)
-	var id = graph.get_vertex_collision(mouse_pos)
+	var id = graph.get_vertex_collision(mouse_global_pos)
 	var is_ctrl = Input.is_key_pressed(KEY_CTRL)
 
 	# 1. CLICKED VERTEX  
 	if id != Globals.NOT_FOUND:
 		if is_ctrl:
-			_handle_path_connection(mouse_pos)
+			_handle_path_connection(mouse_global_pos)
 		else:
 			_start_dragging(id)
 		return
 		
 	# 2. CLICKED EMPTY SPACE INTERACTION 
 	if is_ctrl:
-		_handle_path_connection(mouse_pos) # Create & Connect
+		_handle_path_connection(mouse_global_pos) # Create & Connect
 	else:
-		_handle_vertex_placement(mouse_pos) # Just create
+		_handle_vertex_placement(mouse_global_pos) # Just create
 	
 func _handle_left_release():
 	# Always stop dragging when the mouse is let go
@@ -131,7 +131,7 @@ func _handle_left_release():
 ## ------------------------------------------------------------------------------
 ## RIGHT_CLICKS & RIGHT_RELEASES 
 ## ------------------------------------------------------------------------------
-func _handle_right_click(mouse_pos: Vector2):
+func _handle_right_click(mouse_global_pos: Vector2):
 	pass
 	
 func _handle_right_release():

@@ -2,7 +2,6 @@
 ## Stores adjacency information and algorithm metadata.
 ## This class is data-oriented and intentionally not a Node.
 class_name Vertex
-extends Object # A vertex is an object which means it has a brain without a body. Pure logic.
 
 ## Emitted when values like color or position change. 
 ## The Sprite hears this and repaints itself.
@@ -10,7 +9,7 @@ signal state_changed
 
 ## Emitted when this vertex is removed from the graph.
 ## The VertexView hears this and calls queue_free().
-signal vanished
+signal vanished(v: Vertex)
 
 ## Emitted when a new connection is made. 
 ## The Graph hears this and spawns a new Line (EdgeView).
@@ -116,44 +115,29 @@ func connect_vertices(dest: Vertex, weight: int = 1) -> void:
 	## Tell the Graph to create a visual line for this data
 	edge_added.emit(new_edge)
 
-## Removes the outgoing edge to the given destination vertex.
-## @param dest  The vertex we are disconnecting from.
-## @param shout If true, signals will be sent to update the UI/Algorithms. 
-##              Set to false for the "second half" of undirected edge deletions.
-## @return      True if an edge was found and removed, false otherwise.
-func delete_edge(dest: Vertex, shout: bool = true) -> bool:
+## Removes a specific edge from this vertex's adjacency list.
+## Returns the Edge object that was removed (so the Graph can signal it),
+## or null if the connection didn't exist.
+func delete_edge(dest: Vertex) -> Edge:
 	var prev: Edge = null
 	var curr: Edge = edges
 
-	# Traverse the linked list of edges
 	while curr:
 		if curr.dst == dest:
-			# If shouting is enabled, we notify the rest of the system
-			if shout:
-				## GLOBAL NOTIFICATION: Tells the Graph/Algorithms that the logic changed.
-				edge_removed.emit(curr) 
-				
-				## DIRECT COMMAND: Tells the specific EdgeView (Line2D) to delete itself.
-				## This triggers 'queue_free()' in the visual script.
-				curr.vanished.emit()			
-			
-			# Re-link the list to bypass the current edge (Standard Linked List removal)
+			# Standard Linked List logic
 			if prev == null:
-				# We are removing the head of the list
 				edges = curr.next
 			else:
-				# We are removing a middle or tail element
 				prev.next = curr.next
 
-			# Update metadata
 			degree -= 1
-			return true
-
-		# Move to the next link in the chain
+			return curr # Return the data to the caller
+		
 		prev = curr
 		curr = curr.next
-
-	return false
+	
+	return null # not found
+	
 ## Returns all outgoing edges as an Array.
 ## NOTE:
 ## Godot does not support Array[Edge] typing.

@@ -7,7 +7,7 @@ extends Node2D
 ## ==============================================================================
 
 ## This is the slot for our Brain. The Graph Manager fills this when we are born.
-var data: Vertex 
+var vertex_data: Vertex 
 
 ## References to our body parts in the Scene Tree.
 @onready var label: Label = $Label
@@ -18,12 +18,12 @@ var data: Vertex
 
 ## Called only once in the start, connects signals, and draws once.
 func _ready() -> void:
-	if data:
-		# 1. Listen for data updates (like if the nodes move)
-		data.state_changed.connect(refresh)
+	if vertex_data:
+		# 1. Listen for vertex updates (like if the nodes move)
+		vertex_data.state_changed.connect(refresh)
 
 		# 2. Listen for "die" commands and clear
-		data.vanished.connect(queue_free)
+		vertex_data.vanished.connect(queue_free)
 
 		# Initial draw
 		refresh()
@@ -34,7 +34,7 @@ func _ready() -> void:
 ## This runs every single frame.
 func _process(_delta: float) -> void:
 	# Always follow the brain, good for dragging.
-	global_position = data.pos
+	global_position = vertex_data.pos
 
 ## ------------------------------------------------------------------------------
 ## VISUAL REFRESH 
@@ -43,17 +43,17 @@ func _process(_delta: float) -> void:
 ## Called when something had changed, 
 func refresh() -> void:
 	# Only repaint and relabel if the color/radius/label changed.
-	label.text = str(data.id)
+	label.text = str(vertex_data.id)
 	queue_redraw()
 
 ## This function handles the actual pixel drawing on screen.
 func _draw() -> void:
 	# If the brain isn't plugged in yet, stop everything.
-	if not data:
+	if not vertex_data:
 		return
 		
 	# 1. Setup Color: Use Brain's color (Data is guaranteed by _ready)
-	var circle_color: Color = data.color
+	var circle_color: Color = vertex_data.color
 	
 	# 2. DRAW THE CIRCLE
 	# Vector2.ZERO ensures it draws on the node'ss origin.
