@@ -6,60 +6,58 @@ extends Node2D
 ## It is now a "Pure View": it draws its own circle and listens to the Brain.
 ## ==============================================================================
 
+## The circle's radius
+const RADIUS: float = 20.0
+
 ## This is the slot for our Brain. The Graph Manager fills this when we are born.
 var data: Vertex 
 
 ## References to our body parts in the Scene Tree.
 @onready var label: Label = $Label
 
-## OPTIONAL, add a refrence to circle, and draw it with the scene tree
+## ------------------------------------------------------------------------------
+## LIFE CYCLE
+## ------------------------------------------------------------------------------
 
+## Called only once in the start, connects signals, and draws once.
 func _ready() -> void:
-	# If we HAVE data, connect to it
 	if data:
+		# 1. Listen for data updates (like if the nodes move)
 		data.state_changed.connect(refresh)
-	
-	# ALWAYS run refresh once so the ghost can set its default look
-	refresh()
+
+		# 2. Listen for "die" commands and clear
+		data.vanished.connect(queue_free)
+
+		# Initial draw
+		refresh()
+	else:
+		# If there's no data, delete.
+		queue_free()
 
 ## This runs every single frame.
 func _process(_delta: float) -> void:
-	if data:
-		# The Puppet follows the Brain's position.
-		global_position = data.pos
-	
-	# If we are the Ghost, the GraphController moves us manually.
-	# We queue_redraw to ensure the circle follows the mouse smoothly.
-	queue_redraw()
+	# Always follow the brain, good for dragging.
+	global_position = data.pos
 
 ## ------------------------------------------------------------------------------
-## VISUAL REFRESH (The Translator)
+## VISUAL REFRESH 
 ## ------------------------------------------------------------------------------
 
+## Called when something had changed, 
 func refresh() -> void:
-	# Update Position only if we have data.
-	if data:
-		global_position = data.pos
-		label.text = str(data.id)
-	else:
-		# Ghost specific cleanup
-		label.text = ""
-		
-	# This tells Godot to run the _draw() function again.
+	# Only repaint and relabel if the color/radius/label changed.
+	label.text = str(data.id)
 	queue_redraw()
 
 ## This function handles the actual pixel drawing on screen.
 func _draw() -> void:
-	# 1. Setup Visual Parameters
-	var radius: float = 20.0
-	var circle_color: Color
+	# If the brain isn't plugged in yet, stop everything.
+	if not data:
+		return
+		
+	# 1. Setup Color: Use Brain's color (Data is guaranteed by _ready)
+	var circle_color: Color = data.color
 	
-	# 2. Decide Color: Use Brain's color if available, otherwise use Ghost white
-	if data:
-		circle_color = data.color
-	else:
-		circle_color = Color(1, 1, 1, 0.5) # Faint white for the PlacementPreview
-	
-	# 3. DRAW THE CIRCLE
-	# Vector2.ZERO ensures it is perfectly centered on the node's position.
-	draw_circle(Vector2.ZERO, radius, circle_color)
+	# 2. DRAW THE CIRCLE
+	# Vector2.ZERO ensures it draws on the node'ss origin.
+	draw_circle(Vector2.ZERO, RADIUS, circle_color)

@@ -41,8 +41,8 @@ func _ready() -> void:
 ## ------------------------------------------------------------------------------
 
 ## This runs whenever a vertex emits 'edge_added'
-func _on_edge_shouted_to_graph(new_edge: Edge) -> void:
-	# to only add it once, add just if id.src is smaller
+func _on_edge_added(new_edge: Edge) -> void:
+	# To draw the edge only once, add just if id.src is smaller
 	if new_edge.src.id > new_edge.dst.id:
 		return
 
@@ -53,6 +53,18 @@ func _on_edge_shouted_to_graph(new_edge: Edge) -> void:
 	# Add to scene and ensure it's drawn BEHIND the vertices
 	add_child(line)
 	move_child(line, 0)	
+	
+	# The ONLY place we increase the global count. After we draw successfuly.
+	num_edges += 1
+
+## This runs whenever a vertex emits 'edge_removed'
+func _on_edge_removed(edge_to_remove: Edge) -> void:	
+	# Ensures we only run when the id is lower.
+	if edge_to_remove.src.id > edge_to_remove.dst.id:
+		return
+		
+	# The ONLY place we decrement the global count. After we draw successfuly.
+	num_edges -= 1
 	
 ## ------------------------------------------------------------------------------
 ## GRAPH OPERATIONS (The Brain Factory)
@@ -76,17 +88,22 @@ func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> void
 	# 2. Create the Body (The Scene)
 	var view = VERTEX_VIEW_SCENE.instantiate()
 
-	# 3. THE HANDSHAKE, link Vertex to VertexView.
+	# 3. THE HANDSHAKE, link Vertex to VertexView
 	view.data = v 
 
 	# 4. Show it on screen
 	add_child(view)
 	
-	# 5: Tell the graph to listen for edges from this brain
-	v.edge_added.connect(_on_edge_shouted_to_graph)
+	# 5: Tell the graph to listen for when we add an edge
+	v.edge_added.connect(_on_edge_added)
+	
+	# 6: Tell the graph to listen for when we delete an edge
+	v.edge_removed.connect(_on_edge_removed)
 
 
-## Adds an undirected edge between two existing vertices.
+
+## Adds an undirected edge between two existing vertices. 
+## Connects the vertices
 ## @param src_id Source vertex ID.
 ## @param dst_id Destination vertex ID.
 ## @param weight Edge weight.
@@ -94,16 +111,34 @@ func add_edge(src_id: int, dst_id: int, weight: int = 1) -> void:
 	var src: Vertex = vertices[src_id]
 	var dst: Vertex = vertices[dst_id]
 
-	var before: int = src.degree
+	## Connecting the brains
+	## This automatically triggers the 'edge_added' signal below.
 	src.connect_vertices(dst, weight)
-	var after: int = src.degree
+	dst.connect_vertices(src, weight)
+	
+	
+## Removes a vertex and all incident edges.
+func delete_vertex(id: int) -> void:
+	if not vertices.has(id):
+		return
 
-	# Adds only once
-	if after > before:
-		dst.connect_vertices(src, weight)
-		num_edges += 1
-		
-		
+	var victim: Vertex = vertices[id]
+
+	var e: Edge = victim.edges
+	var removed: int = 0
+	while e:
+		removed += 1
+		e = e.next
+
+	for v: Vertex in vertices.values():
+		if v != victim:
+			v.delete_edge(victim)
+
+	num_edges -= removed
+	num_vertices -= 1
+	vertices.erase(id)
+	
+			
 ## Removes all vertices and edges from the graph.
 func clear() -> void:
 	vertices.clear()
@@ -149,27 +184,6 @@ func delete_edge(src_id: int, dst_id: int) -> void:
 		
 	num_edges -= 1 # Decrease num edges in the graph
 
-
-## Removes a vertex and all incident edges.
-func delete_vertex(id: int) -> void:
-	if not vertices.has(id):
-		return
-
-	var victim: Vertex = vertices[id]
-
-	var e: Edge = victim.edges
-	var removed: int = 0
-	while e:
-		removed += 1
-		e = e.next
-
-	for v: Vertex in vertices.values():
-		if v != victim:
-			v.delete_edge(victim)
-
-	num_edges -= removed
-	num_vertices -= 1
-	vertices.erase(id)
 
 ## Returns true if an edge exists between two vertices.
 func has_edge(src_id: int, dst_id: int) -> bool:

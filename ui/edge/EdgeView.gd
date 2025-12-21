@@ -1,28 +1,57 @@
-extends Line2D
+extends Node2D
+## ==============================================================================
+## EDGE VIEW (The Puppet)
+## ==============================================================================
+## This script controls the "Body" of a connection between two vertices.
+## It draws a line between the source and destination provided by the Brain.
+## ==============================================================================
 
-var data: Edge # The Brain slot
+## The line's thickness
+const WIDTH: float = 4.0
 
+## This is the slot for our Brain. The Graph Manager fills this when we are born.
+var data: Edge 
+
+## ------------------------------------------------------------------------------
+## LIFE CYCLE
+## ------------------------------------------------------------------------------
+
+## Called only once in the start, connects signals, and draws once.
 func _ready() -> void:
 	if data:
-		## REACTION: If the edge data changes (color/pos), redraw the line.
+		# 1. Listen for data updates (like color changes)
 		data.state_changed.connect(refresh)
 		
-		## SELF-DESTRUCTION: If the edge data is deleted, remove this visual node.
-		## 'queue_free' is a built-in Godot function that safely deletes the node.
+		# 2. Listen for "die" commands and clear
 		data.vanished.connect(queue_free)		
 		
-		## INITIALIZE: Draw the line immediately when created.
+		# Initial draw
 		refresh()		
-		
-func refresh() -> void:
-	# Clear the old points 
-	clear_points()
-	
-	# Create the new points
-	add_point(data.src.pos)
-	add_point(data.dst.pos)
+	else:
+		# If there's no data, delete.
+		queue_free()
 
-	# We use 'modulate' as a reactive color filter. 
-	# It tints the entire puppet (Sprite + Label) based on the Brain's data,
-	# allowing for easy transparency (Alpha) and preserving art details.	
-	self.modulate = data.color
+## This runs every single frame.
+func _process(_delta: float) -> void:
+	# Constant update so the line follows moving circles smoothly.
+	# We use queue_redraw here because the line's shape is always changing.
+	queue_redraw()
+
+## ------------------------------------------------------------------------------
+## VISUAL REFRESH
+## ------------------------------------------------------------------------------
+
+## Called when the brain's state changes.
+func refresh() -> void:
+	# Trigger redraw to catch visual changes like color.
+	queue_redraw()
+
+## This function handles the actual line drawing on screen.
+func _draw() -> void:
+	# Stop if the brain or its endpoints are missing.
+	if not data or not data.src or not data.dst:
+		return
+
+	# DRAW THE LINE
+	# We pull the positions directly from the Brains of the two connected vertices.
+	draw_line(data.src.pos, data.dst.pos, data.color, WIDTH)

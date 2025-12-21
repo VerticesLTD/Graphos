@@ -8,6 +8,10 @@ extends Object # A vertex is an object which means it has a brain without a body
 ## The Sprite hears this and repaints itself.
 signal state_changed
 
+## Emitted when this vertex is removed from the graph.
+## The VertexView hears this and calls queue_free().
+signal vanished
+
 ## Emitted when a new connection is made. 
 ## The Graph hears this and spawns a new Line (EdgeView).
 signal edge_added(new_edge: Edge)
@@ -97,17 +101,19 @@ var parent: Vertex = null:
 ## @param dest   Destination vertex.
 ## @param weight Weight assigned to the edge.
 func connect_vertices(dest: Vertex, weight: int = 1) -> void:
+	## Check if the edge is already in the graph
 	var curr: Edge = edges
 	while curr:
 		if curr.dst == dest:
 			return
 		curr = curr.next
 
+	## Add the new  edge to the linked list
 	var new_edge: Edge = Edge.new(weight, self, dest, edges)
 	edges = new_edge
 	degree += 1
 	
-	# Tell the Graph to create a visual line for this data
+	## Tell the Graph to create a visual line for this data
 	edge_added.emit(new_edge)
 
 ## Removes the outgoing edge to the given destination vertex.

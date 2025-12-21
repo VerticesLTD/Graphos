@@ -10,7 +10,7 @@ extends Object # An edge is an object which means it has a brain without a body.
 signal state_changed
 
 ## Emitted when this edge is removed from the graph.
-## The Line2D hears this and calls queue_free().
+## The EdgeView hears this and calls queue_free().
 signal vanished
 
 ## Source vertex of the edge.
