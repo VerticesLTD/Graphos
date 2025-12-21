@@ -18,10 +18,7 @@ func _ready() -> void:
 	InputHandler.subscribe_to_intention(InputHandler.INTENTION_TYPE.MOUSE_CLICK, self)
 	InputHandler.subscribe_to_intention(InputHandler.INTENTION_TYPE.MOUSE_MOTION, self)
 	InputHandler.subscribe_to_intention(InputHandler.INTENTION_TYPE.KEYBOARD, self)
-	
-## Called every frame.
-func _process(delta: float) -> void:
-	pass
+
 
 ## ------------------------------------------------------------------------------
 ## INPUT HANDLING
@@ -78,10 +75,19 @@ func _handle_mouse_movement(mouse_pos: Vector2):
 		
 		
 func _handle_hover(mouse_pos: Vector2):
+	# Idea: make the vertex glow
 	pass
 
 func _handle_dragging(mouse_pos: Vector2):
-	pass
+	# 1. Get the actual vertex using the ID
+	var v = graph.get_vertex(dragged_vertex_id)
+	
+	# 2. Update the 'pos' property. 
+	# THE MAGIC: Because we used a 'set(value)' in the Vertex class, 
+	# this will automatically tell the Puppet to move!
+	if v:
+		v.pos = mouse_pos
+	
 
 ## Starts dragging a node
 func _start_dragging(id: int) -> void:
@@ -146,42 +152,64 @@ func _handle_vertex_placement(pos:Vector2) -> void:
 func _handle_path_connection(pos: Vector2) -> void:
 	var id = graph.get_vertex_collision(pos)
 
-	# Clicked empty space 
+	# 1. EMPTY SPACE (Creation)
 	if id == Globals.NOT_FOUND:
-		# 1. Create the new vertex
-		var new_id = graph._next_vertex_id 
-		graph.add_vertex(pos, Color.GREEN_YELLOW)
-
-		# 2. If we had a previous selection, connect it to the brand new vertex
-		if not selection_buffer.is_empty():
-			graph.add_edge(selection_buffer.back(), new_id)
-
-		# 3. Add to buffer to continue the path from this new point
-		selection_buffer.append(new_id)
-		return		
-
-	# Case 2: If the vertex is the last element, uncheck it, and remove the edge
-	if not selection_buffer.is_empty() and selection_buffer.back() == id:
-		var u = graph.get_vertex(id)
-		# u.remove_edge(selection_buffer.)
-
-		selection_buffer.erase(id)
-		if u: u.color = Color.WHITE
+		_process_path_creation(pos)
 		return
 
-	# Case 3: Add new vertex to the path
-	selection_buffer.append(id)
-	var v = graph.get_vertex(id)
+	# 2. LAST VERTEX (Undo)
+	if not selection_buffer.is_empty() and selection_buffer.back() == id:
+		_process_path_undo(id)
+		return
 
-	# Add a feedback: color the path
-	if v: v.color = Color.YELLOW 
+	# 3. EXISTING VERTEX (Connection)
+	_process_path_extension(id)
 
-	# Gives fidback instantly, auto connects automatically
+## Create a vertex where the mouse is, and set it to the head.
+func _process_path_creation(pos: Vector2) -> void:
+	# Update the head's color
+	_set_vertex_color(selection_buffer.back(), Color.GREEN_YELLOW)
+
+	# Create new vertex as the new head
+	var new_id = graph.add_vertex(pos, Color.YELLOW)
+
+	# Connect if possible
+	if not selection_buffer.is_empty():
+		graph.add_edge(selection_buffer.back(), new_id)
+
+	selection_buffer.append(new_id)
+
+## Undo the last operation, remove the previous edge and change the head.
+func _process_path_undo(id: int) -> void:
+	var victim = graph.get_vertex(id)
+	
+	# Disconnect from previous
 	if selection_buffer.size() >= 2:
-		var from_id = selection_buffer[selection_buffer.size() - 2]
-		var to_id = selection_buffer.back()
-		graph.add_edge(from_id, to_id)
+		var prev_id = selection_buffer[selection_buffer.size() - 2]
+		graph.delete_edge(prev_id, id)
+			
+	# Remove teh vertex from the selection_buffer
+	selection_buffer.pop_back()
 
+	_set_vertex_color(selection_buffer.back(), Color.YELLOW)
+
+	# Delete up or reset the undone vertex.
+	if victim and victim.degree == 0:
+		graph.delete_vertex(id)
+	else:
+		if victim: victim.color = Color.WHITE
+		
+## Chose an existing vertex, connect.
+func _process_path_extension(id: int) -> void:
+	_set_vertex_color(selection_buffer.back(), Color.GREEN_YELLOW)
+
+	# Connect
+	if not selection_buffer.is_empty():
+		graph.add_edge(selection_buffer.back(), id)
+
+	# Update new head
+	_set_vertex_color(id, Color.YELLOW)
+	selection_buffer.append(id)
 
 ## Clears the seletion buffer of the vertices.
 func _clear_selection_context() -> void:
@@ -192,3 +220,10 @@ func _clear_selection_context() -> void:
 	
 	# 2. Empty the logic container
 	selection_buffer.clear()
+
+## Sets a vertex color. id type isnt mantioned because we can get null.
+func _set_vertex_color(id, color: Color) -> void:
+	if id == null:
+		return
+	var v = graph.get_vertex(id)
+	if v: v.color = color

@@ -23,9 +23,6 @@ var num_edges: int = 0
 ## Internal counter to ensure every vertex gets a unique, incremental ID
 var _next_vertex_id: int = 0
 
-## Used to remember which vertices we've selected
-var selection_buffer: Array[int] = []
-
 
 func _ready() -> void:
 	#Subscribe to global mouse clicks via our InputHandler
@@ -70,11 +67,12 @@ func _on_edge_removed(edge_to_remove: Edge) -> void:
 	
 ## Adds a vertex to the graph if it does not already exist.
 ## Connects the scenes and data connected to the vertex.
+## Returns the vertex's id.
 ## @param id    Unique vertex identifier.
 ## @param x     Optional x-coordinate.
 ## @param y     Optional y-coordinate.
 ## @param color Optional color.
-func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> void:
+func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> int:
 	var id = _next_vertex_id # Get the next available ID internally
 	_next_vertex_id += 1 # increment
 	
@@ -97,7 +95,8 @@ func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> void
 	
 	# 6: Tell the graph to listen for when we delete an edge
 	v.edge_removed.connect(_on_edge_removed)
-
+	
+	return id
 
 
 ## Adds an undirected edge between two existing vertices. 
@@ -106,6 +105,9 @@ func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> void
 ## @param dst_id Destination vertex ID.
 ## @param weight Edge weight.
 func add_edge(src_id: int, dst_id: int, weight: int = 1) -> void:
+	if src_id == dst_id or has_edge(src_id, dst_id):
+		return
+
 	var src: Vertex = vertices[src_id]
 	var dst: Vertex = vertices[dst_id]
 
@@ -119,23 +121,24 @@ func add_edge(src_id: int, dst_id: int, weight: int = 1) -> void:
 func delete_vertex(id: int) -> void:
 	if not vertices.has(id):
 		return
-
+	
 	var victim: Vertex = vertices[id]
 
-	var e: Edge = victim.edges
-	var removed: int = 0
-	while e:
-		removed += 1
-		e = e.next
+	# Signals to remove the visuals of the vertex
+	victim.vanished.emit()
 
+	var num_removed_edges = victim.degree
+	
+	# Delete edges next to the vertex
 	for v: Vertex in vertices.values():
 		if v != victim:
 			v.delete_edge(victim)
-
-	num_edges -= removed
+			
+	# Update the graph's metadata
+	num_edges -= num_removed_edges
 	num_vertices -= 1
-	vertices.erase(id)
-	
+	vertices.erase(id)	
+		
 			
 ## Removes all vertices and edges from the graph.
 func clear() -> void:
