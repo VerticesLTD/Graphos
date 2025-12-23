@@ -74,7 +74,7 @@ func _handle_mouse_movement(mouse_global_pos: Vector2):
 		_handle_dragging(mouse_global_pos)
 		
 		
-func _handle_hover(mouse_global_pos: Vector2):
+func _handle_hover(_mouse_global_pos: Vector2):
 	# Idea: make the vertex glow
 	pass
 
@@ -131,7 +131,7 @@ func _handle_left_release():
 ## ------------------------------------------------------------------------------
 ## RIGHT_CLICKS & RIGHT_RELEASES 
 ## ------------------------------------------------------------------------------
-func _handle_right_click(mouse_global_pos: Vector2):
+func _handle_right_click(_mouse_global_pos: Vector2):
 	pass
 	
 func _handle_right_release():
