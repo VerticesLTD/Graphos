@@ -26,10 +26,8 @@ func _init(edge: Edge, target_color: Color, previous_color: Color):
 ## Changes the edge's color to new_color 
 func execute() -> void:
 	target_edge.color = new_color
-	# draw
 
 ## Reverts the action.
 ## Restores the original color of the edge.
 func undo() -> void:
 	target_edge.color = old_color
-	# draw

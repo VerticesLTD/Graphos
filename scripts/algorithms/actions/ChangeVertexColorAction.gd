@@ -26,10 +26,8 @@ func _init(vertex: Vertex, target_color: Color, previous_color: Color):
 ## Changes the vertex's color to new_color 
 func execute() -> void:
 	target_vertex.color = new_color
-	# target_vertex.queue_redraw() do i need it here? has to be in vertex class, help.
 
 ## Reverts the action.
 ## Restores the original color of the vertex.
 func undo() -> void:
 	target_vertex.color = old_color
-	# target_vertex.queue_redraw() do i need it here? has to be in vertex class, help.
