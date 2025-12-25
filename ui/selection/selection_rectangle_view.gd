@@ -17,7 +17,7 @@ func _process(_delta: float) -> void:
 	current_mouse_position = get_global_mouse_position()
 
 	# Calculating selection rectangle
-	rectangle = Rect2(initial_click_position,abs(current_mouse_position - initial_click_position))
+	rectangle = Rect2(initial_click_position,current_mouse_position - initial_click_position).abs()
 
 	queue_redraw()
 

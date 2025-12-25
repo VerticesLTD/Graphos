@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://yxcr5kwlindq"]
+[gd_scene load_steps=5 format=3 uid="uid://yxcr5kwlindq"]
 
 [ext_resource type="Script" uid="uid://c2yhxp7188k8k" path="res://graphs/undirected-graph/UndirectedGraph.gd" id="1_0xm2m"]
 [ext_resource type="Script" uid="uid://bi4h7vrxw31jb" path="res://controllers/GraphController.gd" id="2_0xm2m"]
+[ext_resource type="Script" uid="uid://4boow4h1ajkt" path="res://ui/global/global_UI.gd" id="3_1bvp3"]
+[ext_resource type="Script" uid="uid://crmqoaf7l145k" path="res://ui/selection/selection_rectangle_view.gd" id="4_lquwl"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_0xm2m")
@@ -13,3 +15,19 @@ metadata/_custom_type_script = "uid://c2yhxp7188k8k"
 [node name="GraphController" type="Node" parent="." node_paths=PackedStringArray("graph")]
 script = ExtResource("2_0xm2m")
 graph = NodePath("../UndirectedGraph")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+script = ExtResource("3_1bvp3")
+
+[node name="UISelectionRect" type="Node2D" parent="CanvasLayer"]
+script = ExtResource("4_lquwl")
+metadata/_custom_type_script = "uid://crmqoaf7l145k"
+
+[node name="VertexToolButton" type="Button" parent="CanvasLayer"]
+offset_left = 507.0
+offset_top = 1.0
+offset_right = 573.0
+offset_bottom = 32.0
+text = "VERTEX"
+
+[connection signal="pressed" from="CanvasLayer/VertexToolButton" to="CanvasLayer" method="_on_vertex_tool_button_pressed"]
