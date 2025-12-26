@@ -9,20 +9,22 @@ class_name GraphController
 var dragged_vertex_id: int = Globals.NOT_FOUND
 var is_dragging: bool = false
 
-## The selection buffer to select multiple nodes
-var selection_buffer: Array[int] = []
+## The selection buffer to link multiple nodes with an edge
+var link_buffer: Array[int] = []
+
+## Holds nodes selected by user mass select
+var selection_buffer: Array[Vertex] = []
+
 
 ## Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	pass
 
 func _process(_delta: float) -> void:
-	# Graph controller only processes input if app is in VERTEX state.
-	# This let's us do things like drag without placing vertices.
-	if Globals.current_state != Globals.State.VERTEX:
-		set_process_unhandled_input(false)
-	else:
-		set_process_unhandled_input(true)
+	# If we are currently draggin nodes, we do not want to touch
+	# the selection buffer.
+	if Globals.is_mass_select and not is_dragging:
+		_populate_selection_buffer()
 
 ## ------------------------------------------------------------------------------
 ## INPUT HANDLING
@@ -32,7 +34,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	# 1. MOTION (Dragging)
 	# Handled first because its the most frequent one.
 	if event is InputEventMouseMotion:
-		_handle_mouse_movement(event.global_position)
+		_handle_mouse_movement(event)
 		return
 
 	# 2. LEFT_CLICKS & LEFT_RELEASES
@@ -53,7 +55,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.keycode == KEY_CTRL:
 		if not event.is_pressed():
 			# If they let go of Ctrl, wipe the selection
-			_clear_selection_context()
+			_clear_link_context()
 			return
 
 
@@ -62,30 +64,36 @@ func _unhandled_input(event: InputEvent) -> void:
 ## ------------------------------------------------------------------------------
 	
 ## Handle mouse movement
-func _handle_mouse_movement(mouse_global_pos: Vector2):
+func _handle_mouse_movement(event: InputEventMouseMotion):
 	# LANE 1: PASSIVE (Hovering)
 	# This runs every time the mouse moves, regardless of dragging.
-	_handle_hover(mouse_global_pos)
+	_handle_hover(event.global_position)
 
 	# LANE 2: ACTIVE (Dragging)
 	# We only proceed here if a drag is actually in progress.
 	if is_dragging:
-		_handle_dragging(mouse_global_pos)
+		_handle_dragging(event)
 		
 		
 func _handle_hover(_mouse_global_pos: Vector2):
 	# Idea: make the vertex glow
 	pass
 
-func _handle_dragging(mouse_global_pos: Vector2):
-	# 1. Get the actual vertex using the ID
-	var v = graph.get_vertex(dragged_vertex_id)
-	
-	# 2. Update the 'pos' property. 
-	# THE MAGIC: Because we used a 'set(value)' in the Vertex class, 
-	# this will automatically tell the Puppet to move!
-	if v:
-		v.pos = mouse_global_pos
+func _handle_dragging(event: InputEventMouseMotion):
+	# Dragging single node:
+	if selection_buffer.is_empty():
+		# 1. Get the actual vertex using the ID
+		var v = graph.get_vertex(dragged_vertex_id)
+		
+		# 2. Update the 'pos' property. 
+		# THE MAGIC: Because we used a 'set(value)' in the Vertex class, 
+		# this will automatically tell the Puppet to move!
+		if v:
+			v.pos = event.global_position
+	# Move multiple nodes by mose delta
+	else:
+		for v in selection_buffer:
+			v.pos += event.relative
 	
 
 ## Starts dragging a node
@@ -109,17 +117,23 @@ func _handle_left_click(mouse_global_pos: Vector2):
 
 	# 1. CLICKED VERTEX  
 	if id != Globals.NOT_FOUND:
-		if is_ctrl:
+		if is_ctrl and Globals.current_state == Globals.State.VERTEX:
 			_handle_path_connection(mouse_global_pos)
 		else:
 			_start_dragging(id)
 		return
 		
-	# 2. CLICKED EMPTY SPACE INTERACTION 
-	if is_ctrl:
-		_handle_path_connection(mouse_global_pos) # Create & Connect
-	else:
-		_handle_vertex_placement(mouse_global_pos) # Just create
+	if  Globals.current_state == Globals.State.VERTEX:
+		# 2. CLICKED EMPTY SPACE INTERACTION WHILE VERTEX STATE
+		if is_ctrl:
+			_handle_path_connection(mouse_global_pos) # Create & Connect
+
+		# We only place a vertex if there are no nodes selected
+		elif selection_buffer.is_empty():
+			_handle_vertex_placement(mouse_global_pos) # Just create
+	
+	# Clearing node selection on an empty click
+	_clear_selection_buffer()
 	
 func _handle_left_release():
 	# Always stop dragging when the mouse is let go
@@ -157,7 +171,7 @@ func _handle_path_connection(pos: Vector2) -> void:
 		return
 
 	# 2. LAST VERTEX (Undo)
-	if not selection_buffer.is_empty() and selection_buffer.back() == id:
+	if not link_buffer.is_empty() and link_buffer.back() == id:
 		_process_path_undo(id)
 		return
 
@@ -167,30 +181,30 @@ func _handle_path_connection(pos: Vector2) -> void:
 ## Create a vertex where the mouse is, and set it to the head.
 func _process_path_creation(pos: Vector2) -> void:
 	# Update the head's color
-	_set_vertex_color(selection_buffer.back(), Color.GREEN_YELLOW)
+	_set_vertex_color(link_buffer.back(), Color.GREEN_YELLOW)
 
 	# Create new vertex as the new head
 	var new_id = graph.add_vertex(pos, Color.YELLOW)
 
 	# Connect if possible
-	if not selection_buffer.is_empty():
-		graph.add_edge(selection_buffer.back(), new_id)
+	if not link_buffer.is_empty():
+		graph.add_edge(link_buffer.back(), new_id)
 
-	selection_buffer.append(new_id)
+	link_buffer.append(new_id)
 
 ## Undo the last operation, remove the previous edge and change the head.
 func _process_path_undo(id: int) -> void:
 	var victim = graph.get_vertex(id)
 	
 	# Disconnect from previous
-	if selection_buffer.size() >= 2:
-		var prev_id = selection_buffer[selection_buffer.size() - 2]
+	if link_buffer.size() >= 2:
+		var prev_id = link_buffer[link_buffer.size() - 2]
 		graph.delete_edge(prev_id, id)
 			
-	# Remove teh vertex from the selection_buffer
-	selection_buffer.pop_back()
+	# Remove teh vertex from the link_buffer
+	link_buffer.pop_back()
 
-	_set_vertex_color(selection_buffer.back(), Color.YELLOW)
+	_set_vertex_color(link_buffer.back(), Color.YELLOW)
 
 	# Delete up or reset the undone vertex.
 	if victim and victim.degree == 0:
@@ -200,24 +214,50 @@ func _process_path_undo(id: int) -> void:
 		
 ## Chose an existing vertex, connect.
 func _process_path_extension(id: int) -> void:
-	_set_vertex_color(selection_buffer.back(), Color.GREEN_YELLOW)
+	_set_vertex_color(link_buffer.back(), Color.GREEN_YELLOW)
 
 	# Connect
-	if not selection_buffer.is_empty():
-		graph.add_edge(selection_buffer.back(), id)
+	if not link_buffer.is_empty():
+		graph.add_edge(link_buffer.back(), id)
 
 	# Update new head
 	_set_vertex_color(id, Color.YELLOW)
-	selection_buffer.append(id)
+	link_buffer.append(id)
 
-## Clears the seletion buffer of the vertices.
-func _clear_selection_context() -> void:
+## Clears the seletion buffer for linking nodes.
+func _clear_link_context() -> void:
 	# 1. Clean the visual feedback
-	for id in selection_buffer:
+	for id in link_buffer:
 		var v = graph.get_vertex(id)
 		if v: v.color = Color.WHITE
 	
 	# 2. Empty the logic container
+	link_buffer.clear()
+
+# TODO: Highlighting in the populate/clear functions below could
+# be optimized.
+
+## Looks for nodes inside Globals.selection_rectangle and adds them
+## to buffer.
+func _populate_selection_buffer() -> void:
+	# Clean slate - If selection updated and no longer includes 
+	# some nodes.
+	_clear_selection_buffer()
+
+	var rect = Rect2(Globals.selection_rectangle)
+	for v: Vertex in graph.vertices.values():
+		if rect.has_point(v.pos):
+			# Setting highlight color
+			v.color = Color.PURPLE
+
+			selection_buffer.append(v)
+
+## Clears selection buffer.
+func _clear_selection_buffer() -> void:
+	# Resetting color
+	for v in selection_buffer:
+		v.color = Color.WHITE
+
 	selection_buffer.clear()
 
 ## Sets a vertex color. id type isnt mantioned because we can get null.
@@ -226,3 +266,9 @@ func _set_vertex_color(id, color: Color) -> void:
 		return
 	var v = graph.get_vertex(id)
 	if v: v.color = color
+
+## Returns true if position has a vertex.
+func is_vertex_collision(pos: Vector2) -> bool:
+	return graph.get_vertex_collision(pos) != Globals.NOT_FOUND
+
+

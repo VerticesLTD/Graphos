@@ -10,7 +10,7 @@ var current_mouse_position : Vector2
 var rectangle: Rect2
 
 func _ready() -> void:
-	pass
+	initial_click_position = get_global_mouse_position()
 
 func _process(_delta: float) -> void:
 	# Updating mouse position
@@ -18,6 +18,9 @@ func _process(_delta: float) -> void:
 
 	# Calculating selection rectangle
 	rectangle = Rect2(initial_click_position,current_mouse_position - initial_click_position).abs()
+
+	# updating the global selection area for other nodes to get
+	Globals.selection_rectangle = Rect2(rectangle)
 
 	queue_redraw()
 

@@ -38,6 +38,7 @@ const HOLD_THRESHOLD = 0.10
 # Drag state
 # ------------
 ## This variable is accessed by the app's elements when in drag mode.
+var is_mass_select: bool = false
 var selection_rectangle: Rect2
 
 # ------------
