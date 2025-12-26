@@ -1,4 +1,4 @@
-## A class to control the graph, recieves inputs, and changes the graph.
+## A class to control the graph, recieves inputs, and changes the graph. extends Node class_name GraphController
 extends Node
 class_name GraphController
 
@@ -14,39 +14,38 @@ var selection_buffer: Array[int] = []
 
 ## Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	# Subscribe to intentions to catch input
-	InputHandler.subscribe_to_intention(InputHandler.INTENTION_TYPE.MOUSE_CLICK, self)
-	InputHandler.subscribe_to_intention(InputHandler.INTENTION_TYPE.MOUSE_MOTION, self)
-	InputHandler.subscribe_to_intention(InputHandler.INTENTION_TYPE.KEYBOARD, self)
+	pass
 
+func _process(_delta: float) -> void:
+	# Graph controller only processes input if app is in VERTEX state.
+	# This let's us do things like drag without placing vertices.
+	if Globals.current_state != Globals.State.VERTEX:
+		set_process_unhandled_input(false)
+	else:
+		set_process_unhandled_input(true)
 
 ## ------------------------------------------------------------------------------
 ## INPUT HANDLING
 ## ------------------------------------------------------------------------------
 
-## This function is executed by InputHandler for the subscribed intentions.
-func execute_intention(intention: InputHandler.Intention) -> void:
-	# Grab the data from the intention 
-	var event: InputEvent = intention.event
-	var mouse_global_pos: Vector2 = intention.mouse_global_pos
-
+func _unhandled_input(event: InputEvent) -> void:
 	# 1. MOTION (Dragging)
 	# Handled first because its the most frequent one.
 	if event is InputEventMouseMotion:
-		_handle_mouse_movement(mouse_global_pos)
+		_handle_mouse_movement(event.global_position)
 		return
 
 	# 2. LEFT_CLICKS & LEFT_RELEASES
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.is_pressed():
-			_handle_left_click(mouse_global_pos)
+			_handle_left_click(event.global_position)
 		else:
 			_handle_left_release()
 			
 	# 3. RIGHT_CLICKS & RIGHT_RELEASES
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
 		if event.is_pressed():
-			_handle_right_click(mouse_global_pos)
+			_handle_right_click(event.global_position)
 		else:
 			_handle_right_release()
 			

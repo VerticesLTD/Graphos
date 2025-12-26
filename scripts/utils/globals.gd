@@ -1,4 +1,5 @@
 extends Node
+
 # ------------
 # Logging tags
 # ------------
@@ -7,6 +8,17 @@ const SETUP_TAG = "SETUP"
 const VIS_TAG = "VISUAIZER"
 const MGR_TAG = "MANAGER"
 const EVNT_TAG = "EVENT"
+
+# ------------
+# App states
+# ------------
+enum State {
+	DRAG,
+	VERTEX,
+	ALG,
+	ERASER,
+}
+var current_state: State
 
 # ------------
 # Vertex globals
