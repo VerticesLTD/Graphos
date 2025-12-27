@@ -1,10 +1,10 @@
 extends HBoxContainer
 
 @onready var lock_tool: Button = $LockTool
-@onready var create: Button = $Vertex
+@onready var create: Button = $Create
 @onready var algorithm: Button = $Algorithm
 @onready var eraser: Button = $Eraser
-@onready var selection: Button = $Drag
+@onready var selection: Button = $Selection
 
 # Keep track of the last state so we only animate when it changes
 var _last_state = null 

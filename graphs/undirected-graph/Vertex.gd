@@ -96,6 +96,12 @@ var parent: Vertex = null:
 	set(value):
 		parent = value
 		state_changed.emit() # UI draws "Parent Arrow"
+
+# For draw order
+var z_idx :int = 0:
+	set(value):
+		z_idx = value
+		state_changed.emit()
 		
 ## Adds an outgoing edge from this vertex to the destination vertex.
 ## If an edge already exists, no modification is performed.

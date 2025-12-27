@@ -2,6 +2,9 @@
 extends Node
 class_name GraphController
 
+const VERTEX_ON_TOP = 2
+const VERTEX_BELOW = 1
+
 ## Allows the controller to control the graph
 @export var graph: UndirectedGraph
 
@@ -84,6 +87,7 @@ func _handle_dragging(event: InputEventMouseMotion):
 	if selection_buffer.is_empty():
 		# 1. Get the actual vertex using the ID
 		var v = graph.get_vertex(dragged_vertex_id)
+		v.z_idx = VERTEX_ON_TOP
 		
 		# 2. Update the 'pos' property. 
 		# THE MAGIC: Because we used a 'set(value)' in the Vertex class, 
@@ -100,12 +104,13 @@ func _handle_dragging(event: InputEventMouseMotion):
 func _start_dragging(id: int) -> void:
 	dragged_vertex_id = id
 	is_dragging = true
-	# OPTIONAL add 'v.z_index = 1' here to make the dragged node appear on top
 
 ## If mouse release and ctrl released, stop dragging.
 func _stop_dragging() -> void:
 	is_dragging = false
-	dragged_vertex_id = Globals.NOT_FOUND
+	if dragged_vertex_id != Globals.NOT_FOUND:
+		graph.get_vertex(dragged_vertex_id).z_idx = VERTEX_BELOW
+		dragged_vertex_id = Globals.NOT_FOUND
 
 ## ------------------------------------------------------------------------------
 ## LEFT_CLICKS & LEFT_RELEASES 
@@ -250,6 +255,9 @@ func _populate_selection_buffer() -> void:
 			# Setting highlight color
 			v.color = Color.PURPLE
 
+			# Setting drawing on top
+			v.z_idx = VERTEX_ON_TOP
+
 			selection_buffer.append(v)
 
 ## Clears selection buffer.
@@ -257,6 +265,7 @@ func _clear_selection_buffer() -> void:
 	# Resetting color
 	for v in selection_buffer:
 		v.color = Color.WHITE
+		v.z_idx = VERTEX_BELOW
 
 	selection_buffer.clear()
 
@@ -270,5 +279,3 @@ func _set_vertex_color(id, color: Color) -> void:
 ## Returns true if position has a vertex.
 func is_vertex_collision(pos: Vector2) -> bool:
 	return graph.get_vertex_collision(pos) != Globals.NOT_FOUND
-
-
