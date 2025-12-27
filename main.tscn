@@ -18,6 +18,7 @@ expand_margin_bottom = 15.0
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_0xm2m")
+metadata/_edit_vertical_guides_ = [-53.0]
 
 [node name="UndirectedGraph" type="Node2D" parent="."]
 script = ExtResource("1_0xm2m")

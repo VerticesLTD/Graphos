@@ -92,10 +92,14 @@ func _handle_dragging(event: InputEventMouseMotion):
 		
 		# 2. Update the 'pos' property. 
 		# THE MAGIC: Because we used a 'set(value)' in the Vertex class, 
-		# this will automatically tell the Puppet to move!
+		# this will automatically tell the view to move!
 		if v:
 			v.pos = event.global_position
-			v.z_idx = VERTEX_ON_TOP
+
+			# Setting the view on top:
+			for view in graph.get_children(false):
+				if view is UIVertexView and view.vertex_data.id == v.id:
+					graph.move_child(view,graph.get_children().size()-1)
 			
 	# Move multiple nodes by mose delta
 	else:
@@ -257,17 +261,21 @@ func _populate_selection_buffer() -> void:
 			# Setting highlight color
 			v.color = Color.PURPLE
 
-			# Setting drawing on top
-			v.z_idx = VERTEX_ON_TOP
-
 			selection_buffer.append(v)
+
+			# Set view to top of tree for draw order
+			for view in graph.get_children(false):
+				if view is UIVertexView and view.vertex_data.id == v.id:
+					graph.move_child(view,graph.get_children().size() - 1)
+
+
+
 
 ## Clears selection buffer.
 func _clear_selection_buffer() -> void:
 	# Resetting color
 	for v in selection_buffer:
 		v.color = Color.WHITE
-		v.z_idx = VERTEX_BELOW
 
 	selection_buffer.clear()
 
