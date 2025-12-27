@@ -117,13 +117,13 @@ func _handle_left_click(mouse_global_pos: Vector2):
 
 	# 1. CLICKED VERTEX  
 	if id != Globals.NOT_FOUND:
-		if is_ctrl and Globals.current_state == Globals.State.VERTEX:
+		if is_ctrl and Globals.current_state == Globals.State.CREATE:
 			_handle_path_connection(mouse_global_pos)
 		else:
 			_start_dragging(id)
 		return
 		
-	if  Globals.current_state == Globals.State.VERTEX:
+	if  Globals.current_state == Globals.State.CREATE:
 		# 2. CLICKED EMPTY SPACE INTERACTION WHILE VERTEX STATE
 		if is_ctrl:
 			_handle_path_connection(mouse_global_pos) # Create & Connect

@@ -13,8 +13,8 @@ const EVNT_TAG = "EVENT"
 # App states
 # ------------
 enum State {
-	DRAG,
-	VERTEX,
+	SELECTION,
+	CREATE,
 	ALG,
 	ERASER,
 }

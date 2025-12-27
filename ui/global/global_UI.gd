@@ -17,7 +17,7 @@ var selection_rect: UISelectionRect
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	# Process input when in DRAG mode
+	# Process input when in SELECTION mode
 	
 	if _monitoring_input:
 		_press_timer += delta
@@ -29,7 +29,7 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and \
 		event.button_index == MOUSE_BUTTON_LEFT \
-		and Globals.current_state == Globals.State.DRAG:
+		and Globals.current_state == Globals.State.SELECTION:
 		if event.is_pressed():
 			# Mouse down, start timer
 			_monitoring_input = true
@@ -90,11 +90,11 @@ func _handle_keyboard(event: InputEventKey) -> void:
 	GLogger.debug("Keyboard Clicked.",LOG_TAG)
 	match event.keycode:
 		KEY_V:
-			Globals.current_state = Globals.State.VERTEX
+			Globals.current_state = Globals.State.CREATE
 		KEY_A:
 			Globals.current_state = Globals.State.ALG
 		KEY_D:
-			Globals.current_state = Globals.State.DRAG
+			Globals.current_state = Globals.State.SELECTION
 		KEY_E:
 			Globals.current_state = Globals.State.ERASER
 
@@ -105,11 +105,11 @@ func _on_lock_tool_pressed() -> void:
 
 
 func _on_drag_pressed() -> void:
-	Globals.current_state = Globals.State.DRAG
+	Globals.current_state = Globals.State.SELECTION
 
 
 func _on_vertex_pressed() -> void:
-	Globals.current_state = Globals.State.VERTEX
+	Globals.current_state = Globals.State.CREATE
 
 
 func _on_algorithm_pressed() -> void:

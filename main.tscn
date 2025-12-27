@@ -54,15 +54,15 @@ layout_mode = 2
 focus_mode = 0
 text = "LOCK"
 
-[node name="Drag" type="Button" parent="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer"]
+[node name="Selection" type="Button" parent="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
-text = "DRAG"
+text = "SELECTION"
 
-[node name="Vertex" type="Button" parent="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer"]
+[node name="Create" type="Button" parent="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
-text = "VERTEX"
+text = "CREATE"
 
 [node name="Algorithm" type="Button" parent="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer"]
 layout_mode = 2
@@ -75,7 +75,7 @@ focus_mode = 0
 text = "ERASER"
 
 [connection signal="pressed" from="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer/LockTool" to="CanvasLayer" method="_on_lock_tool_pressed"]
-[connection signal="pressed" from="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer/Drag" to="CanvasLayer" method="_on_drag_pressed"]
-[connection signal="pressed" from="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer/Vertex" to="CanvasLayer" method="_on_vertex_pressed"]
+[connection signal="pressed" from="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer/Selection" to="CanvasLayer" method="_on_drag_pressed"]
+[connection signal="pressed" from="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer/Create" to="CanvasLayer" method="_on_vertex_pressed"]
 [connection signal="pressed" from="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer/Algorithm" to="CanvasLayer" method="_on_algorithm_pressed"]
 [connection signal="pressed" from="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer/Eraser" to="CanvasLayer" method="_on_eraser_pressed"]
