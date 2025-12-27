@@ -1,11 +1,22 @@
-extends Node
+## Represents an action where a vertex changes its visual color.
+## This class captures the state required to apply and revert a vertex color change action.
+class_name AddEdgeCommand
+extends Command
 
+var from_id: int
+var to_id: int
 
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
+## Initializes the add vertex command.
+## @param vertex     The vertex being created.
+func _init(g: UndirectedGraph, src_id: int, dst_id: int):
+	super(g)
+	from_id = src_id
+	to_id = dst_id
 
+func execute() -> void:
+	# Tells the graph to connect these two specific IDs
+	graph.add_edge(from_id, to_id)
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
+func undo() -> void:
+	# Tells the graph to break the connection between these two IDs
+	graph.delete_edge(from_id, to_id)

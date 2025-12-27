@@ -18,6 +18,8 @@ var link_buffer: Array[int] = []
 ## Holds nodes selected by user mass select
 var selection_buffer: Array[Vertex] = []
 
+## History of executed commands for Undo/Redo
+var undo_stack: Array[Command] = []
 
 ## Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -163,10 +165,15 @@ func _handle_right_release():
 ## HELPERS / STATE MANAGEMENT
 ## ------------------------------------------------------------------------------
 
-## Handles vertex placement. Creates a vertex at posistion.
+## Creates and performs an add vertex command.
 func _handle_vertex_placement(pos:Vector2) -> void:
-	graph.add_vertex(pos, Color.WHITE)
+	# 1. Create the command
+	var v_cmd = AddVertexCommand.new(graph, pos)
 
+	# 2. Tell the Singleton to execute and store it
+	CommandManager.execute(v_cmd)
+
+	
 ## Handles connecting a few vertices in a row.
 ## If user clicked on a vertex, it's ID is remembered.
 ## When 2 different vertices have been clicked, add an edge between them.
@@ -188,26 +195,29 @@ func _handle_path_connection(pos: Vector2) -> void:
 
 ## Create a vertex where the mouse is, and set it to the head.
 func _process_path_creation(pos: Vector2) -> void:
-	# Create new vertex as the new head
-	var new_vertex = graph.add_vertex(pos, Color.YELLOW)
-	var new_id = new_vertex.id
+	# 1. Add Vertex
+	var v_cmd = AddVertexCommand.new(graph, pos)
+	CommandManager.execute(v_cmd)
+	var new_v = v_cmd.vertex
 	
-	# Connect if possible
+	# 2. Add Edge
 	if not link_buffer.is_empty():
-		graph.add_edge(link_buffer.back(), new_id)
+		var e_cmd = AddEdgeCommand.new(graph, link_buffer.back(), new_v.id)
+		CommandManager.execute(e_cmd)
 
-	link_buffer.append(new_id)
-
+	link_buffer.append(new_v.id)
 	_refresh_link_buffer_colors()
-
 
 ## Undo the last operation, remove the previous edge and change the head.
 func _process_path_undo(vertex: Vertex) -> void:	
 	# Disconnect from previous
 	if link_buffer.size() >= 2:
 		var prev_id = link_buffer[link_buffer.size() - 2]
-		graph.delete_edge(prev_id, vertex.id)
-			
+		
+		# Delete and record
+		var e_cmd = DeleteEdgeCommand.new(graph, link_buffer.back(), vertex.id)
+		CommandManager.execute(e_cmd)
+
 	# Remove the vertex from the link_buffer
 	link_buffer.pop_back()
 
@@ -215,15 +225,18 @@ func _process_path_undo(vertex: Vertex) -> void:
 
 	# Delete up or reset the undone vertex.
 	if vertex and vertex.degree == 0:
-		graph.delete_vertex(vertex)
-	else:
+		var v_cmd = DeleteVertexCommand.new(graph, vertex)
+		CommandManager.execute(v_cmd)
+		
+	else: 
 		if vertex: vertex.color = Color.WHITE
 		
 ## Chose an existing vertex, connect.
 func _process_path_extension(id: int) -> void:
 	# Connect
 	if not link_buffer.is_empty():
-		graph.add_edge(link_buffer.back(), id)
+		var v_cmd = AddEdgeCommand.new(graph, link_buffer.back(), id)
+		CommandManager.execute(v_cmd)
 
 	# Add the clicked vertex as an head
 	link_buffer.append(id)
@@ -294,3 +307,9 @@ func _set_vertex_color(id, color: Color) -> void:
 ## Returns true if position has a vertex.
 func is_vertex_collision(pos: Vector2) -> bool:
 	return graph.get_vertex_collision(pos) != Globals.NOT_FOUND
+
+
+## Executes any command and records it in history.
+func _perform_action(cmd: Command) -> void:
+	cmd.execute()
+	undo_stack.append(cmd)

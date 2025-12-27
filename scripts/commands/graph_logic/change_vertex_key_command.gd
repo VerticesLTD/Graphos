@@ -1,32 +1,19 @@
-## Represents an action where a vertex changes its key.
-## This class captures the state required to apply and revert a key action.
+## Command to update a vertex's key value and restore it during Undo.
 class_name ChangeVertexKeyCommand
 extends Command
 
-## The target vertex of the action.
 var target_vertex: Vertex
+var new_key: float # Changed to float as Keys in algorithms are often INF
+var old_key: float
 
-## The key to apply during forward execution.
-var new_key: int
-
-## The original key stored for undo operations.
-var old_key: int
-
-## Initializes the key change event with the necessary state snapshots.
-## @param target_vertex   The vertex being modified.
-## @param target_key    The new key to apply.
-## @param previous_key  The current key (saved for undo).
-func _init(vertex: Vertex, target_key: int, previous_key: int):
+func _init(vertex: Vertex, target_key: float, previous_key: float):
+	# Note: Modifies the Vertex object directly; does not require graph structural changes.
 	target_vertex = vertex
 	new_key = target_key
 	old_key = previous_key
 
-## Executes the forward action.
-## Changes the vertex's key to new_key 
 func execute() -> void:
-	target_vertex.key = new_key 
-	
-## Reverts the action.
-## Restores the original key of the vertex.
+	target_vertex.key = new_key
+
 func undo() -> void:
-	target_vertex.key = old_key 
+	target_vertex.key = old_key
