@@ -89,11 +89,11 @@ func _on_hold_end():
 func _handle_keyboard(event: InputEventKey) -> void:
 	GLogger.debug("Keyboard Clicked.",LOG_TAG)
 	match event.keycode:
-		KEY_V:
+		KEY_C:
 			Globals.current_state = Globals.State.CREATE
 		KEY_A:
 			Globals.current_state = Globals.State.ALG
-		KEY_D:
+		KEY_S:
 			Globals.current_state = Globals.State.SELECTION
 		KEY_E:
 			Globals.current_state = Globals.State.ERASER
