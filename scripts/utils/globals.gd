@@ -12,13 +12,18 @@ const EVNT_TAG = "EVENT"
 # ------------
 # App states
 # ------------
+signal app_state_changed
+
 enum State {
 	SELECTION,
 	CREATE,
 	ALG,
 	ERASER,
 }
-var current_state: State
+var current_state: State:
+	set(value):
+		current_state = value
+		app_state_changed.emit()
 
 # ------------
 # Appearance

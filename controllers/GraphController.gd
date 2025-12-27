@@ -21,7 +21,8 @@ var selection_buffer: Array[Vertex] = []
 
 ## Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	pass
+	# If the app's state changed, we want to reset selection
+	Globals.app_state_changed.connect(self._clear_selection_buffer)
 
 func _process(_delta: float) -> void:
 	# If we are currently draggin nodes, we do not want to touch
