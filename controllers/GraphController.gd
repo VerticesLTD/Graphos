@@ -87,13 +87,15 @@ func _handle_dragging(event: InputEventMouseMotion):
 	if selection_buffer.is_empty():
 		# 1. Get the actual vertex using the ID
 		var v = graph.get_vertex(dragged_vertex_id)
-		v.z_idx = VERTEX_ON_TOP
+		
 		
 		# 2. Update the 'pos' property. 
 		# THE MAGIC: Because we used a 'set(value)' in the Vertex class, 
 		# this will automatically tell the Puppet to move!
 		if v:
 			v.pos = event.global_position
+			v.z_idx = VERTEX_ON_TOP
+			
 	# Move multiple nodes by mose delta
 	else:
 		for v in selection_buffer:
@@ -185,17 +187,17 @@ func _handle_path_connection(pos: Vector2) -> void:
 
 ## Create a vertex where the mouse is, and set it to the head.
 func _process_path_creation(pos: Vector2) -> void:
-	# Update the head's color
-	_set_vertex_color(link_buffer.back(), Color.GREEN_YELLOW)
-
 	# Create new vertex as the new head
 	var new_id = graph.add_vertex(pos, Color.YELLOW)
-
+	
 	# Connect if possible
 	if not link_buffer.is_empty():
 		graph.add_edge(link_buffer.back(), new_id)
 
 	link_buffer.append(new_id)
+
+	_refresh_link_buffer_colors()
+
 
 ## Undo the last operation, remove the previous edge and change the head.
 func _process_path_undo(id: int) -> void:
@@ -206,10 +208,10 @@ func _process_path_undo(id: int) -> void:
 		var prev_id = link_buffer[link_buffer.size() - 2]
 		graph.delete_edge(prev_id, id)
 			
-	# Remove teh vertex from the link_buffer
+	# Remove the vertex from the link_buffer
 	link_buffer.pop_back()
 
-	_set_vertex_color(link_buffer.back(), Color.YELLOW)
+	_refresh_link_buffer_colors()
 
 	# Delete up or reset the undone vertex.
 	if victim and victim.degree == 0:
@@ -219,15 +221,14 @@ func _process_path_undo(id: int) -> void:
 		
 ## Chose an existing vertex, connect.
 func _process_path_extension(id: int) -> void:
-	_set_vertex_color(link_buffer.back(), Color.GREEN_YELLOW)
-
 	# Connect
 	if not link_buffer.is_empty():
 		graph.add_edge(link_buffer.back(), id)
 
-	# Update new head
-	_set_vertex_color(id, Color.YELLOW)
+	# Add the clicked vertex as an head
 	link_buffer.append(id)
+
+	_refresh_link_buffer_colors()
 
 ## Clears the seletion buffer for linking nodes.
 func _clear_link_context() -> void:
@@ -269,6 +270,20 @@ func _clear_selection_buffer() -> void:
 
 	selection_buffer.clear()
 
+
+## ONLY refreshes the link buffer colors. It doesn't touch the Array logic.
+func _refresh_link_buffer_colors() -> void:
+	if link_buffer.is_empty():
+		return
+
+	# 1. Paint everything in the buffer as "Path" nodes
+	for id in link_buffer:
+		_set_vertex_color(id, Color.GREEN_YELLOW)
+
+	# 2. Paint the very last one as the "Active Head"
+	_set_vertex_color(link_buffer.back(), Color.YELLOW)
+	
+	
 ## Sets a vertex color. id type isnt mantioned because we can get null.
 func _set_vertex_color(id, color: Color) -> void:
 	if id == null:
