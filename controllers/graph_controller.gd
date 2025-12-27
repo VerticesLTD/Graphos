@@ -167,81 +167,45 @@ func _handle_right_release():
 
 ## Creates and performs an add vertex command.
 func _handle_vertex_placement(pos:Vector2) -> void:
-	# 1. Create the command
-	var v_cmd = AddVertexCommand.new(graph, pos)
+	# Create and execute the command
+	CommandManager.execute(AddVertexCommand.new(graph, pos))
 
-	# 2. Tell the Singleton to execute and store it
-	CommandManager.execute(v_cmd)
 
-	
+
 ## Handles connecting a few vertices in a row.
 ## If user clicked on a vertex, it's ID is remembered.
 ## When 2 different vertices have been clicked, add an edge between them.
 func _handle_path_connection(pos: Vector2) -> void:
 	var id = graph.get_vertex_collision(pos)
-
-	# 1. EMPTY SPACE (Creation)
-	if id == Globals.NOT_FOUND:
-		_process_path_creation(pos)
-		return
-
-	# 2. LAST VERTEX (Undo)
-	if not link_buffer.is_empty() and link_buffer.back() == id:
-		_process_path_undo(id)
-		return
-
-	# 3. EXISTING VERTEX (Connection)
-	_process_path_extension(id)
-
-## Create a vertex where the mouse is, and set it to the head.
-func _process_path_creation(pos: Vector2) -> void:
-	# 1. Add Vertex
-	var v_cmd = AddVertexCommand.new(graph, pos)
-	CommandManager.execute(v_cmd)
-	var new_v = v_cmd.vertex
+	var last_id = link_buffer.back() if not link_buffer.is_empty() else Globals.NOT_FOUND
 	
-	# 2. Add Edge
-	if not link_buffer.is_empty():
-		var e_cmd = AddEdgeCommand.new(graph, link_buffer.back(), new_v.id)
-		CommandManager.execute(e_cmd)
+	# 1. EMPTY SPACE: Create
+	if id == Globals.NOT_FOUND:
+		var step = PathStepCommand.new(graph, pos, last_id)
+		CommandManager.execute(step)
+		link_buffer.append(step.v_cmd.vertex.id)
 
-	link_buffer.append(new_v.id)
+	# 2. LAST VERTEX: Undo
+	elif not link_buffer.is_empty() and link_buffer.back() == id:
+		var v_to_undo = graph.get_vertex(id)
+		if v_to_undo:
+			# Find the previous ID in the buffer for the connection
+			var prev_id = link_buffer[link_buffer.size() - 2] if link_buffer.size() >= 2 else Globals.NOT_FOUND
+			
+			# Execute the Macro
+			var macro = PathUndoCommand.new(graph, v_to_undo, prev_id)
+			CommandManager.execute(macro)
+			
+			link_buffer.pop_back() # Update buffer
+
+	# 3. EXISTING VERTEX: connect
+	else:
+		if last_id != Globals.NOT_FOUND and _should_add_connection(last_id, id):
+			CommandManager.execute(AddEdgeCommand.new(graph, last_id, id))
+		link_buffer.append(id)
+	
 	_refresh_link_buffer_colors()
 
-## Undo the last operation, remove the previous edge and change the head.
-func _process_path_undo(vertex: Vertex) -> void:	
-	# Disconnect from previous
-	if link_buffer.size() >= 2:
-		var prev_id = link_buffer[link_buffer.size() - 2]
-		
-		# Delete and record
-		var e_cmd = DeleteEdgeCommand.new(graph, link_buffer.back(), vertex.id)
-		CommandManager.execute(e_cmd)
-
-	# Remove the vertex from the link_buffer
-	link_buffer.pop_back()
-
-	_refresh_link_buffer_colors()
-
-	# Delete up or reset the undone vertex.
-	if vertex and vertex.degree == 0:
-		var v_cmd = DeleteVertexCommand.new(graph, vertex)
-		CommandManager.execute(v_cmd)
-		
-	else: 
-		if vertex: vertex.color = Color.WHITE
-		
-## Chose an existing vertex, connect.
-func _process_path_extension(id: int) -> void:
-	# Connect
-	if not link_buffer.is_empty():
-		var v_cmd = AddEdgeCommand.new(graph, link_buffer.back(), id)
-		CommandManager.execute(v_cmd)
-
-	# Add the clicked vertex as an head
-	link_buffer.append(id)
-
-	_refresh_link_buffer_colors()
 
 ## Clears the seletion buffer for linking nodes.
 func _clear_link_context() -> void:
@@ -309,7 +273,7 @@ func is_vertex_collision(pos: Vector2) -> bool:
 	return graph.get_vertex_collision(pos) != Globals.NOT_FOUND
 
 
-## Executes any command and records it in history.
-func _perform_action(cmd: Command) -> void:
-	cmd.execute()
-	undo_stack.append(cmd)
+func _should_add_connection(from_id: int, to_id: int) -> bool:
+	return from_id != Globals.NOT_FOUND and \
+		   from_id != to_id and \
+		   not graph.has_edge(from_id, to_id)
