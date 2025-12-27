@@ -189,7 +189,8 @@ func _handle_path_connection(pos: Vector2) -> void:
 ## Create a vertex where the mouse is, and set it to the head.
 func _process_path_creation(pos: Vector2) -> void:
 	# Create new vertex as the new head
-	var new_id = graph.add_vertex(pos, Color.YELLOW)
+	var new_vertex = graph.add_vertex(pos, Color.YELLOW)
+	var new_id = new_vertex.id
 	
 	# Connect if possible
 	if not link_buffer.is_empty():
@@ -201,13 +202,11 @@ func _process_path_creation(pos: Vector2) -> void:
 
 
 ## Undo the last operation, remove the previous edge and change the head.
-func _process_path_undo(id: int) -> void:
-	var victim = graph.get_vertex(id)
-	
+func _process_path_undo(vertex: Vertex) -> void:	
 	# Disconnect from previous
 	if link_buffer.size() >= 2:
 		var prev_id = link_buffer[link_buffer.size() - 2]
-		graph.delete_edge(prev_id, id)
+		graph.delete_edge(prev_id, vertex.id)
 			
 	# Remove the vertex from the link_buffer
 	link_buffer.pop_back()
@@ -215,10 +214,10 @@ func _process_path_undo(id: int) -> void:
 	_refresh_link_buffer_colors()
 
 	# Delete up or reset the undone vertex.
-	if victim and victim.degree == 0:
-		graph.delete_vertex(id)
+	if vertex and vertex.degree == 0:
+		graph.delete_vertex(vertex)
 	else:
-		if victim: victim.color = Color.WHITE
+		if vertex: vertex.color = Color.WHITE
 		
 ## Chose an existing vertex, connect.
 func _process_path_extension(id: int) -> void:

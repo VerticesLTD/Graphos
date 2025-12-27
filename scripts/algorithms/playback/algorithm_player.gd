@@ -6,7 +6,7 @@ class_name AlgorithmPlayer
 extends RefCounted ## Acts similar to java's garbage collector
 
 ## Stores the events by order of the algorithm's execution.
-var timeline: Array[Action] = []
+var timeline: Array[Command] = []
 
 # The Pointer: Tracks where we are in time.
 # -1 = Initial State (Before the first event).
@@ -15,7 +15,7 @@ var current_step_index: int = -1
 
 ## Initialize the Algorithm Player.
 ## @patam actions_array used to set the timeline.
-func _init(actions_array: Array[Action]):
+func _init(actions_array: Array[Command]):
 	timeline = actions_array
 
 ## 1. RECORDING (Building the Timeline)
@@ -24,7 +24,7 @@ func _init(actions_array: Array[Action]):
 ## because we want to let the user "debug" and go backwards and forwards
 ## So we prepare it for the playback.
 ## @param event The event we add to the timeline
-func add_event(event: Action) -> void:
+func add_event(event: Command) -> void:
 	timeline.append(event)
 
 

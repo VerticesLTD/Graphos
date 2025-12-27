@@ -12,6 +12,9 @@ signal state_changed
 @warning_ignore("UNUSED_SIGNAL") # Remove when signal is used
 signal vanished(v: Vertex)
 
+## Emited when the vertex is created
+signal created(v: Vertex)
+
 ## Emitted when a new connection is made. 
 ## The Graph hears this and spawns a new Line (EdgeView).
 signal edge_added(new_edge: Edge)

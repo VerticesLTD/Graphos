@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://yxcr5kwlindq"]
 
-[ext_resource type="Script" uid="uid://c2yhxp7188k8k" path="res://graphs/undirected-graph/UndirectedGraph.gd" id="1_0xm2m"]
-[ext_resource type="Script" uid="uid://bi4h7vrxw31jb" path="res://controllers/GraphController.gd" id="2_0xm2m"]
+[ext_resource type="Script" uid="uid://c2yhxp7188k8k" path="res://graphs/undirected_graph/undirected_graph.gd" id="1_0xm2m"]
+[ext_resource type="Script" uid="uid://bi4h7vrxw31jb" path="res://controllers/graph_controller.gd" id="2_0xm2m"]
 [ext_resource type="Script" uid="uid://4boow4h1ajkt" path="res://ui/global/global_UI.gd" id="3_1bvp3"]
 [ext_resource type="Script" uid="uid://css85v57pq6ys" path="res://ui/global/button_highlights.gd" id="4_1bvp3"]
 

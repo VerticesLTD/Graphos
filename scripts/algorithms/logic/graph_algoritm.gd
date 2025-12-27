@@ -10,7 +10,7 @@ const COLOR_FINISHED = Color.GREEN
 var graph: UndirectedGraph
 
 ## timeline to record the algorithm
-var timeline: Array[Action] = []
+var timeline: Array[Command] = []
 
 ## Initialize the algorithm
 ## @param undirected_graph   The graph the algorithm uses.
@@ -19,7 +19,7 @@ func _init(undirected_graph: UndirectedGraph):
 
 ## Every graph algorithm must have a run function.
 ## Every graph algorithm has a start node, and needs to return an array.
-func run(_start_vertex: Vertex) -> Array[Action]:
+func run(_start_vertex: Vertex) -> Array[Command]:
 	push_error("run() not implemented in child class")
 	return []
 	
@@ -27,20 +27,20 @@ func run(_start_vertex: Vertex) -> Array[Action]:
 # Logging Helper Functions
 # ------------------------------------------------------------------------------
 
-## Changes a vertex color and records the action in the timeline.
+## Changes a vertex color and records the Command in the timeline.
 func change_and_log_vertex_color(target_vertex: Vertex, target_color: Color) -> void:
 	var previous_color = target_vertex.color
-	timeline.append(ChangeVertexColorAction.new(target_vertex, target_color, previous_color))
+	timeline.append(ChangeVertexColorCommand.new(target_vertex, target_color, previous_color))
 	target_vertex.color = target_color
 
-## Changes an edge color and records the action in the timeline.
+## Changes an edge color and records the Command in the timeline.
 func change_and_log_edge_color(target_edge: Edge, target_color: Color) -> void:
 	var previous_color = target_edge.color
-	timeline.append(ChangeEdgeColorAction.new(target_edge, target_color, previous_color))
+	timeline.append(ChangeEdgeColorCommand.new(target_edge, target_color, previous_color))
 	target_edge.color = target_color
 
-## Changes a vertex key and records the action in the timeline.
+## Changes a vertex key and records the Command in the timeline.
 func change_and_log_vertex_key(target_vertex: Vertex, target_key: int) -> void:
 	var previous_key = target_vertex.key
-	timeline.append(ChangeVertexKeyAction.new(target_vertex, target_key, previous_key))
+	timeline.append(ChangeVertexKeyCommand.new(target_vertex, target_key, previous_key))
 	target_vertex.key = target_key

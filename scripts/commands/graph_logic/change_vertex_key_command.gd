@@ -1,7 +1,7 @@
 ## Represents an action where a vertex changes its key.
 ## This class captures the state required to apply and revert a key action.
-class_name ChangeVertexKeyAction
-extends Action
+class_name ChangeVertexKeyCommand
+extends Command
 
 ## The target vertex of the action.
 var target_vertex: Vertex
@@ -25,7 +25,6 @@ func _init(vertex: Vertex, target_key: int, previous_key: int):
 ## Changes the vertex's key to new_key 
 func execute() -> void:
 	target_vertex.key = new_key 
-	# draw
 	
 ## Reverts the action.
 ## Restores the original key of the vertex.

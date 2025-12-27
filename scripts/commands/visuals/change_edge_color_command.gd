@@ -1,7 +1,7 @@
 ## Represents an action where an edge changes its visual color.
 ## This class captures the state required to apply and revert an edge color change action.
-class_name ChangeEdgeColorAction
-extends Action
+class_name ChangeEdgeColorCommand
+extends Command
 
 ## The the target edge of the action.
 var target_edge: Edge

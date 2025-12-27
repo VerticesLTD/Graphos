@@ -1,7 +1,7 @@
 ## Represents an action where a vertex changes its visual color.
 ## This class captures the state required to apply and revert a vertex color change action.
-class_name ChangeVertexColorAction
-extends Action
+class_name ChangeVertexColorCommand
+extends Command
 
 ## The the target vertex of the action.
 var target_vertex: Vertex

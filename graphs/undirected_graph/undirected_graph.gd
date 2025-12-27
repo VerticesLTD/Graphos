@@ -25,9 +25,18 @@ var _next_vertex_id: int = 0
 
 	
 ## ------------------------------------------------------------------------------
-## SIGNAL REACTION: The Factory Logic
+## SIGNAL REACTION, edge/vertex add/remove
 ## ------------------------------------------------------------------------------
 
+func _on_vertex_added(_v: Vertex) -> void:
+	num_vertices += 1
+
+## Function thats called when a vertex is removed.
+## @param v The vertex to remove
+func _on_vertex_vanished(_v: Vertex) -> void:
+	num_vertices -= 1
+	
+	
 ## This runs whenever a vertex emits 'edge_added'
 func _on_edge_added(new_edge: Edge) -> void:
 	# To draw the edge only once, add just if id.src is smaller
@@ -55,22 +64,28 @@ func _on_edge_removed(edge_to_remove: Edge) -> void:
 	num_edges -= 1
 	
 ## ------------------------------------------------------------------------------
-## GRAPH OPERATIONS (The Brain Factory)
+## GRAPH OPERATIONS 
 ## ------------------------------------------------------------------------------
 	
+	
+	
+## ------------------------------------------------------------------------------
+## ADD VERTEX
+## ------------------------------------------------------------------------------
+
 ## Adds a vertex to the graph if it does not already exist.
 ## Connects the scenes and data connected to the vertex.
-## Returns the vertex's id.
+## Returns the vertex itself.
 ## @param pos    The position to create the vertex in.
 ## @param color     The color to create the vertex with.
-func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> int:
+func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> Vertex:
 	var id = _next_vertex_id # Get the next available ID internally
 	_next_vertex_id += 1 # increment
 	
 	# 1. Create the Brain (Data)
 	var v: Vertex = Vertex.new(id, color, Vertex.INF, Vertex.INF, pos)
 	vertices[id] = v
-	num_vertices += 1
+	## NO num_vertices += 1, the connections take care of it.
 
 	# 2. Create the Body (The Scene)
 	var view: UIVertexView = VERTEX_VIEW_SCENE.instantiate()
@@ -81,22 +96,70 @@ func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> int:
 	# 4. Show it on screen
 	add_child(view)
 	
-	# 5: Tell the graph to listen for when we add an edge
+	# 5. Connect
+	v.created.connect(_on_vertex_added)
+	v.vanished.connect(_on_vertex_vanished)
 	v.edge_added.connect(_on_edge_added)
-	
-	# 6: Tell the graph to listen for when we delete an edge
 	v.edge_removed.connect(_on_edge_removed)
 	
-	# 7: Listen for vertex deletion to update the count
-	v.vanished.connect(_on_vertex_vanished)
-	
-	return id
+	# Fire the signal for a new vertex
+	v.created.emit(v) 
+	return v
 
-## Function thats called when a vertex is removed.
-## @param v The vertex to remove
-func _on_vertex_vanished(_v: Vertex) -> void:
-	num_vertices -= 1
+
+## Re-adds an existing vertex object to the graph. 
+## Used primarily by the Command system for Redo operations.
+## The order here matters! first restore to the graph, then create the view, then reconnect.
+func add_vertex_object(v: Vertex) -> void:
+	if not v or vertices.has(v.id):
+		return
+
+	# 1. Restore to data structure
+	vertices[v.id] = v
+
+	# 2. Recreate the visual body
+	var view: UIVertexView = VERTEX_VIEW_SCENE.instantiate()
+	view.vertex_data = v 
+	add_child(view)
 	
+	# 3. Re-connect the signals FIRST
+	v.created.connect(_on_vertex_added)
+	v.vanished.connect(_on_vertex_vanished)
+	v.edge_added.connect(_on_edge_added)
+	v.edge_removed.connect(_on_edge_removed)
+
+	# 4. Emit the creation signal
+	v.created.emit(v)
+	
+	
+## ------------------------------------------------------------------------------
+## DELETE VERTEX
+## ------------------------------------------------------------------------------
+
+
+## Removes a vertex and all incident edges.
+## The signals triggered here handle the cleanup of both visuals and metadata.
+func delete_vertex(vertex: Vertex) -> void:
+	# 1. Safety check
+	if not vertex or not vertices.has(vertex.id):
+		return
+
+	# 2. Clean up connections
+	var neighbors = vertex.get_neighbor_vertices()
+	for neighbor_v in neighbors:
+		delete_edge(vertex.id, neighbor_v.id)
+
+	# Signal deletion (Metadata + UI)
+	vertex.vanished.emit(vertex)
+
+	# Internal cleanup
+	vertices.erase(vertex.id)
+
+
+## ------------------------------------------------------------------------------
+## ADD EDGE
+## ------------------------------------------------------------------------------
+
 ## Adds an undirected edge between two existing vertices. 
 ## Connects the vertices
 ## @param src_id Source vertex ID.
@@ -114,50 +177,10 @@ func add_edge(src_id: int, dst_id: int, weight: int = 1) -> void:
 	src.connect_vertices(dst, weight)
 	dst.connect_vertices(src, weight)
 	
-	
-## Removes a vertex and all incident edges.
-## The signals triggered here handle the cleanup of both visuals and metadata.
-func delete_vertex(id: int) -> void:
-	if not vertices.has(id):
-		return
-
-	var victim: Vertex = vertices[id]
-
-	# Only look at vertices we are actually connected to
-	# IMPORTANT: we use delete_edge of the graph and not vertex because it also emits signals.
-	var neighbors = victim.get_neighbor_vertices()
-	for neighbor_v in neighbors:
-		delete_edge(id, neighbor_v.id)
-
-	# Signal vertex deletion (Metadata + UI)
-	victim.vanished.emit(victim)
-
-	# Internal cleanup
-	vertices.erase(id)
 		
-			
-## Removes all vertices and edges from the graph.
-func clear() -> void:
-	vertices.clear()
-	num_vertices = 0
-	num_edges = 0
-
-
-## Returns the Vertex object associated with the given ID.
-## Returns null if the ID is not found in the graph.
-## Callers must check if v: , to ensure its not null(it is if it wasnt found).
-func get_vertex(id: int) -> Vertex:
-	return vertices.get(id) as Vertex
-
-## Returns the edge connecting u and v, or null if none exists.
-func get_edge(u: Vertex, v: Vertex) -> Edge:
-	var e = u.edges
-	while e:
-		if e.dst == v:
-			return e
-		e = e.next
-	return null
-
+## ------------------------------------------------------------------------------
+## DELETE EDGE
+## ------------------------------------------------------------------------------
 
 ## Removes an undirected edge between two vertices.
 ## Ensures that even though data is stored twice, the UI only reacts once.
@@ -180,6 +203,42 @@ func delete_edge(src_id: int, dst_id: int) -> void:
 
 		# 2. Tell the EdgeView (Puppet) to delete itself
 		edge_to_signal.vanished.emit()
+
+			
+## Removes all vertices and edges from the graph.
+func clear() -> void:
+	vertices.clear()
+	num_vertices = 0
+	num_edges = 0
+
+
+
+## ------------------------------------------------------------------------------
+## GETTERS
+## ------------------------------------------------------------------------------
+
+## Returns the Vertex object associated with the given ID.
+## Returns null if the ID is not found in the graph.
+## Callers must check if v: , to ensure its not null(it is if it wasnt found).
+func get_vertex(id: int) -> Vertex:
+	return vertices.get(id) as Vertex
+
+## Returns the edge connecting u and v, or null if none exists.
+func get_edge(u: Vertex, v: Vertex) -> Edge:
+	var e = u.edges
+	while e:
+		if e.dst == v:
+			return e
+		e = e.next
+	return null
+
+## Iterates over vertices to check if position is colliding with one of them.
+func get_vertex_collision(pos: Vector2) -> int:
+	for v: Vertex in vertices.values():
+		if v.pos.distance_to(pos) <= Globals.VERTEX_RADIUS:
+			return v.id
+	return Globals.NOT_FOUND
+
 
 ## Returns true if an edge exists between two vertices.
 func has_edge(src_id: int, dst_id: int) -> bool:
@@ -219,14 +278,6 @@ func reset_for_algorithm() -> void:
 	# Additionally, reset all the colors to white 
 	for v in vertices.values():
 		v.color = Color.WHITE
-
-## Iterates over vertices to check if position is colliding with one of them.
-func get_vertex_collision(pos: Vector2) -> int:
-	for v: Vertex in vertices.values():
-		if v.pos.distance_to(pos) <= Globals.VERTEX_RADIUS:
-			return v.id
-	return Globals.NOT_FOUND
-
 
 
 ## NOTE: _draw() has been deleted.

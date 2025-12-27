@@ -10,7 +10,7 @@ func _init(g: UndirectedGraph):
 
 ## run function for the algorithm
 ## @param _start_vertex    The vertex the algorithm starts from
-func run(_start_vertex: Vertex) -> Array[Action]:
+func run(_start_vertex: Vertex) -> Array[Command]:
 	# Step 1: Initialize the veritces state
 	for v in graph.vertices.values():
 		change_and_log_vertex_color(v, COLOR_NOT_DISCOVERED)
