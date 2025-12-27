@@ -1,5 +1,5 @@
 ## A class to control the graph, recieves inputs, and changes the graph. extends Node class_name GraphController
-extends Node
+extends Node2D
 class_name GraphController
 
 const VERTEX_ON_TOP = 2
@@ -44,14 +44,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	# 2. LEFT_CLICKS & LEFT_RELEASES
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.is_pressed():
-			_handle_left_click(event.global_position)
+			_handle_left_click(get_global_mouse_position())
 		else:
 			_handle_left_release()
 			
 	# 3. RIGHT_CLICKS & RIGHT_RELEASES
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
 		if event.is_pressed():
-			_handle_right_click(event.global_position)
+			_handle_right_click(get_global_mouse_position())
 		else:
 			_handle_right_release()
 			
@@ -71,7 +71,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _handle_mouse_movement(event: InputEventMouseMotion):
 	# LANE 1: PASSIVE (Hovering)
 	# This runs every time the mouse moves, regardless of dragging.
-	_handle_hover(event.global_position)
+	_handle_hover(get_global_mouse_position())
 
 	# LANE 2: ACTIVE (Dragging)
 	# We only proceed here if a drag is actually in progress.
@@ -94,17 +94,17 @@ func _handle_dragging(event: InputEventMouseMotion):
 		# THE MAGIC: Because we used a 'set(value)' in the Vertex class, 
 		# this will automatically tell the view to move!
 		if v:
-			v.pos = event.global_position
+			v.pos = get_global_mouse_position()
 
 			# Setting the view on top:
 			for view in graph.get_children(false):
 				if view is UIVertexView and view.vertex_data.id == v.id:
-					graph.move_child(view,graph.get_children().size()-1)
+					graph.move_child(view, graph.get_children().size() - 1)
 			
 	# Move multiple nodes by mose delta
 	else:
 		for v in selection_buffer:
-			v.pos += event.relative
+			v.pos += event.relative / MainCamera.zoom
 	
 
 ## Starts dragging a node
@@ -135,7 +135,7 @@ func _handle_left_click(mouse_global_pos: Vector2):
 			_start_dragging(id)
 		return
 		
-	if  Globals.current_state == Globals.State.CREATE:
+	if Globals.current_state == Globals.State.CREATE:
 		# 2. CLICKED EMPTY SPACE INTERACTION WHILE VERTEX STATE
 		if is_ctrl:
 			_handle_path_connection(mouse_global_pos) # Create & Connect
@@ -152,7 +152,6 @@ func _handle_left_release():
 	_stop_dragging()
 
 		
-
 ## ------------------------------------------------------------------------------
 ## RIGHT_CLICKS & RIGHT_RELEASES 
 ## ------------------------------------------------------------------------------
@@ -168,7 +167,7 @@ func _handle_right_release():
 ## ------------------------------------------------------------------------------
 
 ## Handles vertex placement. Creates a vertex at posistion.
-func _handle_vertex_placement(pos:Vector2) -> void:
+func _handle_vertex_placement(pos: Vector2) -> void:
 	graph.add_vertex(pos, Color.WHITE)
 
 ## Handles connecting a few vertices in a row.
@@ -266,9 +265,7 @@ func _populate_selection_buffer() -> void:
 			# Set view to top of tree for draw order
 			for view in graph.get_children(false):
 				if view is UIVertexView and view.vertex_data.id == v.id:
-					graph.move_child(view,graph.get_children().size() - 1)
-
-
+					graph.move_child(view, graph.get_children().size() - 1)
 
 
 ## Clears selection buffer.

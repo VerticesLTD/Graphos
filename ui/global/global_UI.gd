@@ -18,13 +18,13 @@ var selection_rect: UISelectionRect
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	# Process input when in SELECTION mode
-	
 	if _monitoring_input:
 		_press_timer += delta
 
 		if _press_timer >= Globals.HOLD_THRESHOLD and not _is_holding:
 			_is_holding = true
 			_on_hold_start()
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and \
@@ -37,7 +37,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_is_holding = false
 
 			# To provide snappy feedback, we assume the user is mass-selecting. Even if it's just a click.
-			if not graph_controller.is_vertex_collision(event.global_position):
+			#CanvasLayer mouse_position() (and all coordinates in general) is always global
+			if not graph_controller.is_vertex_collision(get_viewport().get_mouse_position()):
 				_start_drag()
 
 		elif not event.is_pressed():
@@ -83,11 +84,11 @@ func _on_hold_end():
 		selection_rect = null
 
 	# Resetting selection so other nodes don't highlight anything
-	Globals.selection_rectangle = Rect2(Vector2.ZERO,Vector2.ZERO)
+	Globals.selection_rectangle = Rect2(Vector2.ZERO, Vector2.ZERO)
 	Globals.is_mass_select = false
 
 func _handle_keyboard(event: InputEventKey) -> void:
-	GLogger.debug("Keyboard Clicked.",LOG_TAG)
+	GLogger.debug("Keyboard Clicked.", LOG_TAG)
 	match event.keycode:
 		KEY_C:
 			Globals.current_state = Globals.State.CREATE
