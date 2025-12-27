@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cxt6f2vgtos0c"]
 
-[ext_resource type="Script" uid="uid://clxumiinhlrwt" path="res://ui/vertex/VertexView.gd" id="1_qqj3q"]
+[ext_resource type="Script" uid="uid://clxumiinhlrwt" path="res://ui/vertex/vertex_view.gd" id="1_qqj3q"]
 
 [node name="VertexView" type="Node2D"]
 script = ExtResource("1_qqj3q")

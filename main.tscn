@@ -1,10 +1,24 @@
-[gd_scene load_steps=3 format=3 uid="uid://yxcr5kwlindq"]
+[gd_scene load_steps=6 format=3 uid="uid://yxcr5kwlindq"]
 
 [ext_resource type="Script" uid="uid://c2yhxp7188k8k" path="res://graphs/undirected-graph/UndirectedGraph.gd" id="1_0xm2m"]
 [ext_resource type="Script" uid="uid://bi4h7vrxw31jb" path="res://controllers/GraphController.gd" id="2_0xm2m"]
+[ext_resource type="Script" uid="uid://4boow4h1ajkt" path="res://ui/global/global_UI.gd" id="3_1bvp3"]
+[ext_resource type="Script" uid="uid://css85v57pq6ys" path="res://ui/global/button_highlights.gd" id="4_1bvp3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1bvp3"]
+bg_color = Color(0.019521689, 0.2182971, 0.34787467, 0.22352941)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+expand_margin_left = 15.0
+expand_margin_top = 15.0
+expand_margin_right = 15.0
+expand_margin_bottom = 15.0
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_0xm2m")
+metadata/_edit_vertical_guides_ = [-53.0]
 
 [node name="UndirectedGraph" type="Node2D" parent="."]
 script = ExtResource("1_0xm2m")
@@ -13,3 +27,56 @@ metadata/_custom_type_script = "uid://c2yhxp7188k8k"
 [node name="GraphController" type="Node" parent="." node_paths=PackedStringArray("graph")]
 script = ExtResource("2_0xm2m")
 graph = NodePath("../UndirectedGraph")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+script = ExtResource("3_1bvp3")
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -28.0
+offset_right = 28.0
+offset_bottom = 40.0
+grow_horizontal = 2
+theme_override_constants/margin_top = 40
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/MarginContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/MarginContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 25
+script = ExtResource("4_1bvp3")
+
+[node name="LockTool" type="Button" parent="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "LOCK"
+
+[node name="Selection" type="Button" parent="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "SELECTION"
+
+[node name="Create" type="Button" parent="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "CREATE"
+
+[node name="Algorithm" type="Button" parent="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "ALGORITHM"
+
+[node name="Eraser" type="Button" parent="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "ERASER"
+
+[connection signal="pressed" from="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer/LockTool" to="CanvasLayer" method="_on_lock_tool_pressed"]
+[connection signal="pressed" from="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer/Selection" to="CanvasLayer" method="_on_drag_pressed"]
+[connection signal="pressed" from="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer/Create" to="CanvasLayer" method="_on_vertex_pressed"]
+[connection signal="pressed" from="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer/Algorithm" to="CanvasLayer" method="_on_algorithm_pressed"]
+[connection signal="pressed" from="CanvasLayer/MarginContainer/PanelContainer/HBoxContainer/Eraser" to="CanvasLayer" method="_on_eraser_pressed"]

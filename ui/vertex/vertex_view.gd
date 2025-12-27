@@ -1,4 +1,5 @@
 extends Node2D
+class_name UIVertexView
 ## ==============================================================================
 ## VERTEX VIEW (The Puppet)
 ## ==============================================================================
@@ -44,6 +45,7 @@ func _process(_delta: float) -> void:
 func refresh() -> void:
 	# Only repaint and relabel if the color/radius/label changed.
 	label.text = str(vertex_data.id)
+	self.z_index = vertex_data.z_idx
 	queue_redraw()
 
 ## This function handles the actual pixel drawing on screen.

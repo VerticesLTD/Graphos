@@ -18,7 +18,6 @@ config/icon="res://icon.svg"
 [autoload]
 
 Globals="*res://scripts/utils/globals.gd"
-InputHandler="*res://scripts/utils/input_handler.gd"
 
 [rendering]
 

@@ -5,8 +5,8 @@ extends Node2D
 class_name UndirectedGraph
 
 # We load our "Blueprints" (Scenes) here
-const VERTEX_VIEW_SCENE = preload("res://ui/vertex/VertexView.tscn")
-const EDGE_VIEW_SCENE = preload("res://ui/edge/EdgeView.tscn")
+const VERTEX_VIEW_SCENE = preload("res://ui/vertex/vertex_view.tscn")
+const EDGE_VIEW_SCENE = preload("res://ui/edge/edge_view.tscn")
 
 
 ## Dictionary[int -> Vertex]
@@ -35,7 +35,7 @@ func _on_edge_added(new_edge: Edge) -> void:
 		return
 
 	# Create the visual Body
-	var line = EDGE_VIEW_SCENE.instantiate()
+	var line: UIEdgeView = EDGE_VIEW_SCENE.instantiate()
 	line.edge_data = new_edge
 
 	# Add to scene and ensure it's drawn BEHIND the vertices
@@ -73,7 +73,7 @@ func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> int:
 	num_vertices += 1
 
 	# 2. Create the Body (The Scene)
-	var view = VERTEX_VIEW_SCENE.instantiate()
+	var view: UIVertexView = VERTEX_VIEW_SCENE.instantiate()
 
 	# 3. THE HANDSHAKE, link Vertex to VertexView
 	view.vertex_data = v 
@@ -94,7 +94,7 @@ func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> int:
 
 ## Function thats called when a vertex is removed.
 ## @param v The vertex to remove
-func _on_vertex_vanished(v: Vertex) -> void:
+func _on_vertex_vanished(_v: Vertex) -> void:
 	num_vertices -= 1
 	
 ## Adds an undirected edge between two existing vertices. 

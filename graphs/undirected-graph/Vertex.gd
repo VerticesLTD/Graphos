@@ -9,6 +9,7 @@ signal state_changed
 
 ## Emitted when this vertex is removed from the graph.
 ## The VertexView hears this and calls queue_free().
+@warning_ignore("UNUSED_SIGNAL") # Remove when signal is used
 signal vanished(v: Vertex)
 
 ## Emitted when a new connection is made. 
@@ -17,6 +18,7 @@ signal edge_added(new_edge: Edge)
 
 ## Emitted when a connection is broken. 
 ## The Graph hears this and deletes the corresponding Line.
+@warning_ignore("UNUSED_SIGNAL") # Remove when signal is used
 signal edge_removed(target_edge: Edge)
 
 ## Constant used to represent infinity in graph algorithms.
@@ -94,6 +96,12 @@ var parent: Vertex = null:
 	set(value):
 		parent = value
 		state_changed.emit() # UI draws "Parent Arrow"
+
+# For draw order
+var z_idx :int = 0:
+	set(value):
+		z_idx = value
+		state_changed.emit()
 		
 ## Adds an outgoing edge from this vertex to the destination vertex.
 ## If an edge already exists, no modification is performed.
