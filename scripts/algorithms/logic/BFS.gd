@@ -42,5 +42,5 @@ func run(_start_vertex: Vertex) -> Array[Command]:
 				v.parent = u
 				Q.push_back(v)
 			
-			change_and_log_vertex_color(u, COLOR_FINISHED)
+		change_and_log_vertex_color(u, COLOR_FINISHED)
 	return timeline
