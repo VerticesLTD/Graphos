@@ -5,7 +5,7 @@ extends Command
 var edge_cmd: DeleteEdgeCommand
 var vertex_cmd: DeleteVertexCommand
 
-func _init(g: UndirectedGraph, vertex: Vertex, prev_id: int):
+func _init(g: Object, vertex: Vertex, prev_id: int):
 	super(g)
 	
 	# 1. Always prepare the edge deletion if a connection exists

@@ -31,6 +31,7 @@ var _next_vertex_id: int = 0
 func _on_vertex_added(_v: Vertex) -> void:
 	num_vertices += 1
 
+
 ## Function thats called when a vertex is removed.
 ## @param v The vertex to remove
 func _on_vertex_vanished(_v: Vertex) -> void:
@@ -80,8 +81,8 @@ func _on_edge_removed(edge_to_remove: Edge) -> void:
 ## @param color     The color to create the vertex with.
 func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> Vertex:
 	var id = _next_vertex_id # Get the next available ID internally
-	_next_vertex_id += 1 # increment
-	
+	_next_vertex_id += 1 # increment id
+
 	# 1. Create the Brain (Data)
 	var v: Vertex = Vertex.new(id, color, Vertex.INF, Vertex.INF, pos)
 	vertices[id] = v

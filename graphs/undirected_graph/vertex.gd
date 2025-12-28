@@ -3,6 +3,12 @@
 ## This class is data-oriented and intentionally not a Node.
 class_name Vertex
 
+## Imposter variable, that supposed to indicate weather or not this vertex
+## should emit signals (used mainly for algorithm class, we want to run algorithms
+## on "imposter" vertexes and edges in order to not actually chage their colot on screen)
+var is_imposter: bool = false
+var true_vertex_id: int
+
 ## Emitted when values like color or position change. 
 ## The Sprite hears this and repaints itself.
 signal state_changed
@@ -44,18 +50,24 @@ var edges: Edge = null
 ## @param _key       Initial key value.
 ## @param _x         Optional x-coordinate.
 ## @param _y         Optional y-coordinate.
+## @param _is_imposter		Is the vertex real or only data.
+## @param _true_vertex		Refrence to the vertex the imposter points to.
 func _init(
 	_id: int,
 	_color: Color = Color.WHITE,
 	_distance: float = INF,
 	_key: float = INF,
 	_pos: Vector2 = Vector2.ZERO,
+	_is_imposter: bool = false,
+	_true_vertex_id: int = -1
 ) -> void:
 	self.id = _id
 	self.color = _color
 	self.distance = _distance
 	self.key = _key
 	self.pos = _pos
+	self.is_imposter = _is_imposter
+	self.true_vertex_id = _true_vertex_id
 
 ####################### SETTER FUNCTIONS & REACTION LOGIC #######################
 
@@ -78,33 +90,39 @@ func _init(
 var color: Color = Color.WHITE: # defult color to our var is white,
 	set(value): # called every time we change the color
 		color = value # Change the color
-		state_changed.emit() # emit the signal
+		if not is_imposter:
+			state_changed.emit() # emit the signal
 
 var distance: float = INF:
 	set(value):
 		distance = value
-		state_changed.emit()
+		if not is_imposter:
+			state_changed.emit()
 
 var key: float = INF:
 	set(value):
 		key = value
-		state_changed.emit()
+		if not is_imposter:
+			state_changed.emit()
 
 var pos: Vector2 = Vector2.ZERO:
 	set(value):
 		pos = value
-		state_changed.emit()
+		if not is_imposter:
+			state_changed.emit()
 		
 var parent: Vertex = null:
 	set(value):
 		parent = value
-		state_changed.emit() # UI draws "Parent Arrow"
+		if not is_imposter:
+			state_changed.emit() # UI draws "Parent Arrow"
 
 # For draw order
 var z_idx :int = 0:
 	set(value):
 		z_idx = value
-		state_changed.emit()
+		if not is_imposter:
+			state_changed.emit()
 		
 ## Adds an outgoing edge from this vertex to the destination vertex.
 ## If an edge already exists, no modification is performed.

@@ -4,15 +4,15 @@ extends GraphAlgorithm
 
 ## Initialize the graph.
 ## @param gtaph    The graph to run the algorithm on.
-func _init(g: UndirectedGraph):
-	# This passes graph up to GraphAlgorithm's _init
-	super(g) 
-
+func _init(_imposter_graph: UndirectedGraph, _true_graph: UndirectedGraph):
+	super(_imposter_graph, _true_graph)
+	
+	
 ## run function for the algorithm
 ## @param _start_vertex    The vertex the algorithm starts from
 func run(_start_vertex: Vertex) -> Array[Command]:
 	# Step 1: Initialize the veritces state
-	for v in graph.vertices.values():
+	for v in true_graph.vertices.values():
 		change_and_log_vertex_color(v, COLOR_NOT_DISCOVERED)
 		v.parent = null
 		
@@ -41,4 +41,6 @@ func run(_start_vertex: Vertex) -> Array[Command]:
 				# 3. Update metadata and queue
 				v.parent = u
 				Q.push_back(v)
+			
+			change_and_log_vertex_color(u, COLOR_FINISHED)
 	return timeline

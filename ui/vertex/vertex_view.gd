@@ -41,7 +41,7 @@ func _process(_delta: float) -> void:
 ## VISUAL REFRESH 
 ## ------------------------------------------------------------------------------
 
-## Called when something had changed, 
+## Called when something had changed.
 func refresh() -> void:
 	# Only repaint and relabel if the color/radius/label changed.
 	label.text = str(vertex_data.id)
