@@ -8,9 +8,6 @@ const VERTEX_BELOW = 1
 ## Allows the controller to control the graph
 @export var graph: UndirectedGraph
 
-## Vars to handle vertex being dragged.
-var dragged_vertex_id: int = Globals.NOT_FOUND
-var is_dragging: bool = false
 
 ## The selection buffer to link multiple nodes with an edge
 var link_buffer: Array[int] = []
@@ -18,8 +15,10 @@ var link_buffer: Array[int] = []
 ## Holds nodes selected by user mass select
 var selection_buffer: Array[Vertex] = []
 
-## History of executed commands for Undo/Redo
-var undo_stack: Array[Command] = []
+## Vars to handle dragging
+## Stores { Vertex: Vector2_Initial_Pos } for whatever is being dragged
+var drag_snapshot: Dictionary = {} 
+var is_dragging: bool = false
 
 ## Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -63,7 +62,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			# If they let go of Ctrl, wipe the selection
 			_clear_link_context()
 			return
-
+			
+	# 5. Handle Undo
+	if event.is_action_pressed("undo"):
+		CommandManager.undo()
+		return
+		
+	# 6. Handle Redo
+	if event.is_action_pressed("redo"):
+		CommandManager.redo()
+		return		
 
 ## ------------------------------------------------------------------------------
 ## MOUSE MOVEMENTS 
@@ -86,40 +94,56 @@ func _handle_hover(_mouse_global_pos: Vector2):
 	pass
 
 func _handle_dragging(event: InputEventMouseMotion):
-	# Dragging single node:
-	if selection_buffer.is_empty():
-		# 1. Get the actual vertex using the ID
-		var v = graph.get_vertex(dragged_vertex_id)
-		
-		
-		# 2. Update the 'pos' property. 
-		# THE MAGIC: Because we used a 'set(value)' in the Vertex class, 
-		# this will automatically tell the Puppet to move!
-		if v:
-			v.pos = event.global_position
-			v.z_idx = VERTEX_ON_TOP
-			
-	# Move multiple nodes by mose delta
-	else:
-		for v in selection_buffer:
-			v.pos += event.relative
+	# We move everything in the snapshot by the mouse delta (relative)
+	for v in drag_snapshot.keys():
+		v.pos += event.relative
+		v.z_idx = VERTEX_ON_TOP
 	
 
 ## Starts dragging a node
 func _start_dragging(id: int) -> void:
-	dragged_vertex_id = id
 	is_dragging = true
+	drag_snapshot.clear()
+	
+	var clicked_v = graph.get_vertex(id)
+	if not clicked_v: return
 
-## If mouse release and ctrl released, stop dragging.
+	# If clicking something already in selection, drag the whole group
+	if selection_buffer.has(clicked_v):
+		for v in selection_buffer:
+			drag_snapshot[v] = v.pos
+	# Otherwise, just drag the single clicked vertex
+	else:
+		drag_snapshot[clicked_v] = clicked_v.pos
+		
+
 func _stop_dragging() -> void:
-	is_dragging = false
-	if dragged_vertex_id != Globals.NOT_FOUND:
-		graph.get_vertex(dragged_vertex_id).z_idx = VERTEX_BELOW
-		dragged_vertex_id = Globals.NOT_FOUND
+	if not is_dragging: return
+	
+	# Check if anything actually moved compared to the snapshot
+	var has_moved = false
+	for v in drag_snapshot.keys():
+		if v.pos != drag_snapshot[v]:
+			has_moved = true
+			break
+	
+	if has_moved:
+		# One command to rule them all!
+		var cmd = MoveSelectionCommand.new(drag_snapshot)
+		CommandManager.push_to_stack(cmd)
 
+	# Visual cleanup
+	for v in drag_snapshot.keys():
+		v.z_idx = VERTEX_BELOW
+
+	is_dragging = false
+	drag_snapshot.clear()
+	
+	
 ## ------------------------------------------------------------------------------
 ## LEFT_CLICKS & LEFT_RELEASES 
 ## ------------------------------------------------------------------------------
+
 func _handle_left_click(mouse_global_pos: Vector2):
 	# Get the vertex in the position of the mouse(or not found)
 	var id = graph.get_vertex_collision(mouse_global_pos)
@@ -133,8 +157,8 @@ func _handle_left_click(mouse_global_pos: Vector2):
 			_start_dragging(id)
 		return
 		
+	# 2. CLICKED EMPTY SPACE INTERACTION WHILE VERTEX STATE
 	if  Globals.current_state == Globals.State.CREATE:
-		# 2. CLICKED EMPTY SPACE INTERACTION WHILE VERTEX STATE
 		if is_ctrl:
 			_handle_path_connection(mouse_global_pos) # Create & Connect
 
@@ -150,7 +174,6 @@ func _handle_left_release():
 	_stop_dragging()
 
 		
-
 ## ------------------------------------------------------------------------------
 ## RIGHT_CLICKS & RIGHT_RELEASES 
 ## ------------------------------------------------------------------------------

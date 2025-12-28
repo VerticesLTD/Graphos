@@ -278,8 +278,3 @@ func reset_for_algorithm() -> void:
 	# Additionally, reset all the colors to white 
 	for v in vertices.values():
 		v.color = Color.WHITE
-
-
-## NOTE: _draw() has been deleted.
-## The Node2D children (VertexView/EdgeView) handle their own rendering.
-## GraphController now handles the inputs.
