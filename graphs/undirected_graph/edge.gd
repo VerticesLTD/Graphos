@@ -84,12 +84,15 @@ func get_other_vertex(v: Vertex) -> Vertex:
 		return src
 
 ## This is called right before the object is removed from memory.
-## Disconnects edge from being callable(Object doesnt do it alone but its object is lighter and faster).
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
-		# Use a Callable to ensure the reference is stable
+		# Callable returns a unique pointer to the function _on_vertex_changed
+		# This is used to check if were deleting the right signals.
 		var cb = Callable(self, "_on_vertex_changed")
 
+		# Only dissconnect if:
+		# The instance hasnt been deleted AND
+		# The edge is REALLY connected with state_changed to src and dest.
 		if is_instance_valid(src) and src.state_changed.is_connected(cb):
 			src.state_changed.disconnect(cb)
 		if is_instance_valid(dst) and dst.state_changed.is_connected(cb):

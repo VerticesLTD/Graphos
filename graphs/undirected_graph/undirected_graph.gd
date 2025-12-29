@@ -256,7 +256,7 @@ func get_edge(u: Vertex, v: Vertex) -> Edge:
 	return null
 
 ## Iterates over vertices to check if position is colliding with one of them.
-func get_vertex_collision(pos: Vector2) -> int:
+func get_vertex_id_at(pos: Vector2) -> int:
 	for v: Vertex in vertices.values():
 		if v.pos.distance_to(pos) <= Globals.VERTEX_RADIUS:
 			return v.id

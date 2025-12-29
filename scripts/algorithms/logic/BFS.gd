@@ -13,9 +13,10 @@ func _init(_imposter_graph: UndirectedGraph, _real_graph: UndirectedGraph):
 func run(_start_vertex: Vertex) -> Array[Command]:
 	# Step 1: Initialize the veritces state
 	for v in real_graph.vertices.values():
-		change_and_log_vertex_color(v, COLOR_NOT_DISCOVERED)
+		v.color = COLOR_NOT_DISCOVERED # NOT LOGGING so we start AFTER initialization
 		v.parent = null
 		
+				
 	change_and_log_vertex_color(_start_vertex, COLOR_VISITING)
 	# OPTIONAL - save the state as a critical point, so we could skip forward to it!
 	
@@ -33,7 +34,7 @@ func run(_start_vertex: Vertex) -> Array[Command]:
 			
 			if v.color == COLOR_NOT_DISCOVERED:
 				# 1. Log and change the edge color (The path)
-				change_and_log_edge_color(edge, COLOR_VISITING)
+				change_and_log_edge_color(edge, COLOR_EDGE_PATH)
 
 				# 2. Log and change the VERTEX color (The destination)
 				change_and_log_vertex_color(v, COLOR_VISITING)

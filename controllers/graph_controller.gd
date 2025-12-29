@@ -75,23 +75,26 @@ func _unhandled_input(event: InputEvent) -> void:
 		CommandManager.redo()
 		return	
 		
+		
+	# 7. Run algorithm
 	if event is InputEventKey and event.keycode == KEY_B:
-		var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
+		var mouse_pos = graph.get_global_mouse_position()
+		var start_v_id = graph.get_vertex_id_at(mouse_pos)
+		if start_v_id != Globals.NOT_FOUND:
+			var start_v = graph.get_vertex(start_v_id)
+			execute_algorithm(BFS, start_v)
+			player.step_forward() # Do one step to give visual fidback for the start
 		
-		# Check if the graph actually has vertices to avoid a crash
-		if not imposter_graph.vertices.is_empty():
-			# Get all vertices
-			var all_vs = imposter_graph.vertices.values()
+	# 8. Algorithm Playing
+	if player:
+		if event.is_action_pressed("ui_right"): # right key
+			player.step_forward()
 			
-			# Sort them by ID (Lowest to Highest)
-			all_vs.sort_custom(func(a, b): return a.id < b.id)
+		if event.is_action_pressed("ui_left"): # left key
+			player.step_backward()
 			
-			# Take the first one (Lowest ID)
-			var start_v = all_vs[0]
-			
-			var bfs = BFS.new(imposter_graph, graph)
-			bfs.run(start_v)
-		
+
+
 ## ------------------------------------------------------------------------------
 ## MOUSE MOVEMENTS 
 ## ------------------------------------------------------------------------------
@@ -109,8 +112,12 @@ func _handle_mouse_movement(event: InputEventMouseMotion):
 		
 		
 func _handle_hover(_mouse_global_pos: Vector2):
-	# Idea: make the vertex glow
-	pass
+	var id = graph.get_vertex_id_at(_mouse_global_pos)
+	if id != Globals.NOT_FOUND:
+		# Change cursor to a 'Pointing Hand' when over a node
+		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
+	else:
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
 func _handle_dragging(event: InputEventMouseMotion):
 	# We move everything in the snapshot by the mouse delta (relative)
@@ -165,7 +172,7 @@ func _stop_dragging() -> void:
 
 func _handle_left_click(mouse_global_pos: Vector2):
 	# Get the vertex in the position of the mouse(or not found)
-	var id = graph.get_vertex_collision(mouse_global_pos)
+	var id = graph.get_vertex_id_at(mouse_global_pos)
 	var is_ctrl = Input.is_key_pressed(KEY_CTRL)
 
 	# 1. CLICKED VERTEX  
@@ -218,7 +225,7 @@ func _handle_vertex_placement(pos:Vector2) -> void:
 ## If user clicked on a vertex, it's ID is remembered.
 ## When 2 different vertices have been clicked, add an edge between them.
 func _handle_path_connection(pos: Vector2) -> void:
-	var id = graph.get_vertex_collision(pos)
+	var id = graph.get_vertex_id_at(pos)
 	var last_id = link_buffer.back() if not link_buffer.is_empty() else Globals.NOT_FOUND
 	
 	# 1. EMPTY SPACE: Create
@@ -312,7 +319,7 @@ func _set_vertex_color(id, color: Color) -> void:
 
 ## Returns true if position has a vertex.
 func is_vertex_collision(pos: Vector2) -> bool:
-	return graph.get_vertex_collision(pos) != Globals.NOT_FOUND
+	return graph.get_vertex_id_at(pos) != Globals.NOT_FOUND
 
 ## Checks if you can add a connection between 2 vertices
 func _should_add_connection(from_id: int, to_id: int) -> bool:
@@ -329,8 +336,8 @@ func _should_add_connection(from_id: int, to_id: int) -> bool:
 ## @param start_node: The real vertex where we want to begin
 func execute_algorithm(algo_class: GDScript, start_node: Vertex) -> void:
 	# 1. Create the Imposter Graph (The Sandbox)
-	# We pass all vertices to make it an induced subgraph of the whole graph
-	var imposter_graph = graph.create_induced_subgraph_from_vertices(graph.vertices.values())
+	# Pass the selection buffer to run the algo on the sub-graph
+	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
 	
 	# 2. Instantiate the specific algorithm generically
 	# Every child of GraphAlgorithm uses the same _init(_imposter, _real)
