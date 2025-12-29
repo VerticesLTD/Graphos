@@ -3,11 +3,6 @@
 ## This class is data-oriented and intentionally not a Node.
 class_name Vertex
 
-## Imposter variable, that supposed to indicate weather or not this vertex
-## should emit signals (used mainly for algorithm class, we want to run algorithms
-## on "imposter" vertexes and edges in order to not actually chage their colot on screen)
-var is_imposter: bool = false
-var true_vertex_id: int
 
 ## Emitted when values like color or position change. 
 ## The Sprite hears this and repaints itself.
@@ -42,6 +37,10 @@ var degree: int = 0
 ## Head of the adjacency list (linked list of Edge).
 var edges: Edge = null
 
+## If true, this vertex acts as a "Data Proxy" for algorithms.
+## Imposters perform logic (BFS/Dijkstra) without emitting signals, 
+## preventing unintended visual updates or UI side effects.
+var is_imposter: bool = false
 
 ## Constructs a new Vertex.
 ## @param _id        Unique vertex identifier.
@@ -51,7 +50,6 @@ var edges: Edge = null
 ## @param _x         Optional x-coordinate.
 ## @param _y         Optional y-coordinate.
 ## @param _is_imposter		Is the vertex real or only data.
-## @param _true_vertex		Refrence to the vertex the imposter points to.
 func _init(
 	_id: int,
 	_color: Color = Color.WHITE,
@@ -59,7 +57,6 @@ func _init(
 	_key: float = INF,
 	_pos: Vector2 = Vector2.ZERO,
 	_is_imposter: bool = false,
-	_true_vertex_id: int = -1
 ) -> void:
 	self.id = _id
 	self.color = _color
@@ -67,25 +64,8 @@ func _init(
 	self.key = _key
 	self.pos = _pos
 	self.is_imposter = _is_imposter
-	self.true_vertex_id = _true_vertex_id
 
 ####################### SETTER FUNCTIONS & REACTION LOGIC #######################
-
-## WHY SETTERS?
-## We want to keep the "Brain" (this Vertex data) separate from the "Body" (the Sprite).
-## In the old way, the Graph had to do all the work to redraw the whole screen. 
-## Now, the Algorithm just updates these numbers, and the Vertex "shouts" when it changes.
-##
-## THE FLOW:
-## 1. BFS says: "You are now Yellow." (`vertex.color = Color.YELLOW`)
-## 2. The Setter (below) catches that change instantly.
-## 3. It fires the `state_changed` signal.
-## 4. The Sprite (the visual node) is listening for that shout.It, 
-##    wakes up, and repaints itself without us having to call `queue_redraw()`.
-##
-## Thats great for undo/execute: 
-## for example: if we put the old color back into this variable, the Sprite hears the change 
-## and "reverts" its look automatically. No extra logic needed.
 
 var color: Color = Color.WHITE: # defult color to our var is white,
 	set(value): # called every time we change the color
@@ -187,3 +167,25 @@ func get_neighbor_vertices() -> Array:
 		neighbors.append(e.dst) # dst is the Vertex on the other side
 		e = e.next
 	return neighbors
+	
+
+## Handles manual memory management for incident edges before the vertex is destroyed.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		var curr = edges
+		while curr:
+			# 1. Grab the next one before we mess with the current one
+			var next_edge = curr.next
+
+			# 2. Tell edge_view (This doesn't kill 'curr' yet)
+			curr.vanished.emit()
+							
+			# 3. Break the link. If no one else is holding 'curr', 
+			# Godot will delete it from RAM automatically after this loop cycle.
+			curr.next = null 
+			
+			# 4. Move to the next link in the chain
+			curr = next_edge
+			
+		# 5. Clear the head of the list
+		edges = null

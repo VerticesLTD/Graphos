@@ -8,12 +8,14 @@ const VERTEX_BELOW = 1
 ## Allows the controller to control the graph
 @export var graph: UndirectedGraph
 
-
 ## The selection buffer to link multiple nodes with an edge
 var link_buffer: Array[int] = []
 
 ## Holds nodes selected by user mass select
 var selection_buffer: Array[Vertex] = []
+
+## A class which holds a player with all the algorithm commands.
+var player: AlgorithmPlayer
 
 ## Vars to handle dragging
 ## Stores { Vertex: Vector2_Initial_Pos } for whatever is being dragged
@@ -317,3 +319,34 @@ func _should_add_connection(from_id: int, to_id: int) -> bool:
 	return from_id != Globals.NOT_FOUND and \
 		   from_id != to_id and \
 		   not graph.has_edge(from_id, to_id)
+
+## ------------------------------------------------------------------------------
+## ALGORITHM PLAYER
+## ------------------------------------------------------------------------------
+
+## This function can now run BFS, DFS, Dijkstra, or any future algorithm.
+## @param algo_class: The Script/Class of the algorithm (e.g., BFS)
+## @param start_node: The real vertex where we want to begin
+func execute_algorithm(algo_class: GDScript, start_node: Vertex) -> void:
+	# 1. Create the Imposter Graph (The Sandbox)
+	# We pass all vertices to make it an induced subgraph of the whole graph
+	var imposter_graph = graph.create_induced_subgraph_from_vertices(graph.vertices.values())
+	
+	# 2. Instantiate the specific algorithm generically
+	# Every child of GraphAlgorithm uses the same _init(_imposter, _real)
+	var algo_instance: GraphAlgorithm = algo_class.new(imposter_graph, graph)
+	
+	# 3. Find the starting vertex's equivalent in the imposter graph
+	var imposter_start_node = imposter_graph.get_vertex(start_node.id)
+	
+	# 4. RUN the algorithm to generate the timeline
+	var timeline = algo_instance.run(imposter_start_node)
+	
+	# 5. Initialize the playback
+	player = AlgorithmPlayer.new(timeline)
+	
+	# 6. Cleanup the imposter graph
+	# The timeline already has the Commands targeting the REAL graph
+	imposter_graph.queue_free()
+	
+	print("Algorithm logic finished. Timeline recorded with %d steps." % timeline.size())

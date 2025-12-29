@@ -32,11 +32,6 @@ func _ready() -> void:
 		# If there's no edge, delete.
 		queue_free()
 
-## This runs every single frame.
-func _process(_delta: float) -> void:
-	# Constant update so the line follows moving circles smoothly.
-	# We use queue_redraw here because the line's shape is always changing.
-	queue_redraw()
 
 ## ------------------------------------------------------------------------------
 ## VISUAL REFRESH

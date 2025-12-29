@@ -10,7 +10,6 @@ signal state_changed
 
 ## Emitted when this edge is removed from the graph.
 ## The EdgeView hears this and calls queue_free().
-@warning_ignore("UNUSED_SIGNAL")
 signal vanished
 
 ## Source vertex of the edge.
@@ -22,6 +21,9 @@ var dst: Vertex
 ## Pointer to the next edge in the adjacency list.
 ## May be null if this is the last edge.
 var next: Edge = null
+
+## Lets the edge know if its an imposter to not emit drawing signals.
+var is_imposter: bool = false
 
 
 ## Constructs a new Edge.
@@ -42,16 +44,18 @@ func _init(
 	self.dst = _dst
 	self.next = _next
 	self.color = _color
-
-	# The Edge spyies on its vertices to know where to move(only if they exist)
+	
+	# If the vertex is an imposter, this edge is an imposter too.
 	if src:
-		src.state_changed.connect(_on_vertex_changed)
-	if dst:
-		dst.state_changed.connect(_on_vertex_changed)
+		self.is_imposter = src.is_imposter
+
+	# Only connect signals if we are REAL. 
+	# This prevents dozens of useless connections in the imposter graph.
+	if not is_imposter:
+		if src: src.state_changed.connect(_on_vertex_changed)
+		if dst: dst.state_changed.connect(_on_vertex_changed)
 
 ####################### SETTER FUNCTIONS & REACTION LOGIC #######################
-
-## Long explanation on why and how use setters in Vertex class
 
 var weight: int = 1:
 	set(value):

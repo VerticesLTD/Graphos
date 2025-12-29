@@ -311,7 +311,7 @@ func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> Un
 	# 1. Create the Nodes (The Ghosts)
 	for v in source_vertices:
 		var imposter_v = Vertex.new(
-			v.id, v.color, v.distance, v.key, v.pos, true, v.id
+			v.id, v.color, v.distance, v.key, v.pos, true,
 		)
 		# Manually add it to the graph to not trigger emitions.
 		imposter_graph.vertices[v.id] = imposter_v
@@ -326,3 +326,20 @@ func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> Un
 			if imposter_graph.vertices.has(neighbor.id) and v.id < neighbor.id:
 				imposter_graph.add_edge_silently(v.id, neighbor.id)		
 	return imposter_graph
+
+
+## Notification thats recieved right before the graph is deleted.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		# Tell all vertices to shout one last time so vertex views 
+		# can clean themselves up before the graph disappears.
+		for v in vertices.values():
+			# Check if valid instance(not been deleted yet)
+			if is_instance_valid(v):
+				v.vanished.emit(v)	
+					
+		vertices.clear()
+		
+		# We don't need to manually queue_free children.
+		# When this Graph (Node2D) is removed from memory, Godot automatically
+		# removes all children (vertex_views and edge_views) from the Scene Tree.
