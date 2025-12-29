@@ -128,7 +128,7 @@ var z_idx :int = 0:
 ## If an edge already exists, no modification is performed.
 ## @param dest   Destination vertex.
 ## @param weight Weight assigned to the edge.
-func connect_vertices(dest: Vertex, weight: int = 1) -> void:
+func connect_vertices(dest: Vertex, weight: int = 1, shout: bool = true) -> void:
 	## Check if the edge is already in the graph
 	var curr: Edge = edges
 	while curr:
@@ -142,7 +142,8 @@ func connect_vertices(dest: Vertex, weight: int = 1) -> void:
 	degree += 1
 	
 	## Tell the Graph to create a visual line for this data
-	edge_added.emit(new_edge)
+	if not self.is_imposter and shout:
+		edge_added.emit(new_edge)
 
 ## Removes a specific edge from this vertex's adjacency list.
 ## Returns the Edge object that was removed (so the Graph can signal it),

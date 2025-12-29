@@ -16,8 +16,12 @@ var vertices: Dictionary = {}
 const EDGE_COLOR = Color.RED
 const EDGE_WIDTH = 10.0
 
-## Metadata counters
-var num_vertices: int = 0
+## Metadata counters, num_vertices shouldn't be taken 
+## care of manually because we can get it by using size
+var num_vertices: int:
+	get:
+		return vertices.size()
+		
 var num_edges: int = 0
 
 ## Internal counter to ensure every vertex gets a unique, incremental ID
@@ -29,18 +33,19 @@ var _next_vertex_id: int = 0
 ## ------------------------------------------------------------------------------
 
 func _on_vertex_added(_v: Vertex) -> void:
-	num_vertices += 1
+	pass
 
 
 ## Function thats called when a vertex is removed.
 ## @param v The vertex to remove
 func _on_vertex_vanished(_v: Vertex) -> void:
-	num_vertices -= 1
+	pass
 	
 	
 ## This runs whenever a vertex emits 'edge_added'
 func _on_edge_added(new_edge: Edge) -> void:
-	# To draw the edge only once, add just if id.src is smaller
+	# SAFETY CHECK: Even if both vertices shouted, we only draw the 
+	# edge where the source ID is lower to prevent visual duplicates.
 	if new_edge.src.id > new_edge.dst.id:
 		return
 
@@ -50,7 +55,7 @@ func _on_edge_added(new_edge: Edge) -> void:
 
 	# Add to scene and ensure it's drawn BEHIND the vertices
 	add_child(line)
-	move_child(line, 0)	
+	move_child(line, 0)	# Draw behind vertices
 	
 	# The ONLY place we increase the global count. After we draw successfuly.
 	num_edges += 1
@@ -86,7 +91,6 @@ func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> Vert
 	# 1. Create the Brain (Data)
 	var v: Vertex = Vertex.new(id, color, Vertex.INF, Vertex.INF, pos)
 	vertices[id] = v
-	## NO num_vertices += 1, the connections take care of it.
 
 	# 2. Create the Body (The Scene)
 	var view: UIVertexView = VERTEX_VIEW_SCENE.instantiate()
@@ -170,15 +174,34 @@ func add_edge(src_id: int, dst_id: int, weight: int = 1) -> void:
 	if src_id == dst_id or has_edge(src_id, dst_id):
 		return
 
-	var src: Vertex = vertices[src_id]
-	var dst: Vertex = vertices[dst_id]
-
-	## Connecting the brains
-	## This automatically triggers the 'edge_added' signal below.
-	src.connect_vertices(dst, weight)
-	dst.connect_vertices(src, weight)
+	var v_src = vertices.get(src_id)
+	var v_dst = vertices.get(dst_id)
 	
-		
+	if not v_src or not v_dst: return
+
+	# Determine who shouts based on ID 
+	var first = v_src if src_id < dst_id else v_dst
+	var second = v_dst if src_id < dst_id else v_src
+
+	# The lower ID always 'shouts' and creates the UI line
+	first.connect_vertices(second, weight, true) 
+	second.connect_vertices(first, weight, false)	
+
+## Adds an edge without triggering any UI signals or spawning EdgeViews.
+## Used for imposter graphs and internal calculations.
+func add_edge_silently(src_id: int, dst_id: int, weight: int = 1) -> void:
+	if src_id == dst_id or has_edge(src_id, dst_id):
+		return
+
+	var src: Vertex = vertices.get(src_id)
+	var dst: Vertex = vertices.get(dst_id)
+
+	if src and dst:
+		# We call the vertex data connection directly
+		src.connect_vertices(dst, weight, false)
+		dst.connect_vertices(src, weight, false)
+		num_edges += 1
+			
 ## ------------------------------------------------------------------------------
 ## DELETE EDGE
 ## ------------------------------------------------------------------------------
@@ -209,7 +232,6 @@ func delete_edge(src_id: int, dst_id: int) -> void:
 ## Removes all vertices and edges from the graph.
 func clear() -> void:
 	vertices.clear()
-	num_vertices = 0
 	num_edges = 0
 
 
@@ -279,3 +301,28 @@ func reset_for_algorithm() -> void:
 	# Additionally, reset all the colors to white 
 	for v in vertices.values():
 		v.color = Color.WHITE
+
+
+## Returns a new sub-graph from given vertices
+## This graph is 'Data-Only' and will not appear on screen.
+func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> UndirectedGraph:
+	var imposter_graph = UndirectedGraph.new()
+	
+	# 1. Create the Nodes (The Ghosts)
+	for v in source_vertices:
+		var imposter_v = Vertex.new(
+			v.id, v.color, v.distance, v.key, v.pos, true, v.id
+		)
+		# Manually add it to the graph to not trigger emitions.
+		imposter_graph.vertices[v.id] = imposter_v
+
+	
+	# 2. Connect the Edges (Walking the neighbors), 
+	# better for efficiency than going over all vertices in imposters
+	for v in source_vertices:
+		for neighbor in v.get_neighbor_vertices():
+			# We only connect if the neighbor is ALSO in our selection
+			# and we use ID comparison to avoid connecting the same edge twice
+			if imposter_graph.vertices.has(neighbor.id) and v.id < neighbor.id:
+				imposter_graph.add_edge_silently(v.id, neighbor.id)		
+	return imposter_graph

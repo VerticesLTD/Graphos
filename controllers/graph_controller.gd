@@ -74,7 +74,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return	
 		
 	if event is InputEventKey and event.keycode == KEY_B:
-		var imposter_graph = create_sub_graph_from_vertices(selection_buffer)
+		var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
 		
 		# Check if the graph actually has vertices to avoid a crash
 		if not imposter_graph.vertices.is_empty():
@@ -317,25 +317,3 @@ func _should_add_connection(from_id: int, to_id: int) -> bool:
 	return from_id != Globals.NOT_FOUND and \
 		   from_id != to_id and \
 		   not graph.has_edge(from_id, to_id)
-
-## Returns a new sub-graph from given vertices
-func create_sub_graph_from_vertices(vertices: Array[Vertex]) -> UndirectedGraph:
-	var imposter_graph = UndirectedGraph.new()
-	# Create vertices
-	for v in vertices:
-		var imposter_vertex = Vertex.new(
-			v.id, v.color, v.distance, v.key, v.pos, true, v.id
-		)
-		# Manually add it to the internal dictionary of the new graph
-		imposter_graph.vertices[v.id] = imposter_vertex	
-		
-	# Create edges
-	for v in imposter_graph.vertices.values():
-		var true_v_id = v.true_vertex_id
-		for u in imposter_graph.vertices.values():
-			var true_u_id = u.true_vertex_id
-			if graph.has_edge(true_v_id, true_u_id):
-				# Create edge in the imposter graph
-				imposter_graph.add_edge(true_v_id, true_u_id)
-	
-	return imposter_graph
