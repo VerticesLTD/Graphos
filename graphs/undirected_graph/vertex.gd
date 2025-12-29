@@ -14,6 +14,7 @@ signal state_changed
 signal vanished(v: Vertex)
 
 ## Emited when the vertex is created
+@warning_ignore("UNUSED_SIGNAL") # Remove when signal is used
 signal created(v: Vertex)
 
 ## Emitted when a new connection is made. 
