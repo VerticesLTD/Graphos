@@ -15,7 +15,7 @@ func execute() -> void:
 		vertex = graph.add_vertex(pos)
 	else:
 		# Redo: Re-add the exact same vertex object to the graph
-		graph.add_vertex_object(vertex)
+		graph.restore_vertex(vertex)
 		
 func undo() -> void:
 	if vertex:

@@ -10,7 +10,8 @@ signal state_changed
 
 ## Emitted when this edge is removed from the graph.
 ## The EdgeView hears this and calls queue_free().
-signal vanished
+@warning_ignore("unused_signal")
+signal vanished(v: Vertex)
 
 ## Source vertex of the edge.
 var src: Vertex

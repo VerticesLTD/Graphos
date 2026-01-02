@@ -20,6 +20,7 @@ var vertex_data: Vertex
 ## Called only once in the start, connects signals, and draws once.
 func _ready() -> void:
 	if vertex_data:
+		self.name = str(vertex_data.id)
 		# 1. Listen for vertex updates (like if the nodes move)
 		vertex_data.state_changed.connect(refresh)
 

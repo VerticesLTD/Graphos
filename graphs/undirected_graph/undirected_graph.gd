@@ -31,15 +31,6 @@ var _next_vertex_id: int = 0
 ## ------------------------------------------------------------------------------
 ## SIGNAL REACTION, edge/vertex add/remove
 ## ------------------------------------------------------------------------------
-
-func _on_vertex_added(_v: Vertex) -> void:
-	pass
-
-
-## Function thats called when a vertex is removed.
-## @param v The vertex to remove
-func _on_vertex_vanished(_v: Vertex) -> void:
-	pass
 	
 	
 ## This runs whenever a vertex emits 'edge_added'
@@ -79,62 +70,32 @@ func _on_edge_removed(edge_to_remove: Edge) -> void:
 ## ADD VERTEX
 ## ------------------------------------------------------------------------------
 
-## Adds a vertex to the graph if it does not already exist.
-## Connects the scenes and data connected to the vertex.
-## Returns the vertex itself.
-## @param pos    The position to create the vertex in.
-## @param color     The color to create the vertex with.
+## Public: Create brand new vertex
 func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> Vertex:
-	var id = _next_vertex_id # Get the next available ID internally
-	_next_vertex_id += 1 # increment id
+	var id = _next_vertex_id
+	_next_vertex_id += 1
 
-	# 1. Create the Brain (Data)
-	var v: Vertex = Vertex.new(id, color, Vertex.INF, Vertex.INF, pos)
-	vertices[id] = v
-
-	# 2. Create the Body (The Scene)
-	var view: UIVertexView = VERTEX_VIEW_SCENE.instantiate()
-
-	# 3. THE HANDSHAKE, link Vertex to VertexView
-	view.vertex_data = v 
-
-	# 4. Show it on screen
-	add_child(view)
+	var v = Vertex.new(id, color, Vertex.INF, Vertex.INF, pos)
 	
-	# 5. Connect
-	v.created.connect(_on_vertex_added)
-	v.vanished.connect(_on_vertex_vanished)
+	# Initial connections happen only here, not in redo/undo
 	v.edge_added.connect(_on_edge_added)
 	v.edge_removed.connect(_on_edge_removed)
 	
-	# Fire the signal for a new vertex
-	v.created.emit(v) 
+	_register_and_visualize(v)
 	return v
 
+## Public: Restore from Undo/Redo
+func restore_vertex(v: Vertex) -> void:
+	if not v or vertices.has(v.id): return
+	_register_and_visualize(v)
 
-## Re-adds an existing vertex object to the graph. 
-## Used primarily by the Command system for Redo operations.
-## The order here matters! first restore to the graph, then create the view, then reconnect.
-func add_vertex_object(v: Vertex) -> void:
-	if not v or vertices.has(v.id):
-		return
-
-	# 1. Restore to data structure
+## Private Helper: handles VertexView and vertices dictionary
+func _register_and_visualize(v: Vertex) -> void:
 	vertices[v.id] = v
-
-	# 2. Recreate the visual body
+	
 	var view: UIVertexView = VERTEX_VIEW_SCENE.instantiate()
 	view.vertex_data = v 
 	add_child(view)
-	
-	# 3. Re-connect the signals FIRST
-	v.created.connect(_on_vertex_added)
-	v.vanished.connect(_on_vertex_vanished)
-	v.edge_added.connect(_on_edge_added)
-	v.edge_removed.connect(_on_edge_removed)
-
-	# 4. Emit the creation signal
-	v.created.emit(v)
 	
 	
 ## ------------------------------------------------------------------------------

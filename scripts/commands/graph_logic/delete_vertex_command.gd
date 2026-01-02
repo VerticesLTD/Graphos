@@ -28,7 +28,7 @@ func execute() -> void:
 
 func undo() -> void:
 	# 1. Restore the vertex itself
-	graph.add_vertex_object(vertex)
+	graph.restore_vertex(vertex)
 	
 	# 2. Restore all edges that were captured during _init
 	for e_cmd in edge_commands:

@@ -13,9 +13,6 @@ signal state_changed
 @warning_ignore("UNUSED_SIGNAL") # Remove when signal is used
 signal vanished(v: Vertex)
 
-## Emited when the vertex is created
-@warning_ignore("UNUSED_SIGNAL") # Remove when signal is used
-signal created(v: Vertex)
 
 ## Emitted when a new connection is made. 
 ## The Graph hears this and spawns a new Line (EdgeView).
@@ -108,7 +105,7 @@ var z_idx :int = 0:
 ## Adds an outgoing edge from this vertex to the destination vertex.
 ## If an edge already exists, no modification is performed.
 ## @param dest   Destination vertex.
-## @param weight Weight assigned to the edge.
+## @param weight Weight assigned to the edge-;/ .
 func connect_vertices(dest: Vertex, weight: int = 1, shout: bool = true) -> void:
 	## Check if the edge is already in the graph
 	var curr: Edge = edges
