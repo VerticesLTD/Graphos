@@ -100,7 +100,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	
 	# 10. Copy
 	if event.is_action_pressed("copy"):
-		print("Inside copy pressed. Buffer size: ", selection_buffer.size()) # Check the count here
 		if selection_buffer:
 			# Clean up old clipboard memory
 			if Globals.clipboard_graph:
@@ -117,6 +116,22 @@ func _unhandled_input(event: InputEvent) -> void:
 			
 			var paste_cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, self)
 			CommandManager.execute(paste_cmd)
+			
+	# 11. Paste
+	if event.is_action_pressed("cut"):
+		if selection_buffer:
+			# Clean up old clipboard memory
+			if Globals.clipboard_graph:
+				Globals.clipboard_graph.queue_free()
+			
+			# Create the snapshot
+			Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
+			print("Selection copied to clipboard.")		
+			
+			# Delete the selected sub-graph	
+			CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
+
+			
 
 
 ## ------------------------------------------------------------------------------

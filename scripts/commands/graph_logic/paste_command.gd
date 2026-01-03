@@ -12,7 +12,7 @@ func _init(g: UndirectedGraph, _clipboard: UndirectedGraph, _mouse_global_pos: V
 	clipboard_ref = _clipboard
 	graph_controller = _ctrl
 	
-	# 1. Map: { Old_ID : New_ID }
+	# Map: { Old_ID : New_ID }
 	var id_map = {}
 	
 	
@@ -38,7 +38,7 @@ func _init(g: UndirectedGraph, _clipboard: UndirectedGraph, _mouse_global_pos: V
 		
 		id_map[old_v.id] = v_cmd.vertex.id
 		
-	# Create add edges commands
+	# 3. Create Edges Commands
 	for old_v in clipboard_ref.vertices.values():
 		for neighbor in old_v.get_neighbor_vertices():
 			# Avoid double-adding edges (only process if ID is smaller)
