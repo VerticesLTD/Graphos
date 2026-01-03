@@ -87,7 +87,16 @@ func _on_hold_end():
 	Globals.is_mass_select = false
 
 func _handle_keyboard(event: InputEventKey) -> void:
-	GLogger.debug("Keyboard Clicked.",LOG_TAG)
+	# We only want to switch states if it's a "clean" key press (no Ctrl, Shift, or Alt)
+	var is_modified = event.shift_pressed or event.alt_pressed or event.is_command_or_control_pressed()
+	
+	GLogger.debug("Keyboard Clicked.", LOG_TAG)
+	
+	# If any modifier is held, stop here so we don't switch states 
+	# while trying to Copy/Paste/Undo etc.
+	if is_modified:
+		return
+	
 	match event.keycode:
 		KEY_C:
 			Globals.current_state = Globals.State.CREATE
