@@ -4,18 +4,19 @@ extends GraphAlgorithm
 
 ## Initialize the graph.
 ## @param gtaph    The graph to run the algorithm on.
-func _init(g: UndirectedGraph):
-	# This passes graph up to GraphAlgorithm's _init
-	super(g) 
-
+func _init(_imposter_graph: UndirectedGraph, _real_graph: UndirectedGraph):
+	super(_imposter_graph, _real_graph)
+	
+	
 ## run function for the algorithm
 ## @param _start_vertex    The vertex the algorithm starts from
-func run(_start_vertex: Vertex) -> Array[Action]:
+func run(_start_vertex: Vertex) -> Array[Command]:
 	# Step 1: Initialize the veritces state
-	for v in graph.vertices.values():
-		change_and_log_vertex_color(v, COLOR_NOT_DISCOVERED)
+	for v in real_graph.vertices.values():
+		v.color = COLOR_NOT_DISCOVERED # NOT LOGGING so we start AFTER initialization
 		v.parent = null
 		
+				
 	change_and_log_vertex_color(_start_vertex, COLOR_VISITING)
 	# OPTIONAL - save the state as a critical point, so we could skip forward to it!
 	
@@ -33,7 +34,7 @@ func run(_start_vertex: Vertex) -> Array[Action]:
 			
 			if v.color == COLOR_NOT_DISCOVERED:
 				# 1. Log and change the edge color (The path)
-				change_and_log_edge_color(edge, COLOR_VISITING)
+				change_and_log_edge_color(edge, COLOR_EDGE_PATH)
 
 				# 2. Log and change the VERTEX color (The destination)
 				change_and_log_vertex_color(v, COLOR_VISITING)
@@ -41,4 +42,6 @@ func run(_start_vertex: Vertex) -> Array[Action]:
 				# 3. Update metadata and queue
 				v.parent = u
 				Q.push_back(v)
+			
+		change_and_log_vertex_color(u, COLOR_FINISHED)
 	return timeline

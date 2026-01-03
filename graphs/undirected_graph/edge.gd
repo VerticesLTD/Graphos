@@ -10,8 +10,8 @@ signal state_changed
 
 ## Emitted when this edge is removed from the graph.
 ## The EdgeView hears this and calls queue_free().
-@warning_ignore("UNUSED_SIGNAL")
-signal vanished
+@warning_ignore("unused_signal")
+signal vanished(v: Vertex)
 
 ## Source vertex of the edge.
 var src: Vertex
@@ -22,6 +22,9 @@ var dst: Vertex
 ## Pointer to the next edge in the adjacency list.
 ## May be null if this is the last edge.
 var next: Edge = null
+
+## Lets the edge know if its an imposter to not emit drawing signals.
+var is_imposter: bool = false
 
 
 ## Constructs a new Edge.
@@ -42,16 +45,18 @@ func _init(
 	self.dst = _dst
 	self.next = _next
 	self.color = _color
-
-	# The Edge spyies on its vertices to know where to move(only if they exist)
+	
+	# If the vertex is an imposter, this edge is an imposter too.
 	if src:
-		src.state_changed.connect(_on_vertex_changed)
-	if dst:
-		dst.state_changed.connect(_on_vertex_changed)
+		self.is_imposter = src.is_imposter
+
+	# Only connect signals if we are REAL. 
+	# This prevents dozens of useless connections in the imposter graph.
+	if not is_imposter:
+		if src: src.state_changed.connect(_on_vertex_changed)
+		if dst: dst.state_changed.connect(_on_vertex_changed)
 
 ####################### SETTER FUNCTIONS & REACTION LOGIC #######################
-
-## Long explanation on why and how use setters in Vertex class
 
 var weight: int = 1:
 	set(value):
@@ -80,12 +85,15 @@ func get_other_vertex(v: Vertex) -> Vertex:
 		return src
 
 ## This is called right before the object is removed from memory.
-## Disconnects edge from being callable(Object doesnt do it alone but its object is lighter and faster).
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
-		# Use a Callable to ensure the reference is stable
+		# Callable returns a unique pointer to the function _on_vertex_changed
+		# This is used to check if were deleting the right signals.
 		var cb = Callable(self, "_on_vertex_changed")
 
+		# Only dissconnect if:
+		# The instance hasnt been deleted AND
+		# The edge is REALLY connected with state_changed to src and dest.
 		if is_instance_valid(src) and src.state_changed.is_connected(cb):
 			src.state_changed.disconnect(cb)
 		if is_instance_valid(dst) and dst.state_changed.is_connected(cb):

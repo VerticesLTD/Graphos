@@ -8,16 +8,19 @@ const VERTEX_BELOW = 1
 ## Allows the controller to control the graph
 @export var graph: UndirectedGraph
 
-## Vars to handle vertex being dragged.
-var dragged_vertex_id: int = Globals.NOT_FOUND
-var is_dragging: bool = false
-
 ## The selection buffer to link multiple nodes with an edge
 var link_buffer: Array[int] = []
 
 ## Holds nodes selected by user mass select
 var selection_buffer: Array[Vertex] = []
 
+## A class which holds a player with all the algorithm commands.
+var player: AlgorithmPlayer
+
+## Vars to handle dragging
+## Stores { Vertex: Vector2_Initial_Pos } for whatever is being dragged
+var drag_snapshot: Dictionary = {} 
+var is_dragging: bool = false
 
 ## Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -61,6 +64,35 @@ func _unhandled_input(event: InputEvent) -> void:
 			# If they let go of Ctrl, wipe the selection
 			_clear_link_context()
 			return
+			
+	# 5. Handle Undo
+	if event.is_action_pressed("undo"):
+		CommandManager.undo()
+		return
+		
+	# 6. Handle Redo
+	if event.is_action_pressed("redo"):
+		CommandManager.redo()
+		return	
+		
+		
+	# 7. Run algorithm
+	if event is InputEventKey and event.keycode == KEY_B:
+		var mouse_pos = graph.get_global_mouse_position()
+		var start_v_id = graph.get_vertex_id_at(mouse_pos)
+		if start_v_id != Globals.NOT_FOUND:
+			var start_v = graph.get_vertex(start_v_id)
+			execute_algorithm(BFS, start_v)
+			player.step_forward() # Do one step to give visual fidback for the start
+		
+	# 8. Algorithm Playing
+	if player:
+		if event.is_action_pressed("ui_right"): # right key
+			player.step_forward()
+			
+		if event.is_action_pressed("ui_left"): # left key
+			player.step_backward()
+			
 
 
 ## ------------------------------------------------------------------------------
@@ -80,51 +112,67 @@ func _handle_mouse_movement(event: InputEventMouseMotion):
 		
 		
 func _handle_hover(_mouse_global_pos: Vector2):
-	# Idea: make the vertex glow
-	pass
+	var id = graph.get_vertex_id_at(_mouse_global_pos)
+	if id != Globals.NOT_FOUND:
+		# Change cursor to a 'Pointing Hand' when over a node
+		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
+	else:
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
 func _handle_dragging(event: InputEventMouseMotion):
-	# Dragging single node:
-	if selection_buffer.is_empty():
-		# 1. Get the actual vertex using the ID
-		var v = graph.get_vertex(dragged_vertex_id)
-		
-		
-		# 2. Update the 'pos' property. 
-		# THE MAGIC: Because we used a 'set(value)' in the Vertex class, 
-		# this will automatically tell the view to move!
-		if v:
-			v.pos = event.global_position
-
-			# Setting the view on top:
-			for view in graph.get_children(false):
-				if view is UIVertexView and view.vertex_data.id == v.id:
-					graph.move_child(view,graph.get_children().size()-1)
-			
-	# Move multiple nodes by mose delta
-	else:
-		for v in selection_buffer:
-			v.pos += event.relative
+	# We move everything in the snapshot by the mouse delta (relative)
+	for v in drag_snapshot.keys():
+		v.pos += event.relative
+		v.z_idx = VERTEX_ON_TOP
 	
 
 ## Starts dragging a node
 func _start_dragging(id: int) -> void:
-	dragged_vertex_id = id
 	is_dragging = true
+	drag_snapshot.clear()
+	
+	var clicked_v = graph.get_vertex(id)
+	if not clicked_v: return
 
-## If mouse release and ctrl released, stop dragging.
+	# If clicking something already in selection, drag the whole group
+	if selection_buffer.has(clicked_v):
+		for v in selection_buffer:
+			drag_snapshot[v] = v.pos
+	# Otherwise, just drag the single clicked vertex
+	else:
+		drag_snapshot[clicked_v] = clicked_v.pos
+		
+
 func _stop_dragging() -> void:
-	is_dragging = false
-	if dragged_vertex_id != Globals.NOT_FOUND:
-		graph.get_vertex(dragged_vertex_id).z_idx = VERTEX_BELOW
-		dragged_vertex_id = Globals.NOT_FOUND
+	if not is_dragging: return
+	
+	# Check if anything actually moved compared to the snapshot
+	var has_moved = false
+	for v in drag_snapshot.keys():
+		if v.pos != drag_snapshot[v]:
+			has_moved = true
+			break
+	
+	if has_moved:
+		# One command to rule them all!
+		var cmd = MoveSelectionCommand.new(drag_snapshot)
+		CommandManager.push_to_stack(cmd)
 
+	# Visual cleanup
+	for v in drag_snapshot.keys():
+		v.z_idx = VERTEX_BELOW
+
+	is_dragging = false
+	drag_snapshot.clear()
+	
+	
 ## ------------------------------------------------------------------------------
 ## LEFT_CLICKS & LEFT_RELEASES 
 ## ------------------------------------------------------------------------------
+
 func _handle_left_click(mouse_global_pos: Vector2):
 	# Get the vertex in the position of the mouse(or not found)
-	var id = graph.get_vertex_collision(mouse_global_pos)
+	var id = graph.get_vertex_id_at(mouse_global_pos)
 	var is_ctrl = Input.is_key_pressed(KEY_CTRL)
 
 	# 1. CLICKED VERTEX  
@@ -135,8 +183,8 @@ func _handle_left_click(mouse_global_pos: Vector2):
 			_start_dragging(id)
 		return
 		
+	# 2. CLICKED EMPTY SPACE INTERACTION WHILE VERTEX STATE
 	if  Globals.current_state == Globals.State.CREATE:
-		# 2. CLICKED EMPTY SPACE INTERACTION WHILE VERTEX STATE
 		if is_ctrl:
 			_handle_path_connection(mouse_global_pos) # Create & Connect
 
@@ -152,7 +200,6 @@ func _handle_left_release():
 	_stop_dragging()
 
 		
-
 ## ------------------------------------------------------------------------------
 ## RIGHT_CLICKS & RIGHT_RELEASES 
 ## ------------------------------------------------------------------------------
@@ -167,73 +214,47 @@ func _handle_right_release():
 ## HELPERS / STATE MANAGEMENT
 ## ------------------------------------------------------------------------------
 
-## Handles vertex placement. Creates a vertex at posistion.
+## Creates and performs an add vertex command.
 func _handle_vertex_placement(pos:Vector2) -> void:
-	graph.add_vertex(pos, Color.WHITE)
+	# Create and execute the command
+	CommandManager.execute(AddVertexCommand.new(graph, pos))
+
+
 
 ## Handles connecting a few vertices in a row.
 ## If user clicked on a vertex, it's ID is remembered.
 ## When 2 different vertices have been clicked, add an edge between them.
 func _handle_path_connection(pos: Vector2) -> void:
-	var id = graph.get_vertex_collision(pos)
-
-	# 1. EMPTY SPACE (Creation)
+	var id = graph.get_vertex_id_at(pos)
+	var last_id = link_buffer.back() if not link_buffer.is_empty() else Globals.NOT_FOUND
+	
+	# 1. EMPTY SPACE: Create
 	if id == Globals.NOT_FOUND:
-		_process_path_creation(pos)
-		return
+		var step = PathStepCommand.new(graph, pos, last_id)
+		CommandManager.execute(step)
+		link_buffer.append(step.v_cmd.vertex.id)
 
-	# 2. LAST VERTEX (Undo)
-	if not link_buffer.is_empty() and link_buffer.back() == id:
-		_process_path_undo(id)
-		return
-
-	# 3. EXISTING VERTEX (Connection)
-	_process_path_extension(id)
-
-## Create a vertex where the mouse is, and set it to the head.
-func _process_path_creation(pos: Vector2) -> void:
-	# Create new vertex as the new head
-	var new_id = graph.add_vertex(pos, Color.YELLOW)
-	
-	# Connect if possible
-	if not link_buffer.is_empty():
-		graph.add_edge(link_buffer.back(), new_id)
-
-	link_buffer.append(new_id)
-
-	_refresh_link_buffer_colors()
-
-
-## Undo the last operation, remove the previous edge and change the head.
-func _process_path_undo(id: int) -> void:
-	var victim = graph.get_vertex(id)
-	
-	# Disconnect from previous
-	if link_buffer.size() >= 2:
-		var prev_id = link_buffer[link_buffer.size() - 2]
-		graph.delete_edge(prev_id, id)
+	# 2. LAST VERTEX: Undo
+	elif not link_buffer.is_empty() and link_buffer.back() == id:
+		var v_to_undo = graph.get_vertex(id)
+		if v_to_undo:
+			# Find the previous ID in the buffer for the connection
+			var prev_id = link_buffer[link_buffer.size() - 2] if link_buffer.size() >= 2 else Globals.NOT_FOUND
 			
-	# Remove the vertex from the link_buffer
-	link_buffer.pop_back()
+			# Execute the Macro
+			var macro = PathUndoCommand.new(graph, v_to_undo, prev_id)
+			CommandManager.execute(macro)
+			
+			link_buffer.pop_back() # Update buffer
 
-	_refresh_link_buffer_colors()
-
-	# Delete up or reset the undone vertex.
-	if victim and victim.degree == 0:
-		graph.delete_vertex(id)
+	# 3. EXISTING VERTEX: connect
 	else:
-		if victim: victim.color = Color.WHITE
-		
-## Chose an existing vertex, connect.
-func _process_path_extension(id: int) -> void:
-	# Connect
-	if not link_buffer.is_empty():
-		graph.add_edge(link_buffer.back(), id)
-
-	# Add the clicked vertex as an head
-	link_buffer.append(id)
-
+		if last_id != Globals.NOT_FOUND and _should_add_connection(last_id, id):
+			CommandManager.execute(AddEdgeCommand.new(graph, last_id, id))
+		link_buffer.append(id)
+	
 	_refresh_link_buffer_colors()
+
 
 ## Clears the seletion buffer for linking nodes.
 func _clear_link_context() -> void:
@@ -261,21 +282,17 @@ func _populate_selection_buffer() -> void:
 			# Setting highlight color
 			v.color = Color.PURPLE
 
+			# Setting drawing on top
+			v.z_idx = VERTEX_ON_TOP
+
 			selection_buffer.append(v)
-
-			# Set view to top of tree for draw order
-			for view in graph.get_children(false):
-				if view is UIVertexView and view.vertex_data.id == v.id:
-					graph.move_child(view,graph.get_children().size() - 1)
-
-
-
 
 ## Clears selection buffer.
 func _clear_selection_buffer() -> void:
 	# Resetting color
 	for v in selection_buffer:
 		v.color = Color.WHITE
+		v.z_idx = VERTEX_BELOW
 
 	selection_buffer.clear()
 
@@ -302,4 +319,41 @@ func _set_vertex_color(id, color: Color) -> void:
 
 ## Returns true if position has a vertex.
 func is_vertex_collision(pos: Vector2) -> bool:
-	return graph.get_vertex_collision(pos) != Globals.NOT_FOUND
+	return graph.get_vertex_id_at(pos) != Globals.NOT_FOUND
+
+## Checks if you can add a connection between 2 vertices
+func _should_add_connection(from_id: int, to_id: int) -> bool:
+	return from_id != Globals.NOT_FOUND and \
+		   from_id != to_id and \
+		   not graph.has_edge(from_id, to_id)
+
+## ------------------------------------------------------------------------------
+## ALGORITHM PLAYER
+## ------------------------------------------------------------------------------
+
+## This function can now run BFS, DFS, Dijkstra, or any future algorithm.
+## @param algo_class: The Script/Class of the algorithm (e.g., BFS)
+## @param start_node: The real vertex where we want to begin
+func execute_algorithm(algo_class: GDScript, start_node: Vertex) -> void:
+	# 1. Create the Imposter Graph (The Sandbox)
+	# Pass the selection buffer to run the algo on the sub-graph
+	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
+	
+	# 2. Instantiate the specific algorithm generically
+	# Every child of GraphAlgorithm uses the same _init(_imposter, _real)
+	var algo_instance: GraphAlgorithm = algo_class.new(imposter_graph, graph)
+	
+	# 3. Find the starting vertex's equivalent in the imposter graph
+	var imposter_start_node = imposter_graph.get_vertex(start_node.id)
+	
+	# 4. RUN the algorithm to generate the timeline
+	var timeline = algo_instance.run(imposter_start_node)
+	
+	# 5. Initialize the playback
+	player = AlgorithmPlayer.new(timeline)
+	
+	# 6. Cleanup the imposter graph
+	# The timeline already has the Commands targeting the REAL graph
+	imposter_graph.queue_free()
+	
+	print("Algorithm logic finished. Timeline recorded with %d steps." % timeline.size())
