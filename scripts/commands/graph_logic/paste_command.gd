@@ -15,7 +15,6 @@ func _init(g: UndirectedGraph, _clipboard: UndirectedGraph, _mouse_global_pos: V
 	# Map: { Old_ID : New_ID }
 	var id_map = {}
 	
-	
 	# --- Step 1: Find the box ---
 	var bounds = Rect2(clipboard_ref.vertices.values()[0].pos, Vector2.ZERO)
 	for v in clipboard_ref.vertices.values():
@@ -27,8 +26,6 @@ func _init(g: UndirectedGraph, _clipboard: UndirectedGraph, _mouse_global_pos: V
 	for old_v in clipboard_ref.vertices.values():	
 		# get the vertex offset relative to the bounds center
 		var offset = old_v.pos - center
-		
-		
 		var new_pos = _mouse_global_pos + offset
 		var v_cmd = AddVertexCommand.new(graph, new_pos)
 		
@@ -51,7 +48,9 @@ func _init(g: UndirectedGraph, _clipboard: UndirectedGraph, _mouse_global_pos: V
 func execute() -> void:
 	for v_cmd in created_vertex_cmds:
 		# We use restore here because the vertex objects already exist
+		# graph.restore_vertex handles the 'already exists' check internally.
 		graph.restore_vertex(v_cmd.vertex)	
+		
 		
 	for e_cmd in created_edge_cmds:
 		e_cmd.execute()
@@ -65,7 +64,7 @@ func execute() -> void:
 	# Trigger the purple highlights and z-index update
 	graph_controller.select_vertices(new_vertices)		
 
-		
+	
 func undo() -> void:
 	# Delete in reverse: Edges first, then Vertices
 	for e_cmd in created_edge_cmds:
