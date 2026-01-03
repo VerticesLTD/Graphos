@@ -98,8 +98,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		if selection_buffer:
 			CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
 	
-
+	# 10. Copy
+	if event.is_action_pressed("copy"):
+		print("Inside copy pressed. Buffer size: ", selection_buffer.size()) # Check the count here
+		if selection_buffer:
+			# Clean up old clipboard memory
+			if Globals.clipboard_graph:
+				Globals.clipboard_graph.queue_free()
 			
+			# Create the snapshot
+			Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
+			print("Selection copied to clipboard.")			
+	
+	# 11. Paste
+	if event.is_action_pressed("paste"):
+		if Globals.clipboard_graph:
+			var mouse_pos = graph.get_global_mouse_position()
+			
+			var paste_cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, self)
+			CommandManager.execute(paste_cmd)
 
 
 ## ------------------------------------------------------------------------------
@@ -215,7 +232,7 @@ func _handle_right_click(_mouse_global_pos: Vector2):
 	
 func _handle_right_release():
 	pass
-
+	
 
 ## ------------------------------------------------------------------------------
 ## HELPERS / STATE MANAGEMENT
@@ -293,6 +310,19 @@ func _populate_selection_buffer() -> void:
 			v.z_idx = VERTEX_ON_TOP
 
 			selection_buffer.append(v)
+
+## Manually sets the selection buffer to a specific set of vertices.
+## Useful for PasteCommand.
+func select_vertices(vertices_to_select: Array[Vertex]) -> void:
+	# 1. Start fresh
+	_clear_selection_buffer()
+	
+	# 2. Add and highlight each vertex
+	for v in vertices_to_select:
+		v.color = Color.PURPLE
+		v.z_idx = VERTEX_ON_TOP
+		selection_buffer.append(v)
+
 
 ## Clears selection buffer.
 func _clear_selection_buffer() -> void:

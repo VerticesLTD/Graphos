@@ -49,8 +49,13 @@ var selection_rectangle: Rect2
 # ------------
 # Vertex globals
 # ------------
-var vertex_id = 0
 const VERTEX_RADIUS = 20.0
+
+# ------------
+# Clipboard
+# ------------
+## Stores induced graph for copy paste
+var clipboard_graph: UndirectedGraph
 
 # ------------
 # IDENTIFIRES
