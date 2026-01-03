@@ -92,6 +92,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			
 		if event.is_action_pressed("ui_left"): # left key
 			player.step_backward()
+		
+	# 9. Delete selection
+	if event.is_action_pressed("delete"):
+		if selection_buffer:
+			CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
+	
+
 			
 
 
