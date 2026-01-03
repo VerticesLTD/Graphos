@@ -34,22 +34,20 @@ func _build_menu_recursive(menu: PopupMenu, menu_def: Array) -> void:
 		var value = item[1]
 		
 		if value is Command:
-			var idx = menu.item_count  #we take the amount of items in the menu to be idx
-			menu.add_item(label, idx)  #so the menu is 0 based
-			menu.set_item_metadata(idx, value) #i.e [[0,a command],[1,different command]...]
+			var idx = menu.item_count # we take the amount of items in the menu to be idx
+			menu.add_item(label, idx) # so the menu is 0 based
+			menu.set_item_metadata(idx, value) # i.e [[0,a command],[1,different command]...]
 			
 		elif value is Array:
-			var sub := PopupMenu.new()  #the := operator not only assign things, but it also assign their type and make it static
+			var sub := PopupMenu.new() # the := operator not only assign things, but it also assign their type and make it static
 			add_child(sub)
-			var idx = menu.item_count
-			menu.add_submenu_node_item(label, sub) #godot handles id automatically
-			_build_menu_recursive(sub, value) #how convenient
+			menu.add_submenu_node_item(label, sub) # godot handles id automatically
+			_build_menu_recursive(sub, value) # how convenient
 			
-			sub.mouse_exited.connect(func(): sub.hide()) #who knew gdscript has lambda functions
+			sub.mouse_exited.connect(func(): sub.hide()) # who knew gdscript has lambda functions
 			
 func _on_item_pressed(index: int) -> void:
 	var cmd = MainMenu.get_item_metadata(index)
 	if cmd is Command:
 		#i'm executing the command, i also need to take care of the timeline here
-		cmd.execute() #need to use command manager here!!!!!!!! i need to figure out how to grab the right arguments to pass to this function
-		
+		cmd.execute() # need to use command manager here!!!!!!!! i need to figure out how to grab the right arguments to pass to this function
