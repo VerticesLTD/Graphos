@@ -300,7 +300,7 @@ func _clear_link_context() -> void:
 	# 1. Clean the visual feedback
 	for id in link_buffer:
 		var v = graph.get_vertex(id)
-		if v: v.color = Color.WHITE
+		if v: v.color = Globals.VERTEX_COLOR
 	
 	# 2. Empty the logic container
 	link_buffer.clear()
@@ -343,7 +343,7 @@ func select_vertices(vertices_to_select: Array[Vertex]) -> void:
 func _clear_selection_buffer() -> void:
 	# Resetting color
 	for v in selection_buffer:
-		v.color = Color.WHITE
+		v.color = Globals.VERTEX_COLOR
 		v.z_idx = VERTEX_BELOW
 
 	selection_buffer.clear()

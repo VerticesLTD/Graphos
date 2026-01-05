@@ -50,7 +50,7 @@ var is_imposter: bool = false
 ## @param _is_imposter		Is the vertex real or only data.
 func _init(
 	_id: int,
-	_color: Color = Color.WHITE,
+	_color: Color = Globals.VERTEX_COLOR, 
 	_distance: float = INF,
 	_key: float = INF,
 	_pos: Vector2 = Vector2.ZERO,
@@ -65,11 +65,11 @@ func _init(
 
 ####################### SETTER FUNCTIONS & REACTION LOGIC #######################
 
-var color: Color = Color.WHITE: # defult color to our var is white,
-	set(value): # called every time we change the color
-		color = value # Change the color
+var color: Color = Globals.VERTEX_COLOR:
+	set(value):
+		color = value
 		if not is_imposter:
-			state_changed.emit() # emit the signal
+			state_changed.emit()
 
 var distance: float = INF:
 	set(value):

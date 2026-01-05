@@ -7,9 +7,6 @@ class_name UIEdgeView
 ## It draws a line between the source and destination provided by the Brain.
 ## ==============================================================================
 
-## The line's thickness
-const WIDTH: float = 4.0
-
 ## This is the slot for our Brain. The Graph Manager fills this when we are born.
 var edge_data: Edge 
 
@@ -50,4 +47,4 @@ func _draw() -> void:
 
 	# DRAW THE LINE
 	# We pull the positions directly from the Brains of the two connected vertices.
-	draw_line(edge_data.src.pos, edge_data.dst.pos, edge_data.color, WIDTH)
+	draw_line(edge_data.src.pos, edge_data.dst.pos, edge_data.color, Globals.EDGE_WIDTH)
