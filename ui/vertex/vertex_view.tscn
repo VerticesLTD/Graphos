@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://cxt6f2vgtos0c"]
+[gd_scene load_steps=3 format=3 uid="uid://cxt6f2vgtos0c"]
 
 [ext_resource type="Script" uid="uid://clxumiinhlrwt" path="res://ui/vertex/vertex_view.gd" id="1_qqj3q"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_uqwdd"]
 
 [node name="VertexView" type="Node2D"]
 script = ExtResource("1_qqj3q")
@@ -20,3 +22,12 @@ grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="MouseDetectionArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MouseDetectionArea"]
+shape = SubResource("CircleShape2D_uqwdd")
+debug_color = Color(0.642425, 0.38703382, 0.89807576, 0.41960785)
+
+[connection signal="mouse_entered" from="MouseDetectionArea" to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MouseDetectionArea" to="." method="_on_mouse_exited"]
