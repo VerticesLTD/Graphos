@@ -19,6 +19,18 @@ expand_margin_bottom = 15.0
 [node name="Main" type="Node2D"]
 script = ExtResource("1_0xm2m")
 
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="ColorRect" type="ColorRect" parent="Background"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0.039215688, 0.06666667, 0.15686275, 1)
+
 [node name="UndirectedGraph" type="Node2D" parent="."]
 script = ExtResource("1_0xm2m")
 metadata/_custom_type_script = "uid://c2yhxp7188k8k"
@@ -28,17 +40,7 @@ script = ExtResource("2_0xm2m")
 graph = NodePath("../UndirectedGraph")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
-layer = -1
 script = ExtResource("3_1bvp3")
-
-[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-color = Color(0.039215688, 0.06666667, 0.15686275, 1)
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer"]
 anchors_preset = 5
