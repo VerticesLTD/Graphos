@@ -1,21 +1,22 @@
-class_name GLogger
+@tool
+extends Node
 
 ## Enable when debugging for info output
-static var enabled := true
+var enabled := true
 
-static var log_level = "DEBUG"
+var log_level = "DEBUG"
 
 ## Tags to filter by. If filter is none empty, only logs
 ## with tags inside the filter list will be printed
-static var filters:Array[String] = []
+var filters:Array[String] = []
 
-static func add_filter(tag):
+func add_filter(tag):
 	filters.append(tag)
 
-static func clear_filters():
+func clear_filters():
 	filters.clear()
 
-static func debug(msg, tag=""):
+func debug(msg, tag=""):
 	if not log_level == "DEBUG":
 		return
 
@@ -25,7 +26,7 @@ static func debug(msg, tag=""):
 	if enabled:
 		print_rich("[color=orange][DEBUG][/color]","[color=cyan][",tag,"][/color] - ",msg)
 
-static func info(msg, tag=""):
+func info(msg, tag=""):
 	if filters.size() > 0 and  tag not in filters:
 		return
 		
