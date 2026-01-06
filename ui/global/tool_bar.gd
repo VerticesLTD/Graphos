@@ -14,6 +14,9 @@ func _on_create_pressed() -> void:
 	Globals.current_state = Globals.State.CREATE
 
 
+# THESE BUTTONS DO NOT EXIST
+# When the app has meaning for these states, they should be added.
+
 func _on_algorithm_pressed() -> void:
 	Globals.current_state = Globals.State.ALG
 

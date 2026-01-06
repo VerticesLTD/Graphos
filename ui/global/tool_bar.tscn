@@ -1,7 +1,12 @@
-[gd_scene load_steps=4 format=3 uid="uid://b78ey3notmd7g"]
+[gd_scene load_steps=9 format=3 uid="uid://b78ey3notmd7g"]
 
 [ext_resource type="Script" uid="uid://dcl6ckcas6der" path="res://ui/global/tool_bar.gd" id="1_gdu6t"]
 [ext_resource type="Script" uid="uid://css85v57pq6ys" path="res://ui/global/button_highlights.gd" id="1_uiivm"]
+[ext_resource type="Texture2D" uid="uid://dnyrl4sa00ffg" path="res://assets/icons/lock-alt-svgrepo-com.svg" id="3_l8ge4"]
+[ext_resource type="StyleBox" uid="uid://npixnrumei6q" path="res://ui/styles/toolbar/button_normal.tres" id="3_lpcgc"]
+[ext_resource type="StyleBox" uid="uid://edc2pra87k3x" path="res://ui/styles/toolbar/button_hover.tres" id="4_u1pd4"]
+[ext_resource type="Texture2D" uid="uid://v5eliv4lx04j" path="res://assets/icons/cursor-alt-svgrepo-com.svg" id="4_vgevf"]
+[ext_resource type="Texture2D" uid="uid://cmgktymkkl21e" path="res://assets/icons/create_tool_icon.svg" id="5_2j54p"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1bvp3"]
 bg_color = Color(0.019521689, 0.2182971, 0.34787467, 0.22352941)
@@ -35,32 +40,99 @@ theme_override_constants/separation = 25
 script = ExtResource("1_uiivm")
 
 [node name="LockTool" type="Button" parent="PanelContainer/HBoxContainer"]
+texture_filter = 4
+custom_minimum_size = Vector2(70, 70)
 layout_mode = 2
 focus_mode = 0
-text = "LOCK"
+theme_override_styles/normal = ExtResource("3_lpcgc")
+theme_override_styles/pressed = ExtResource("4_u1pd4")
+theme_override_styles/hover = ExtResource("4_u1pd4")
+theme_override_styles/focus = ExtResource("4_u1pd4")
+toggle_mode = true
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/HBoxContainer/LockTool"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="Icon" type="TextureRect" parent="PanelContainer/HBoxContainer/LockTool/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("3_l8ge4")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Selection" type="Button" parent="PanelContainer/HBoxContainer"]
+texture_filter = 4
+custom_minimum_size = Vector2(70, 70)
 layout_mode = 2
 focus_mode = 0
-text = "SELECTION"
+theme_override_styles/normal = ExtResource("3_lpcgc")
+theme_override_styles/pressed = ExtResource("4_u1pd4")
+theme_override_styles/hover = ExtResource("4_u1pd4")
+theme_override_styles/focus = ExtResource("4_u1pd4")
+toggle_mode = true
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/HBoxContainer/Selection"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="Icon" type="TextureRect" parent="PanelContainer/HBoxContainer/Selection/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("4_vgevf")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Create" type="Button" parent="PanelContainer/HBoxContainer"]
+texture_filter = 4
+custom_minimum_size = Vector2(70, 70)
 layout_mode = 2
 focus_mode = 0
-text = "CREATE"
+theme_override_styles/normal = ExtResource("3_lpcgc")
+theme_override_styles/pressed = ExtResource("4_u1pd4")
+theme_override_styles/hover = ExtResource("4_u1pd4")
+theme_override_styles/focus = ExtResource("4_u1pd4")
+toggle_mode = true
 
-[node name="Algorithm" type="Button" parent="PanelContainer/HBoxContainer"]
-layout_mode = 2
-focus_mode = 0
-text = "ALGORITHM"
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/HBoxContainer/Create"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
 
-[node name="Eraser" type="Button" parent="PanelContainer/HBoxContainer"]
+[node name="Icon" type="TextureRect" parent="PanelContainer/HBoxContainer/Create/MarginContainer"]
 layout_mode = 2
-focus_mode = 0
-text = "ERASER"
+mouse_filter = 2
+texture = ExtResource("5_2j54p")
+expand_mode = 1
+stretch_mode = 5
+metadata/_edit_use_anchors_ = true
 
 [connection signal="pressed" from="PanelContainer/HBoxContainer/LockTool" to="." method="_on_lock_tool_pressed"]
 [connection signal="pressed" from="PanelContainer/HBoxContainer/Selection" to="." method="_on_selection_pressed"]
 [connection signal="pressed" from="PanelContainer/HBoxContainer/Create" to="." method="_on_create_pressed"]
-[connection signal="pressed" from="PanelContainer/HBoxContainer/Algorithm" to="." method="_on_algorithm_pressed"]
-[connection signal="pressed" from="PanelContainer/HBoxContainer/Eraser" to="." method="_on_eraser_pressed"]

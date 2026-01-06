@@ -30,8 +30,8 @@ var current_state: State:
 # ------------
 const BUTTON_REGULAR_MODULATE = Color(1, 1, 1)
 const BUTTON_REGULAR_SCALE = Vector2(1,1)
-const BUTTON_HIGHLIGHT_MODULATE = Color(1.2, 1.2, 1.2)
-const BUTTON_HIGHLIGHT_SCALE = Vector2(1.1,1.1)
+const BUTTON_HIGHLIGHT_MODULATE = Color("66b2ff")
+const BUTTON_HIGHLIGHT_SCALE = Vector2(1.2,1.2)
 
 # Vertices
 const VERTEX_RADIUS = 20.0
