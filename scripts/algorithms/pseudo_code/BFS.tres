@@ -4,4 +4,31 @@
 
 [resource]
 script = ExtResource("1_5kq1g")
+source_text = "Q ← new Queue()--1
+S ← {s}--2
+Q.enqueue(s)--3
+
+while Q ≠ ∅ do--4,5,6,7,8,9,10,11
+	u ← Q.dequeue()--5
+	for each v ∈ Adj[u] do--6
+		if v ∉ S then--7
+			S ← S ∪ {v}--8
+			Q.enqueue(v)--9
+		end if--10
+	end for--11
+end while--12"
+raw_code = "Q ← new Queue()
+S ← {s}
+Q.enqueue(s)
+
+while Q ≠ ∅ do
+	u ← Q.dequeue()
+	for each v ∈ Adj[u] do
+		if v ∉ S then
+			S ← S ∪ {v}
+			Q.enqueue(v)
+		end if
+	end for
+end while"
+steps = [[0], [1], [2], [4], [4, 5], [4, 6], [4, 7], [4, 8], [4, 9], [4, 10], [4, 11], [12]]
 metadata/_custom_type_script = "uid://c8h8cvjik2tcu"
