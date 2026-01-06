@@ -1,0 +1,66 @@
+[gd_scene load_steps=4 format=3 uid="uid://b78ey3notmd7g"]
+
+[ext_resource type="Script" uid="uid://dcl6ckcas6der" path="res://ui/global/tool_bar.gd" id="1_gdu6t"]
+[ext_resource type="Script" uid="uid://css85v57pq6ys" path="res://ui/global/button_highlights.gd" id="1_uiivm"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1bvp3"]
+bg_color = Color(0.019521689, 0.2182971, 0.34787467, 0.22352941)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+expand_margin_left = 15.0
+expand_margin_top = 15.0
+expand_margin_right = 15.0
+expand_margin_bottom = 15.0
+
+[node name="ToolBar" type="MarginContainer"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -28.0
+offset_right = 28.0
+offset_bottom = 40.0
+grow_horizontal = 2
+theme_override_constants/margin_top = 40
+script = ExtResource("1_gdu6t")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 25
+script = ExtResource("1_uiivm")
+
+[node name="LockTool" type="Button" parent="PanelContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "LOCK"
+
+[node name="Selection" type="Button" parent="PanelContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "SELECTION"
+
+[node name="Create" type="Button" parent="PanelContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "CREATE"
+
+[node name="Algorithm" type="Button" parent="PanelContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "ALGORITHM"
+
+[node name="Eraser" type="Button" parent="PanelContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "ERASER"
+
+[connection signal="pressed" from="PanelContainer/HBoxContainer/LockTool" to="." method="_on_lock_tool_pressed"]
+[connection signal="pressed" from="PanelContainer/HBoxContainer/Selection" to="." method="_on_selection_pressed"]
+[connection signal="pressed" from="PanelContainer/HBoxContainer/Create" to="." method="_on_create_pressed"]
+[connection signal="pressed" from="PanelContainer/HBoxContainer/Algorithm" to="." method="_on_algorithm_pressed"]
+[connection signal="pressed" from="PanelContainer/HBoxContainer/Eraser" to="." method="_on_eraser_pressed"]
