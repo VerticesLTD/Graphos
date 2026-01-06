@@ -2,22 +2,12 @@
 
 [ext_resource type="Script" uid="uid://dcl6ckcas6der" path="res://ui/global/tool_bar.gd" id="1_gdu6t"]
 [ext_resource type="Script" uid="uid://css85v57pq6ys" path="res://ui/global/button_highlights.gd" id="1_uiivm"]
+[ext_resource type="StyleBox" uid="uid://bdiessvqitwl2" path="res://ui/styles/toolbar/tool_bar_background.tres" id="2_u1pd4"]
 [ext_resource type="Texture2D" uid="uid://dnyrl4sa00ffg" path="res://assets/icons/lock-alt-svgrepo-com.svg" id="3_l8ge4"]
 [ext_resource type="StyleBox" uid="uid://npixnrumei6q" path="res://ui/styles/toolbar/button_normal.tres" id="3_lpcgc"]
 [ext_resource type="StyleBox" uid="uid://edc2pra87k3x" path="res://ui/styles/toolbar/button_hover.tres" id="4_u1pd4"]
 [ext_resource type="Texture2D" uid="uid://v5eliv4lx04j" path="res://assets/icons/cursor-alt-svgrepo-com.svg" id="4_vgevf"]
 [ext_resource type="Texture2D" uid="uid://cmgktymkkl21e" path="res://assets/icons/create_tool_icon.svg" id="5_2j54p"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1bvp3"]
-bg_color = Color(0.019521689, 0.2182971, 0.34787467, 0.22352941)
-corner_radius_top_left = 15
-corner_radius_top_right = 15
-corner_radius_bottom_right = 15
-corner_radius_bottom_left = 15
-expand_margin_left = 15.0
-expand_margin_top = 15.0
-expand_margin_right = 15.0
-expand_margin_bottom = 15.0
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_lpcgc"]
 color = Color(0.5058824, 0.5058824, 0.5058824, 0.5411765)
@@ -37,7 +27,7 @@ script = ExtResource("1_gdu6t")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
+theme_override_styles/panel = ExtResource("2_u1pd4")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer"]
 layout_mode = 2
