@@ -73,9 +73,9 @@ func _on_hold_start():
 
 func _on_hold_end():
 	GLogger.debug("User hold end.", LOG_TAG)
-	remove_child(selection_rect)
 
 	if selection_rect != null:
+		remove_child(selection_rect)
 		selection_rect.queue_free()
 		selection_rect = null
 
