@@ -134,3 +134,5 @@ func _stop_hover_animation() -> void:
 	)
 	# Set is hovered to false when finished
 	tween.chain().tween_callback(func(): is_hovered = false)
+	# Prevents some bug with chaining color
+	tween.chain().tween_callback(func(): draw_color_hovered = Globals.VERTEX_COLOR)
