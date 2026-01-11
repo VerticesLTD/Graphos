@@ -47,6 +47,9 @@ const VERTEX_TWEEN_TIME = 0.2
 # Edges
 const EDGE_COLOR = Color("FEFCFB")
 const EDGE_WIDTH = 5.0
+const EDGE_HOVER_COLOR = Color("FFE66D")
+const EDGE_HOVER_SCALE = 1.3
+const EDGE_TWEEN_TIME = 0.2
 
 # Selection rectangle
 const SELECTION_BORDER_WIDTH: float = 2.0

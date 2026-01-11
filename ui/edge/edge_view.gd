@@ -12,10 +12,17 @@ var edge_data: Edge
 @onready var mouse_detection_area: Area2D = $MouseDetectionArea
 @onready var collision_shape: CollisionShape2D = $MouseDetectionArea/CollisionShape2D
 
+# Drawing properties - Will be tweened for animations
+var draw_width_hovered = Globals.EDGE_WIDTH
+var draw_color_hovered = Globals.EDGE_COLOR
+
+# Animations
+var is_hovered: bool = false
+var _tween: Tween
+
 
 ## Called only once in the start, connects signals, and draws once.
 func _ready() -> void:
-	GLogger.add_filter("EDGE_AREA")
 	if edge_data:
 		_setup_detection_area()
 
@@ -31,7 +38,12 @@ func _ready() -> void:
 		# If there's no edge, delete.
 		queue_free()
 
-func _setup_detection_area():
+func _process(_delta: float) -> void:
+	# Redraw every frame is needed for animations.
+	# Could perhaps be optimized
+	queue_redraw()
+
+func _setup_detection_area() -> void:
 	# Assumes edge_data exists
 	var pos1 = edge_data.src.pos
 	var pos2  = edge_data.dst.pos
@@ -47,7 +59,7 @@ func _setup_detection_area():
 	if not collision_shape.shape is RectangleShape2D:
 		collision_shape.shape = RectangleShape2D.new()
 	
-	var shape:RectangleShape2D = collision_shape.shape as RectangleShape2D
+	var shape: RectangleShape2D = collision_shape.shape as RectangleShape2D
 
 	shape.size = Vector2(length, width)
 
@@ -63,13 +75,65 @@ func _draw() -> void:
 	if not edge_data or not edge_data.src or not edge_data.dst:
 		return
 
-	# We pull the positions directly from edge_data
-	draw_line(edge_data.src.pos, edge_data.dst.pos, edge_data.color, Globals.EDGE_WIDTH)
+	if is_hovered:
+		draw_line(edge_data.src.pos, edge_data.dst.pos, draw_color_hovered, draw_width_hovered)
+	else:
+		draw_line(edge_data.src.pos, edge_data.dst.pos, edge_data.color, Globals.EDGE_WIDTH)
 
 
 func _on_mouse_entered() -> void:
-	GLogger.debug("MOUSE IN", "EDGE_AREA")
+	is_hovered = true
+	_start_hover_animation()
+
+func _start_hover_animation() -> void:
+	# Stop prev animation if still running
+	if _tween: _tween.kill()
+	_tween = create_tween()
+
+	_tween.set_parallel(true)
+	_tween.set_trans(Tween.TRANS_BACK)
+	_tween.set_ease(Tween.EASE_OUT)
+
+	_tween.tween_property(
+		self,
+		"draw_width_hovered",
+		Globals.EDGE_WIDTH * Globals.EDGE_HOVER_SCALE,
+		Globals.EDGE_TWEEN_TIME
+	)
+	_tween.tween_property(
+		self,
+		"draw_color_hovered",
+		Globals.EDGE_HOVER_COLOR,	
+		Globals.EDGE_TWEEN_TIME
+	)
 
 
 func _on_mouse_exited() -> void:
-	GLogger.debug("MOUSE OUT", "EDGE_AREA")
+	# is_hovered will be set by the _tween!
+	_stop_hover_animation()
+
+func _stop_hover_animation() -> void:
+	# Stop previous animation if running
+	if _tween: _tween.kill()
+	_tween = create_tween()
+
+	_tween.set_parallel(true)
+	_tween.set_trans(Tween.TRANS_BACK)
+	_tween.set_ease(Tween.EASE_OUT)
+
+	_tween.tween_property(
+		self,
+		"draw_width_hovered",
+		Globals.EDGE_WIDTH,
+		Globals.EDGE_TWEEN_TIME
+	)
+	_tween.tween_property(
+		self,
+		"draw_color_hovered",
+		edge_data.color,	
+		Globals.VERTEX_TWEEN_TIME
+	)
+	# Set is hovered to false when finished
+	_tween.chain().tween_callback(func(): is_hovered = false)
+	# Prevents some bug with chaining color
+	_tween.chain().tween_callback(func(): draw_color_hovered = Globals.VERTEX_COLOR)

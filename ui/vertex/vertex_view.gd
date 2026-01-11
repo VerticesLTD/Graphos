@@ -15,7 +15,7 @@ var draw_color_hovered = Globals.VERTEX_COLOR
 
 # Animations
 var is_hovered: bool = false
-var tween: Tween = null
+var _tween: Tween = null
 
 ## Called only once in the start, connects signals, and draws once.
 func _ready() -> void:
@@ -87,20 +87,20 @@ func _on_mouse_entered() -> void:
 
 func _start_hover_animation() -> void:
 	# Stop previous animation if running
-	if tween: tween.kill()
-	tween = create_tween()
+	if _tween: _tween.kill()
+	_tween = create_tween()
 
-	tween.set_parallel(true)
-	tween.set_trans(Tween.TRANS_BACK)
-	tween.set_ease(Tween.EASE_OUT)
+	_tween.set_parallel(true)
+	_tween.set_trans(Tween.TRANS_BACK)
+	_tween.set_ease(Tween.EASE_OUT)
 
-	tween.tween_property(
+	_tween.tween_property(
 		self,
 		"draw_radius_hovered",
 		Globals.VERTEX_HOVER_SCALE * Globals.VERTEX_RADIUS,
 		Globals.VERTEX_TWEEN_TIME
 	)
-	tween.tween_property(
+	_tween.tween_property(
 		self,
 		"draw_color_hovered",
 		Globals.VERTEX_HOVER_COLOR,
@@ -109,31 +109,31 @@ func _start_hover_animation() -> void:
 
 
 func _on_mouse_exited() -> void:
-	# is_hovered will be set by the tween!
+	# is_hovered will be set by the _tween!
 	_stop_hover_animation()
 
 func _stop_hover_animation() -> void:
 	# Stop previous animation if running
-	if tween: tween.kill()
-	tween = create_tween()
+	if _tween: _tween.kill()
+	_tween = create_tween()
 
-	tween.set_parallel(true)
-	tween.set_trans(Tween.TRANS_BACK)
-	tween.set_ease(Tween.EASE_OUT)
+	_tween.set_parallel(true)
+	_tween.set_trans(Tween.TRANS_BACK)
+	_tween.set_ease(Tween.EASE_OUT)
 
-	tween.tween_property(
+	_tween.tween_property(
 		self,
 		"draw_radius_hovered",
 		Globals.VERTEX_RADIUS,
 		Globals.VERTEX_TWEEN_TIME
 	)
-	tween.tween_property(
+	_tween.tween_property(
 		self,
 		"draw_color_hovered",
 		vertex_data.color,
 		Globals.VERTEX_TWEEN_TIME
 	)
 	# Set is hovered to false when finished
-	tween.chain().tween_callback(func(): is_hovered = false)
+	_tween.chain().tween_callback(func(): is_hovered = false)
 	# Prevents some bug with chaining color
-	tween.chain().tween_callback(func(): draw_color_hovered = Globals.VERTEX_COLOR)
+	_tween.chain().tween_callback(func(): draw_color_hovered = Globals.VERTEX_COLOR)
