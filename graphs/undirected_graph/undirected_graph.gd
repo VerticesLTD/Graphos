@@ -31,14 +31,24 @@ var _next_vertex_id: int = 0
 	
 ## This runs whenever a vertex emits 'edge_added'
 func _on_edge_added(new_edge: Edge) -> void:
-	# SAFETY CHECK: Even if both vertices shouted, we only draw the 
-	# edge where the source ID is lower to prevent visual duplicates.
-	if new_edge.src.id > new_edge.dst.id:
-		return
+	var line: UIEdgeView
 
-	# Create the visual Body
-	var line: UIEdgeView = EDGE_VIEW_SCENE.instantiate()
+	# Only one view needs to be created. If one was already created,
+	# we make sure both edges reference the same view.
+	if new_edge.src.id > new_edge.dst.id:
+		var dst_edges = new_edge.dst.edges
+		while dst_edges:
+			if dst_edges.dst == new_edge.src:
+				# TODO remove this
+				assert (dst_edges.view != null)
+				line = dst_edges.view
+	else:
+		# Create the visual Body
+		line = EDGE_VIEW_SCENE.instantiate()
+
+	# Dependency injection
 	line.edge_data = new_edge
+	new_edge.view = line
 
 	# Add to scene and ensure it's drawn BEHIND the vertices
 	add_child(line)
@@ -90,7 +100,11 @@ func _register_and_visualize(v: Vertex) -> void:
 	vertices[v.id] = v
 	
 	var view: UIVertexView = VERTEX_VIEW_SCENE.instantiate()
-	view.vertex_data = v
+
+	# Dependency injection
+	view.vertex_data = v 
+	v.view = view
+
 	add_child(view)
 	
 	

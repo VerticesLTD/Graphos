@@ -15,7 +15,14 @@ const VERTEX_BELOW = 1
 var link_buffer: Array[int] = []
 
 ## Holds nodes selected by user mass select
-var selection_buffer: Array[Vertex] = []
+var selection_buffer: Array[Vertex] = []:
+	set(value):
+		selection_buffer = value
+		# Keeps animation manager updated with selected vertices
+		animation_manager.update_current_selection(selection_buffer)
+
+## Animation manager responsible for animations at the controller level
+@onready var animation_manager: AnimationManager = $AnimationManager
 
 ## A class which holds a player with all the algorithm commands.
 var player: AlgorithmPlayer
@@ -57,9 +64,7 @@ func _ready() -> void:
 		popup.graph = graph
 		popup.controller = self 
 	else:
-		print("there's no popup")
 		push_warning("GraphController: popup manager not assigned in Inspector.")
-
 
 func _process(_delta: float) -> void:
 	# If we are currently draggin nodes, we do not want to touch
@@ -341,9 +346,8 @@ func select_vertices(vertices_to_select: Array[Vertex]) -> void:
 	# 1. Start fresh
 	_clear_selection_buffer()
 	
-	# 2. Add and highlight each vertex
+	# 2. Add each vertex to selection (AnimationManager will highlight)
 	for v in vertices_to_select:
-		v.color = Color.PURPLE
 		v.z_idx = VERTEX_ON_TOP
 		selection_buffer.append(v)
 
