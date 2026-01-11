@@ -22,6 +22,13 @@ boot_splash/minimum_display_time=1500
 
 Globals="*res://scripts/utils/globals.gd"
 CommandManager="*res://scripts/managers/command_manager.gd"
+GLogger="*res://scripts/utils/logger.gd"
+
+[file_customization]
+
+folder_colors={
+"res://assets/": "orange"
+}
 
 [file_customization]
 

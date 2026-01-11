@@ -51,6 +51,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			_handle_left_release()
 			
+	# MacOs ctrl+left_click is right click. Needs to be handled.
+	if event is InputEventMouseButton and \
+	event.button_index == MOUSE_BUTTON_RIGHT and \
+	event.ctrl_pressed and \
+	OS.get_name() == "macOS":
+		if event.is_pressed():
+			_handle_left_click(event.global_position)
+		else:
+			_handle_left_release()
+
 	# 3. RIGHT_CLICKS & RIGHT_RELEASES
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
 		if event.is_pressed():
@@ -300,7 +310,7 @@ func _clear_link_context() -> void:
 	# 1. Clean the visual feedback
 	for id in link_buffer:
 		var v = graph.get_vertex(id)
-		if v: v.color = Color.WHITE
+		if v: v.color = Globals.VERTEX_COLOR
 	
 	# 2. Empty the logic container
 	link_buffer.clear()
@@ -343,7 +353,7 @@ func select_vertices(vertices_to_select: Array[Vertex]) -> void:
 func _clear_selection_buffer() -> void:
 	# Resetting color
 	for v in selection_buffer:
-		v.color = Color.WHITE
+		v.color = Globals.VERTEX_COLOR
 		v.z_idx = VERTEX_BELOW
 
 	selection_buffer.clear()
@@ -356,10 +366,10 @@ func _refresh_link_buffer_colors() -> void:
 
 	# 1. Paint everything in the buffer as "Path" nodes
 	for id in link_buffer:
-		_set_vertex_color(id, Color.GREEN_YELLOW)
+		_set_vertex_color(id, Globals.VERTEX_COLOR_CHAIN)
 
 	# 2. Paint the very last one as the "Active Head"
-	_set_vertex_color(link_buffer.back(), Color.YELLOW)
+	_set_vertex_color(link_buffer.back(), Globals.VERTEX_COLOR_CHAIN_HEAD)
 	
 	
 ## Sets a vertex color. id type isnt mantioned because we can get null.
