@@ -79,6 +79,19 @@ func _draw() -> void:
 		draw_line(edge_data.src.pos, edge_data.dst.pos, draw_color_hovered, draw_width_hovered)
 	else:
 		draw_line(edge_data.src.pos, edge_data.dst.pos, edge_data.color, Globals.EDGE_WIDTH)
+		
+	# Flow animation (growing highlight)
+	if highlight_progress > 0.0:
+		var start = edge_data.src.pos
+		var end = edge_data.dst.pos
+		
+		if not highlight_direction:
+			var temp = start
+			start = end
+			end = temp
+			
+		var highlight_end = start.lerp(end, highlight_progress)
+		draw_line(start, highlight_end, Globals.EDGE_HOVER_COLOR, draw_width_hovered)
 
 
 func _on_mouse_entered() -> void:
@@ -146,3 +159,27 @@ func _stop_hover_animation() -> void:
 	_tween.chain().tween_callback(func(): is_hovered = false)
 	# Prevents some bug with chaining color
 	_tween.chain().tween_callback(func(): draw_color_hovered = Globals.VERTEX_COLOR)
+
+
+# --- FLOW ANIMATION --
+# This is a separate animation that "grows" a highlight from src to dst.
+
+var highlight_progress: float = 0.0
+var highlight_direction: bool = true
+var _flow_tween: Tween
+
+func start_flow_animation(from_src_to_dst: bool = true) -> void:
+	highlight_direction = from_src_to_dst
+	if _flow_tween: _flow_tween.kill()
+	_flow_tween = create_tween()
+	
+	_flow_tween.tween_property(self, "highlight_progress", 1.0, Globals.EDGE_FLOW_TWEEN_TIME)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func stop_flow_animation() -> void:
+	if _flow_tween: _flow_tween.kill()
+	_flow_tween = create_tween()
+	
+	_flow_tween.tween_property(self, "highlight_progress", 0.0, Globals.EDGE_FLOW_TWEEN_TIME)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+

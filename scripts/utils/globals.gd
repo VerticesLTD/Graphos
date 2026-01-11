@@ -50,6 +50,8 @@ const EDGE_WIDTH = 5.0
 const EDGE_HOVER_COLOR = Color("FFE66D")
 const EDGE_HOVER_SCALE = 1.3
 const EDGE_TWEEN_TIME = 0.2
+const EDGE_FLOW_TWEEN_TIME = 0.08
+
 
 # Selection rectangle
 const SELECTION_BORDER_WIDTH: float = 2.0
