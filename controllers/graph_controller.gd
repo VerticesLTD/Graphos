@@ -366,10 +366,10 @@ func _refresh_link_buffer_colors() -> void:
 
 	# 1. Paint everything in the buffer as "Path" nodes
 	for id in link_buffer:
-		_set_vertex_color(id, Color.GREEN_YELLOW)
+		_set_vertex_color(id, Globals.VERTEX_COLOR_CHAIN)
 
 	# 2. Paint the very last one as the "Active Head"
-	_set_vertex_color(link_buffer.back(), Color.YELLOW)
+	_set_vertex_color(link_buffer.back(), Globals.VERTEX_COLOR_CHAIN_HEAD)
 	
 	
 ## Sets a vertex color. id type isnt mantioned because we can get null.

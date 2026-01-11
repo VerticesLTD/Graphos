@@ -37,6 +37,13 @@ const BUTTON_HIGHLIGHT_SCALE = Vector2(1.2,1.2)
 const VERTEX_RADIUS = 20.0
 const VERTEX_COLOR = Color("1282A2")
 
+# Vertex animations
+const VERTEX_COLOR_CHAIN = Color.GREEN_YELLOW
+const VERTEX_COLOR_CHAIN_HEAD = Color.YELLOW
+const VERTEX_HOVER_SCALE = 1.2
+const VERTEX_HOVER_COLOR = Color("4DB8D8")
+const VERTEX_TWEEN_TIME = 0.2
+
 # Edges
 const EDGE_COLOR = Color("FEFCFB")
 const EDGE_WIDTH = 5.0
