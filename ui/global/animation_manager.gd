@@ -8,7 +8,7 @@ var current_selection: Array[Vertex] = []
 
 func update_current_selection(new_selection: Array[Vertex], update_animations=true) -> void:
 	old_selection = current_selection.duplicate()
-	current_selection = new_selection
+	current_selection = new_selection.duplicate()
 
 	if update_animations:
 		update_selected_elements_hover_animations()
