@@ -82,6 +82,14 @@ func _on_vanished(_v: Vertex) -> void:
 
 
 func _on_mouse_entered() -> void:
+	if is_hovered:
+		return
+
+	is_hovered = true
+	_start_hover_animation()
+
+## This function is used when external forces demand animation to start
+func manual_hover_start() -> void:
 	is_hovered = true
 	_start_hover_animation()
 
@@ -107,9 +115,14 @@ func _start_hover_animation() -> void:
 		Globals.VERTEX_TWEEN_TIME
 	)
 
-
 func _on_mouse_exited() -> void:
+	if not is_hovered:
+		return
 	# is_hovered will be set by the _tween!
+	_stop_hover_animation()
+
+## This function is used when external forces demand animation to stop
+func manual_hover_stop() -> void:
 	_stop_hover_animation()
 
 func _stop_hover_animation() -> void:

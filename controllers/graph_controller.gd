@@ -332,13 +332,12 @@ func _populate_selection_buffer() -> void:
 	var rect = Rect2(Globals.selection_rectangle)
 	for v: Vertex in graph.vertices.values():
 		if rect.has_point(v.pos):
-			# Setting highlight color
-			v.color = Color.PURPLE
-
 			# Setting drawing on top
 			v.z_idx = VERTEX_ON_TOP
 
 			selection_buffer.append(v)
+
+	animation_manager.update_current_selection(selection_buffer)
 
 ## Manually sets the selection buffer to a specific set of vertices.
 ## Useful for PasteCommand.
@@ -350,6 +349,9 @@ func select_vertices(vertices_to_select: Array[Vertex]) -> void:
 	for v in vertices_to_select:
 		v.z_idx = VERTEX_ON_TOP
 		selection_buffer.append(v)
+	
+	animation_manager.update_current_selection(selection_buffer)
+	
 
 
 ## Clears selection buffer.
@@ -360,6 +362,7 @@ func _clear_selection_buffer() -> void:
 		v.z_idx = VERTEX_BELOW
 
 	selection_buffer.clear()
+	animation_manager.update_current_selection(selection_buffer)
 
 func _handle_delete_pressed(_event: InputEvent) -> void:
 	if selection_buffer:

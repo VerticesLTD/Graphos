@@ -85,6 +85,11 @@ func _on_mouse_entered() -> void:
 	is_hovered = true
 	_start_hover_animation()
 
+## This function is used when external forces demand animation to start
+func manual_hover_start() -> void:
+	is_hovered = true
+	_start_hover_animation()
+
 func _start_hover_animation() -> void:
 	# Stop prev animation if still running
 	if _tween: _tween.kill()
@@ -110,6 +115,10 @@ func _start_hover_animation() -> void:
 
 func _on_mouse_exited() -> void:
 	# is_hovered will be set by the _tween!
+	_stop_hover_animation()
+
+## This function is used when external forces demand animation to stop
+func manual_hover_stop() -> void:
 	_stop_hover_animation()
 
 func _stop_hover_animation() -> void:
