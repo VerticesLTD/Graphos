@@ -38,7 +38,7 @@ func _init(
 	_src: Vertex = null,
 	_dst: Vertex = null,
 	_next: Edge = null,
-	_color: Color = Color.RED
+	_color: Color = Globals.EDGE_COLOR 
 ) -> void:
 	self.weight = _weight
 	self.src = _src
@@ -64,7 +64,7 @@ var weight: int = 1:
 		state_changed.emit()
 		
 
-var color: Color = Color.RED:
+var color: Color = Globals.EDGE_COLOR: 
 	set(value):
 		color = value
 		state_changed.emit()

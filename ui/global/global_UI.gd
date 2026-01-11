@@ -1,8 +1,5 @@
 extends CanvasLayer
 
-@onready var ui_selection_rect: UISelectionRect = $UISelectionRect
-@onready var vertex_tool_button: Button = $VertexToolButton
-
 @onready var graph_controller: GraphController = $"../GraphController"
 
 const SELECTION_RECT_BLUEPRINT = preload("res://ui/selection/selection_rect_view.tscn")

@@ -12,10 +12,6 @@ const EDGE_VIEW_SCENE = preload("res://ui/edge/edge_view.tscn")
 ## Dictionary[int -> Vertex]
 var vertices: Dictionary = {}
 
-## Edge appearance
-const EDGE_COLOR = Color.RED
-const EDGE_WIDTH = 10.0
-
 ## Metadata counters, num_vertices shouldn't be taken 
 ## care of manually because we can get it by using size
 var num_vertices: int:
@@ -71,7 +67,7 @@ func _on_edge_removed(edge_to_remove: Edge) -> void:
 ## ------------------------------------------------------------------------------
 
 ## Public: Create brand new vertex
-func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> Vertex:
+func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR) -> Vertex:
 	var id = _next_vertex_id
 	_next_vertex_id += 1
 
@@ -259,9 +255,9 @@ func reset_for_algorithm() -> void:
 	reset_parents()
 	reset_keys()
 	
-	# Additionally, reset all the colors to white 
+	# Additionally, reset all the colors
 	for v in vertices.values():
-		v.color = Color.WHITE
+		v.color = Globals.VERTEX_COLOR
 
 
 ## Returns a new sub-graph from given vertices

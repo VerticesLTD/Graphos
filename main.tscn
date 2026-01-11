@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://css85v57pq6ys" path="res://ui/global/button_highlights.gd" id="4_1bvp3"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1bvp3"]
-bg_color = Color(0.019521689, 0.2182971, 0.34787467, 0.22352941)
+bg_color = Color(0.24241143, 0.64497656, 0.9332706, 0.22352941)
 corner_radius_top_left = 15
 corner_radius_top_right = 15
 corner_radius_bottom_right = 15
@@ -18,6 +18,18 @@ expand_margin_bottom = 15.0
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_0xm2m")
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="ColorRect" type="ColorRect" parent="Background"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0.039215688, 0.06666667, 0.15686275, 1)
 
 [node name="UndirectedGraph" type="Node2D" parent="."]
 script = ExtResource("1_0xm2m")
