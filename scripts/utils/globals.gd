@@ -46,6 +46,19 @@ const SELECTION_BORDER_WIDTH: float = 2.0
 const SELECTION_BORDER_COLOR: Color = Color("4da1a9")
 const SELECTION_FILL_COLOR: Color = Color8(77, 161, 169,30) 
 
+# Vertices
+const VERTEX_RADIUS = 20.0
+const VERTEX_COLOR = Color("1282A2")
+
+# Edges
+const EDGE_COLOR = Color("FEFCFB")
+const EDGE_WIDTH = 5.0
+
+# Selection rectangle
+const SELECTION_BORDER_WIDTH: float = 2.0
+const SELECTION_BORDER_COLOR: Color = Color("4da1a9")
+const SELECTION_FILL_COLOR: Color = Color8(77, 161, 169,30) 
+
 # ------------
 # Input constants
 # ------------
