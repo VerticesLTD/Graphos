@@ -51,6 +51,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			_handle_left_release()
 			
+	# MacOs ctrl+left_click is right click. Needs to be handled.
+	if event is InputEventMouseButton and \
+	event.button_index == MOUSE_BUTTON_RIGHT and \
+	event.ctrl_pressed and \
+	OS.get_name() == "macOS":
+		if event.is_pressed():
+			_handle_left_click(event.global_position)
+		else:
+			_handle_left_release()
+
 	# 3. RIGHT_CLICKS & RIGHT_RELEASES
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
 		if event.is_pressed():
