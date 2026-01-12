@@ -13,12 +13,22 @@ config_version=5
 config/name="Graphos"
 run/main_scene="uid://yxcr5kwlindq"
 config/features=PackedStringArray("4.5", "GL Compatibility")
+boot_splash/fullsize=false
+boot_splash/image="uid://c4kcswmb35gkq"
 config/icon="res://icon.svg"
+boot_splash/minimum_display_time=1500
 
 [autoload]
 
 Globals="*res://scripts/utils/globals.gd"
 CommandManager="*res://scripts/managers/command_manager.gd"
+GLogger="*res://scripts/utils/logger.gd"
+
+[file_customization]
+
+folder_colors={
+"res://assets/": "orange"
+}
 
 [input]
 

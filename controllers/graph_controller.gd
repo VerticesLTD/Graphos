@@ -19,7 +19,7 @@ var player: AlgorithmPlayer
 
 ## Vars to handle dragging
 ## Stores { Vertex: Vector2_Initial_Pos } for whatever is being dragged
-var drag_snapshot: Dictionary = {} 
+var drag_snapshot: Dictionary = {}
 var is_dragging: bool = false
 
 ## Called when the node enters the scene tree for the first time.
@@ -51,8 +51,19 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			_handle_left_release()
 			
+	# MacOs ctrl+left_click is right click. Needs to be handled.
+	if event is InputEventMouseButton and \
+	event.button_index == MOUSE_BUTTON_RIGHT and \
+	event.ctrl_pressed and \
+	OS.get_name() == "macOS":
+		if event.is_pressed():
+			_handle_left_click(event.global_position)
+		else:
+			_handle_left_release()
+
 	# 3. RIGHT_CLICKS & RIGHT_RELEASES
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT \
+		and not event.ctrl_pressed:
 		if event.is_pressed():
 			_handle_right_click(event.global_position)
 		else:
@@ -73,7 +84,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	# 6. Handle Redo
 	if event.is_action_pressed("redo"):
 		CommandManager.redo()
-		return	
+		return
 		
 		
 	# 7. Run algorithm
@@ -107,7 +118,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			
 			# Create the snapshot
 			Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
-			print("Selection copied to clipboard.")			
+			print("Selection copied to clipboard.")
 	
 	# 11. Paste
 	if event.is_action_pressed("paste"):
@@ -126,14 +137,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			
 			# Create the snapshot
 			Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
-			print("Selection copied to clipboard.")		
+			print("Selection copied to clipboard.")
 			
 			# Delete the selected sub-graph	
 			CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
 
 			
-
-
 ## ------------------------------------------------------------------------------
 ## MOUSE MOVEMENTS 
 ## ------------------------------------------------------------------------------
@@ -223,7 +232,7 @@ func _handle_left_click(mouse_global_pos: Vector2):
 		return
 		
 	# 2. CLICKED EMPTY SPACE INTERACTION WHILE VERTEX STATE
-	if  Globals.current_state == Globals.State.CREATE:
+	if Globals.current_state == Globals.State.CREATE:
 		if is_ctrl:
 			_handle_path_connection(mouse_global_pos) # Create & Connect
 
@@ -254,10 +263,9 @@ func _handle_right_release():
 ## ------------------------------------------------------------------------------
 
 ## Creates and performs an add vertex command.
-func _handle_vertex_placement(pos:Vector2) -> void:
+func _handle_vertex_placement(pos: Vector2) -> void:
 	# Create and execute the command
 	CommandManager.execute(AddVertexCommand.new(graph, pos))
-
 
 
 ## Handles connecting a few vertices in a row.
@@ -300,7 +308,11 @@ func _clear_link_context() -> void:
 	# 1. Clean the visual feedback
 	for id in link_buffer:
 		var v = graph.get_vertex(id)
+<< << << < HEAD
 		if v: v.color = Color.WHITE
+== == == =
+		if v: v.color = Globals.VERTEX_COLOR
+>> >> >> > origin / main
 	
 	# 2. Empty the logic container
 	link_buffer.clear()
@@ -343,7 +355,11 @@ func select_vertices(vertices_to_select: Array[Vertex]) -> void:
 func _clear_selection_buffer() -> void:
 	# Resetting color
 	for v in selection_buffer:
+<< << << < HEAD
 		v.color = Color.WHITE
+== == == =
+		v.color = Globals.VERTEX_COLOR
+>> >> >> > origin / main
 		v.z_idx = VERTEX_BELOW
 
 	selection_buffer.clear()
@@ -356,10 +372,17 @@ func _refresh_link_buffer_colors() -> void:
 
 	# 1. Paint everything in the buffer as "Path" nodes
 	for id in link_buffer:
+<< << << < HEAD
 		_set_vertex_color(id, Color.GREEN_YELLOW)
 
 	# 2. Paint the very last one as the "Active Head"
 	_set_vertex_color(link_buffer.back(), Color.YELLOW)
+== == == =
+		_set_vertex_color(id, Globals.VERTEX_COLOR_CHAIN)
+
+	# 2. Paint the very last one as the "Active Head"
+	_set_vertex_color(link_buffer.back(), Globals.VERTEX_COLOR_CHAIN_HEAD)
+>> >> >> > origin / main
 	
 	
 ## Sets a vertex color. id type isnt mantioned because we can get null.

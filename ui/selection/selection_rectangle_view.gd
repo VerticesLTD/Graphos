@@ -1,28 +1,22 @@
 extends Node2D
 class_name UISelectionRect
 
-const WIDTH = 1.0
-const REC_COLOR = Color.BLUE
-
-## 2 Points to draw the rectangle by
-var initial_click_position : Vector2
-var current_mouse_position : Vector2
+var initial_click_position: Vector2
+var current_mouse_position: Vector2
 var rectangle: Rect2
 
 func _ready() -> void:
 	initial_click_position = get_global_mouse_position()
 
 func _process(_delta: float) -> void:
-	# Updating mouse position
 	current_mouse_position = get_global_mouse_position()
-
-	# Calculating selection rectangle
-	rectangle = Rect2(initial_click_position,current_mouse_position - initial_click_position).abs()
-
-	# updating the global selection area for other nodes to get
-	Globals.selection_rectangle = Rect2(rectangle)
-
+	# Calculate Rect2 and normalize negative sizes using abs()
+	rectangle = Rect2(initial_click_position, current_mouse_position - initial_click_position).abs()
+	Globals.selection_rectangle = rectangle
 	queue_redraw()
 
 func _draw() -> void:
-	draw_rect(rectangle,REC_COLOR,false,WIDTH,true)
+	# Draw the semi-transparent fill
+	draw_rect(rectangle, Globals.SELECTION_FILL_COLOR, true)
+
+	draw_rect(rectangle, Globals.SELECTION_BORDER_COLOR, false, Globals.SELECTION_BORDER_WIDTH)

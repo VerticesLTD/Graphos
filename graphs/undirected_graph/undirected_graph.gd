@@ -12,10 +12,6 @@ const EDGE_VIEW_SCENE = preload("res://ui/edge/edge_view.tscn")
 ## Dictionary[int -> Vertex]
 var vertices: Dictionary = {}
 
-## Edge appearance
-const EDGE_COLOR = Color.RED
-const EDGE_WIDTH = 10.0
-
 ## Metadata counters, num_vertices shouldn't be taken 
 ## care of manually because we can get it by using size
 var num_vertices: int:
@@ -46,13 +42,13 @@ func _on_edge_added(new_edge: Edge) -> void:
 
 	# Add to scene and ensure it's drawn BEHIND the vertices
 	add_child(line)
-	move_child(line, 0)	# Draw behind vertices
+	move_child(line, 0) # Draw behind vertices
 	
 	# The ONLY place we increase the global count. After we draw successfuly.
 	num_edges += 1
 
 ## This runs whenever a vertex emits 'edge_removed'
-func _on_edge_removed(edge_to_remove: Edge) -> void:	
+func _on_edge_removed(edge_to_remove: Edge) -> void:
 	# Ensures we only run when the id is lower.
 	if edge_to_remove.src.id > edge_to_remove.dst.id:
 		return
@@ -65,13 +61,13 @@ func _on_edge_removed(edge_to_remove: Edge) -> void:
 ## ------------------------------------------------------------------------------
 	
 	
-	
 ## ------------------------------------------------------------------------------
 ## ADD VERTEX
 ## ------------------------------------------------------------------------------
 
 ## Public: Create brand new vertex
-func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Color.WHITE) -> Vertex:
+
+func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR) -> Vertex:
 	var id = _next_vertex_id
 	_next_vertex_id += 1
 
@@ -94,7 +90,7 @@ func _register_and_visualize(v: Vertex) -> void:
 	vertices[v.id] = v
 	
 	var view: UIVertexView = VERTEX_VIEW_SCENE.instantiate()
-	view.vertex_data = v 
+	view.vertex_data = v
 	add_child(view)
 	
 	
@@ -145,8 +141,8 @@ func add_edge(src_id: int, dst_id: int, weight: int = 1) -> void:
 	var second = v_dst if src_id < dst_id else v_src
 
 	# The lower ID always 'shouts' and creates the UI line
-	first.connect_vertices(second, weight, true) 
-	second.connect_vertices(first, weight, false)	
+	first.connect_vertices(second, weight, true)
+	second.connect_vertices(first, weight, false)
 
 ## Adds an edge without triggering any UI signals or spawning EdgeViews.
 ## Used for imposter graphs and internal calculations.
@@ -194,7 +190,6 @@ func delete_edge(src_id: int, dst_id: int) -> void:
 func clear() -> void:
 	vertices.clear()
 	num_edges = 0
-
 
 
 ## ------------------------------------------------------------------------------
@@ -258,10 +253,10 @@ func reset_for_algorithm() -> void:
 	reset_distances()
 	reset_parents()
 	reset_keys()
-	
-	# Additionally, reset all the colors to white 
+
+	# Additionally, reset all the colors
 	for v in vertices.values():
-		v.color = Color.WHITE
+		v.color = Globals.VERTEX_COLOR
 
 
 ## Returns a new sub-graph from given vertices
@@ -285,7 +280,7 @@ func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> Un
 			# We only connect if the neighbor is ALSO in our selection
 			# and we use ID comparison to avoid connecting the same edge twice
 			if imposter_graph.vertices.has(neighbor.id) and v.id < neighbor.id:
-				imposter_graph.add_edge_silently(v.id, neighbor.id)		
+				imposter_graph.add_edge_silently(v.id, neighbor.id)
 	return imposter_graph
 
 
@@ -297,7 +292,7 @@ func _notification(what: int) -> void:
 		for v in vertices.values():
 			# Check if valid instance(not been deleted yet)
 			if is_instance_valid(v):
-				v.vanished.emit(v)	
+				v.vanished.emit(v)
 					
 		vertices.clear()
 		

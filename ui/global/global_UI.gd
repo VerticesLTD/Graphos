@@ -1,8 +1,5 @@
 extends CanvasLayer
 
-@onready var ui_selection_rect: UISelectionRect = $UISelectionRect
-@onready var vertex_tool_button: Button = $VertexToolButton
-
 @onready var graph_controller: GraphController = $"../GraphController"
 
 const SELECTION_RECT_BLUEPRINT = preload("res://ui/selection/selection_rect_view.tscn")
@@ -76,9 +73,9 @@ func _on_hold_start():
 
 func _on_hold_end():
 	GLogger.debug("User hold end.", LOG_TAG)
-	remove_child(selection_rect)
 
 	if selection_rect != null:
+		remove_child(selection_rect)
 		selection_rect.queue_free()
 		selection_rect = null
 
