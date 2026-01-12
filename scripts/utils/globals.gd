@@ -70,13 +70,6 @@ var selection_rectangle: Rect2
 # ------------
 # Clipboard
 # ------------
-
-## Stores induced graph for copy paste
-var clipboard_graph: UndirectedGraph
-
-# ------------
-# Clipboard
-# ------------
 ## Stores induced graph for copy paste
 var clipboard_graph: UndirectedGraph
 

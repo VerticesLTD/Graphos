@@ -308,11 +308,8 @@ func _clear_link_context() -> void:
 	# 1. Clean the visual feedback
 	for id in link_buffer:
 		var v = graph.get_vertex(id)
-<< << << < HEAD
-		if v: v.color = Color.WHITE
-== == == =
+
 		if v: v.color = Globals.VERTEX_COLOR
->> >> >> > origin / main
 	
 	# 2. Empty the logic container
 	link_buffer.clear()
@@ -355,11 +352,7 @@ func select_vertices(vertices_to_select: Array[Vertex]) -> void:
 func _clear_selection_buffer() -> void:
 	# Resetting color
 	for v in selection_buffer:
-<< << << < HEAD
-		v.color = Color.WHITE
-== == == =
 		v.color = Globals.VERTEX_COLOR
->> >> >> > origin / main
 		v.z_idx = VERTEX_BELOW
 
 	selection_buffer.clear()
@@ -372,17 +365,10 @@ func _refresh_link_buffer_colors() -> void:
 
 	# 1. Paint everything in the buffer as "Path" nodes
 	for id in link_buffer:
-<< << << < HEAD
-		_set_vertex_color(id, Color.GREEN_YELLOW)
-
-	# 2. Paint the very last one as the "Active Head"
-	_set_vertex_color(link_buffer.back(), Color.YELLOW)
-== == == =
 		_set_vertex_color(id, Globals.VERTEX_COLOR_CHAIN)
 
 	# 2. Paint the very last one as the "Active Head"
 	_set_vertex_color(link_buffer.back(), Globals.VERTEX_COLOR_CHAIN_HEAD)
->> >> >> > origin / main
 	
 	
 ## Sets a vertex color. id type isnt mantioned because we can get null.
