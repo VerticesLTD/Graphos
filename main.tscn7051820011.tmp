@@ -25,10 +25,9 @@ color = Color(0.120550476, 0.1708557, 0.33700082, 0.12941177)
 script = ExtResource("1_0xm2m")
 metadata/_custom_type_script = "uid://c2yhxp7188k8k"
 
-[node name="GraphController" type="Node" parent="." node_paths=PackedStringArray("graph", "popup")]
+[node name="GraphController" type="Node" parent="." node_paths=PackedStringArray("graph")]
 script = ExtResource("2_0xm2m")
 graph = NodePath("../UndirectedGraph")
-popup = NodePath("../CanvasLayer/PopupMenuLayer")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 script = ExtResource("3_1bvp3")

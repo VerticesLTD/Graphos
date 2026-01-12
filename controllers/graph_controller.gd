@@ -8,6 +8,9 @@ const VERTEX_BELOW = 1
 ## Allows the controller to control the graph
 @export var graph: UndirectedGraph
 
+## UI overlay that draws/opens context menus
+@export var popup: GraphContextMenuManager
+
 ## The selection buffer to link multiple nodes with an edge
 var link_buffer: Array[int] = []
 
@@ -26,6 +29,15 @@ var is_dragging: bool = false
 func _ready() -> void:
 	# If the app's state changed, we want to reset selection
 	Globals.app_state_changed.connect(self._clear_selection_buffer)
+
+	## Inject graph into popup manager so it can create commands like DeleteVertexCommand.new(graph, v)
+	if popup:
+		print("there's a popup")
+		popup.graph = graph
+	else:
+		print("there's no popup")
+		push_warning("GraphController: popup manager not assigned in Inspector.")
+
 
 func _process(_delta: float) -> void:
 	# If we are currently draggin nodes, we do not want to touch
@@ -251,8 +263,26 @@ func _handle_left_release():
 ## ------------------------------------------------------------------------------
 ## RIGHT_CLICKS & RIGHT_RELEASES 
 ## ------------------------------------------------------------------------------
-func _handle_right_click(_mouse_global_pos: Vector2):
-	pass
+func _handle_right_click(mouse_global_pos: Vector2) -> void:
+	## 1. Check vertex at mouse
+	var v_id = graph.get_vertex_id_at(mouse_global_pos)
+	if v_id != Globals.NOT_FOUND:
+		var v: Vertex = graph.get_vertex(v_id)
+		if v and popup:
+			popup.open_for_vertex(v, mouse_global_pos)
+		return
+
+	## 2. Check edge at mouse
+	var e_ins = graph.get_edge_at(mouse_global_pos)
+	if e_ins != null:
+		if popup:
+			popup.open_for_edge(e_ins, mouse_global_pos)
+		return
+
+	## 3. Empty space
+	if popup:
+		popup.open_for_canvas(mouse_global_pos)
+
 	
 func _handle_right_release():
 	pass

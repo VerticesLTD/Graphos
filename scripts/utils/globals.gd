@@ -60,6 +60,12 @@ const SELECTION_FILL_COLOR: Color = Color8(77, 161, 169, 30)
 const HOLD_THRESHOLD = 0.10
 
 # ------------
+# how close to a edge to trigger get_edge_at in graphController
+const EDGE_DISTANCE_THRESHOLD = 5
+# ------------
+
+
+# ------------
 # Drag state
 # ------------
 ## This variable is accessed by the app's elements when in drag mode.

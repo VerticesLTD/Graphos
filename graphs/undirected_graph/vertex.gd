@@ -40,6 +40,7 @@ var edges: Edge = null
 ## preventing unintended visual updates or UI side effects.
 var is_imposter: bool = false
 
+
 ## Constructs a new Vertex.
 ## @param _id        Unique vertex identifier.
 ## @param _color     Optional color.

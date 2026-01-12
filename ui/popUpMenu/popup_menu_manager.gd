@@ -1,0 +1,246 @@
+## PopupMenuManager
+## -----------------------------------------------------------------------------
+## Central UI overlay that builds and opens context menus for graph objects.
+## SOLID goals:
+## - GraphController decides what was clicked (vertex/edge/canvas).
+## - PopupMenuManager decides what menu to show and how to build it.
+## - Commands hold the logic + undo/redo integration (CommandManager).
+##
+## Menu definition format (nested Array):
+## [
+##   ["Label", Command_instance],
+##   ["Label", [ submenu items... ]],
+##   ["Label", null],                  # placeholder (no action)
+## ]
+##
+## IMPORTANT:
+## - Every PopupMenu (main AND submenus) emits its own "index_pressed".
+##   So we must connect handlers for submenus too, not only MainMenu.
+## -----------------------------------------------------------------------------
+class_name GraphContextMenuManager
+extends Control
+
+
+@onready var MainMenu: PopupMenu = $MainMenu
+
+## The graph the commands operate on.
+## We inject it from GraphController in _ready().
+var graph: UndirectedGraph
+
+## Active context (what was clicked)
+var active = null
+var mode: String = "general"
+
+## We create submenu PopupMenus dynamically on each open.
+## Store them so we can free them next time (avoid leaks / duplicates).
+var _dynamic_menus: Array[PopupMenu] = []
+
+
+func _ready() -> void:
+	print("GraphContextMenuManager running at: ", get_path())
+	print("Children: ", get_children())
+
+	if MainMenu == null:
+		push_error("Missing MainMenu under: %s" % [get_path()])
+		return
+	_wire_menu(MainMenu)
+
+	
+## -----------------------------------------------------------------------------
+## PUBLIC API: GraphController calls exactly ONE of these
+## -----------------------------------------------------------------------------
+
+func open_for_vertex(v: Vertex, mouse_pos: Vector2) -> void:
+	active = v
+	mode = "vertex"
+	_open_at(mouse_pos, _make_vertex_menu(v))
+
+func open_for_edge(e: Edge, mouse_pos: Vector2) -> void:
+	active = e
+	mode = "edge"
+	_open_at(mouse_pos, _make_edge_menu(e))
+
+func open_for_canvas(mouse_pos: Vector2) -> void:
+	active = null
+	mode = "general"
+	_open_at(mouse_pos, _make_canvas_menu())
+
+
+## -----------------------------------------------------------------------------
+## OPEN + BUILD
+## -----------------------------------------------------------------------------
+
+## Opens the main popup at a specific position, rebuilds all items.
+func _open_at(mouse_pos: Vector2, menu_def: Array) -> void:
+	## 1. Clean old dynamically-created submenus (critical)
+	_clear_dynamic_menus()
+
+	## 2. Build menu tree recursively (MainMenu + all submenus)
+	_build_menu_recursive(MainMenu, menu_def)
+
+	## 3. Show the main menu at mouse position
+	## PopupMenu inherits Popup, and popup(rect) is the clean way to place it.
+	MainMenu.popup(Rect2i(Vector2i(mouse_pos), Vector2i.ZERO))
+
+
+## Recursively builds menu items and submenu nodes.
+func _build_menu_recursive(menu: PopupMenu, menu_def: Array) -> void:
+	## Clean slate
+	menu.clear()
+
+	## Loop entries like: ["Delete", Command] or ["Algorithms", [...]] etc.
+	for item in menu_def:
+		var label = item[0]
+		var value = item[1] if item.size() > 1 else null ## allow ["test"] too
+
+		## CASE 1: Real Command instance -> clickable item
+		if value is Command:
+			var idx = menu.item_count
+			menu.add_item(label)
+			menu.set_item_metadata(idx, value) ## store command object here
+
+		## CASE 2: Submenu -> nested Array
+		elif value is Array:
+			var submenu := PopupMenu.new()
+			submenu.name = item[0]
+			menu.add_child(submenu)
+
+			## Track dynamic menus so we can free them next open
+			_dynamic_menus.append(submenu)
+
+			## Wire submenu clicks too (very important)
+			_wire_menu(submenu)
+
+			## Link submenu to this item (Godot handles submenu UI behavior)
+			menu.add_submenu_node_item(label, submenu)
+
+			## Fill submenu contents
+			_build_menu_recursive(submenu, value)
+
+			## Optional UX: hide submenu when mouse exits it
+			## (You wanted this behavior)
+			#submenu.mouse_exited.connect(func(): submenu.hide())
+
+		## CASE 3: Placeholder / missing command / debug
+		else:
+			var idx = menu.item_count
+			menu.add_item(label)
+			menu.set_item_metadata(idx, null) ## no action
+
+
+## Connects a PopupMenu's clicks to a handler that reads metadata and executes command.
+func _wire_menu(menu: PopupMenu) -> void:
+	## Avoid double-connecting if you ever reuse menus
+	if menu.index_pressed.is_connected(_on_any_menu_item_pressed):
+		return
+	menu.index_pressed.connect(_on_any_menu_item_pressed.bind(menu))
+
+
+## This runs for MainMenu AND for any submenu.
+## We get the clicked menu instance + index, then fetch metadata from that menu.
+func _on_any_menu_item_pressed(index: int, menu: PopupMenu) -> void:
+	var cmd = menu.get_item_metadata(index)
+
+	## Placeholder: do nothing (but keep it safe and debuggable)
+	if cmd == null:
+		print("Popup placeholder clicked: '%s' (mode=%s)" % [menu.get_item_text(index), mode])
+		return
+
+	## Real command: execute through CommandManager so undo/redo works
+	if cmd is Command:
+		CommandManager.execute(cmd)
+		return
+
+	## If someone accidentally stored something else, fail safely
+	push_warning("Popup item metadata is not a Command: %s" % [str(cmd)])
+
+
+func _clear_dynamic_menus() -> void:
+	## Free previously created submenu nodes
+	for m in _dynamic_menus:
+		if is_instance_valid(m):
+			m.queue_free()
+	_dynamic_menus.clear()
+
+
+func _clear_context() -> void:
+	active = null
+	mode = "general"
+
+
+## -----------------------------------------------------------------------------
+## MENU FACTORIES (ALL MENUS DEFINED HERE, SOLID)
+## -----------------------------------------------------------------------------
+
+func _make_vertex_menu(v: Vertex) -> Array:
+	## You can put placeholders (null) while implementing commands.
+	## This lets you test menu opening immediately.
+	return [
+		["test (no command)", null],
+		["Delete Vertex", DeleteVertexCommand.new(graph, v)],
+		["Algorithms", [
+			["MST (placeholder)", null],
+			["More", [
+				["Deep placeholder", null],
+			]]
+		]]
+	]
+
+
+func _make_edge_menu(e: Edge) -> Array:
+	return [
+		["test (no command)", null],
+		["Delete Edge (placeholder)", null], ## swap to DeleteEdgeCommand when ready
+		["Algorithms", [
+			["Bridge Check (placeholder)", null],
+		]]
+	]
+
+
+func _make_canvas_menu() -> Array:
+	return [
+		["Canvas test", null],
+		["Algorithms", [
+			["Global MST (placeholder)", null],
+		]]
+	]
+	
+	
+	
+
+func find_vertex_view(node: Node) -> UIVertexView:
+	var current = node
+	while current:
+		if current is UIVertexView:
+			return current
+		current = current.get_parent()
+	return null
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+		pick_at_position(event.position)
+
+
+func pick_at_position(pos: Vector2) -> void:
+	var space_state: PhysicsDirectSpaceState2D = get_world_2d().direct_space_state
+
+	var query := PhysicsPointQueryParameters2D.new()
+	query.position = pos
+	query.collide_with_areas = true
+	query.collide_with_bodies = true
+
+	# Returns ALL colliders at this point (sorted by Z & proximity)
+	var results: Array = space_state.intersect_point(query)
+
+	if results.is_empty():
+		print("Clicked empty space")
+		return
+
+	# Closest / top-most hit
+	var hit = results[0]
+
+	var v = find_vertex_view(hit["collider"])
+	if v:
+		open_for_vertex(v.vertex_data, pos)
+	print("Clicked collider:", find_vertex_view(hit["collider"]))

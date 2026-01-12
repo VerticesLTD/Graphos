@@ -218,6 +218,48 @@ func get_vertex_id_at(pos: Vector2) -> int:
 			return v.id
 	return Globals.NOT_FOUND
 
+## Returns the closest Edge under the mouse, or null if none is close enough.
+## threshold is in world units (same coordinate space as Vertex.pos).
+func get_edge_at(mouse_pos: Vector2, threshold: float = 12.0) -> Edge:
+	var best: Edge = null
+	var best_d2: float = threshold * threshold
+
+	## Deduplicate undirected edges using a typed key (lo_id, hi_id)
+	var seen: Dictionary = {}
+
+	for v: Vertex in vertices.values():
+		var e: Edge = v.edges
+		while e:
+			var a_id: int = e.src.id
+			var b_id: int = e.dst.id
+
+			var lo: int
+			var hi: int
+			if a_id < b_id:
+				lo = a_id
+				hi = b_id
+			else:
+				lo = b_id
+				hi = a_id
+
+			var key: Vector2i = Vector2i(lo, hi)
+
+			if not seen.has(key):
+				seen[key] = true
+
+				var a: Vector2 = e.src.pos
+				var b: Vector2 = e.dst.pos
+				var closest: Vector2 = Geometry2D.get_closest_point_to_segment(mouse_pos, a, b)
+				var d2: float = (mouse_pos - closest).length_squared()
+
+				if d2 <= best_d2:
+					best_d2 = d2
+					best = e
+
+			e = e.next
+
+	return best
+
 
 ## Returns true if an edge exists between two vertices.
 func has_edge(src_id: int, dst_id: int) -> bool:
