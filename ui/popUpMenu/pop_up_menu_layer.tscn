@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://c232xbf42jyrl"]
+
+[ext_resource type="Script" uid="uid://b8mqitvao656x" path="res://ui/popUpMenu/popup_menu_manager.gd" id="1_pao4u"]
+
+[node name="PopupMenuLayer" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_pao4u")
+
+[node name="MainMenu" type="PopupMenu" parent="."]
+oversampling_override = 1.0

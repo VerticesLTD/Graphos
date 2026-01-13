@@ -30,12 +30,6 @@ folder_colors={
 "res://assets/": "orange"
 }
 
-[file_customization]
-
-folder_colors={
-"res://assets/": "orange"
-}
-
 [input]
 
 undo={

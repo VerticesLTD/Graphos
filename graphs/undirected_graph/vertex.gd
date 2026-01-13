@@ -40,6 +40,7 @@ var edges: Edge = null
 ## preventing unintended visual updates or UI side effects.
 var is_imposter: bool = false
 
+
 ## Constructs a new Vertex.
 ## @param _id        Unique vertex identifier.
 ## @param _color     Optional color.
@@ -50,7 +51,7 @@ var is_imposter: bool = false
 ## @param _is_imposter		Is the vertex real or only data.
 func _init(
 	_id: int,
-	_color: Color = Globals.VERTEX_COLOR, 
+	_color: Color = Globals.VERTEX_COLOR,
 	_distance: float = INF,
 	_key: float = INF,
 	_pos: Vector2 = Vector2.ZERO,
@@ -64,6 +65,7 @@ func _init(
 	self.is_imposter = _is_imposter
 
 ####################### SETTER FUNCTIONS & REACTION LOGIC #######################
+
 
 var color: Color = Globals.VERTEX_COLOR:
 	set(value):
@@ -96,7 +98,7 @@ var parent: Vertex = null:
 			state_changed.emit() # UI draws "Parent Arrow"
 
 # For draw order
-var z_idx :int = 0:
+var z_idx: int = 0:
 	set(value):
 		z_idx = value
 		if not is_imposter:
@@ -180,7 +182,7 @@ func _notification(what: int) -> void:
 							
 			# 3. Break the link. If no one else is holding 'curr', 
 			# Godot will delete it from RAM automatically after this loop cycle.
-			curr.next = null 
+			curr.next = null
 			
 			# 4. Move to the next link in the chain
 			curr = next_edge

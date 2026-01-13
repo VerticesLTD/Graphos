@@ -8,6 +8,9 @@ const VERTEX_BELOW = 1
 ## Allows the controller to control the graph
 @export var graph: UndirectedGraph
 
+## UI overlay that draws/opens context menus
+@export var popup: GraphContextMenuManager
+
 ## The selection buffer to link multiple nodes with an edge
 var link_buffer: Array[int] = []
 
@@ -19,13 +22,22 @@ var player: AlgorithmPlayer
 
 ## Vars to handle dragging
 ## Stores { Vertex: Vector2_Initial_Pos } for whatever is being dragged
-var drag_snapshot: Dictionary = {} 
+var drag_snapshot: Dictionary = {}
 var is_dragging: bool = false
 
 ## Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	# If the app's state changed, we want to reset selection
 	Globals.app_state_changed.connect(self._clear_selection_buffer)
+
+	## Inject graph into popup manager so it can create commands like DeleteVertexCommand.new(graph, v)
+	if popup:
+		popup.graph = graph
+		popup.controller = self 
+	else:
+		print("there's no popup")
+		push_warning("GraphController: popup manager not assigned in Inspector.")
+
 
 func _process(_delta: float) -> void:
 	# If we are currently draggin nodes, we do not want to touch
@@ -38,6 +50,14 @@ func _process(_delta: float) -> void:
 ## ------------------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
+	# If the menu closed less than 200ms ago, ignore ALL clicks.
+	# This prevents "Accidental Vertices" (Left Click)
+	if popup and popup.MainMenu.visible:
+			# If it's a mouse click, we consume it so it doesn't create vertices or re-open menus
+			if event is InputEventMouseButton and event.pressed:
+				get_viewport().set_input_as_handled()
+			return		
+		
 	# 1. MOTION (Dragging)
 	# Handled first because its the most frequent one.
 	if event is InputEventMouseMotion:
@@ -62,7 +82,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_handle_left_release()
 
 	# 3. RIGHT_CLICKS & RIGHT_RELEASES
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT \
+		and not event.ctrl_pressed:
 		if event.is_pressed():
 			_handle_right_click(event.global_position)
 		else:
@@ -83,17 +104,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	# 6. Handle Redo
 	if event.is_action_pressed("redo"):
 		CommandManager.redo()
-		return	
+		return
 		
-		
-	# 7. Run algorithm
-	if event is InputEventKey and event.keycode == KEY_B:
-		var mouse_pos = graph.get_global_mouse_position()
-		var start_v_id = graph.get_vertex_id_at(mouse_pos)
-		if start_v_id != Globals.NOT_FOUND:
-			var start_v = graph.get_vertex(start_v_id)
-			execute_algorithm(BFS, start_v)
-			player.step_forward() # Do one step to give visual fidback for the start
 		
 	# 8. Algorithm Playing
 	if player:
@@ -106,44 +118,29 @@ func _unhandled_input(event: InputEvent) -> void:
 	# 9. Delete selection
 	if event.is_action_pressed("delete"):
 		if selection_buffer:
-			CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
+			var cmd = DeleteSelectionCommand.new(graph, selection_buffer)
+			CommandManager.execute(cmd)
 	
 	# 10. Copy
 	if event.is_action_pressed("copy"):
 		if selection_buffer:
-			# Clean up old clipboard memory
-			if Globals.clipboard_graph:
-				Globals.clipboard_graph.queue_free()
-			
-			# Create the snapshot
-			Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
-			print("Selection copied to clipboard.")			
+			# Copy doesn't change the state so we dont need CommandManager.execute()
+			var cmd = CopyCommand.new(graph, selection_buffer)
+			cmd.execute()
 	
 	# 11. Paste
 	if event.is_action_pressed("paste"):
-		if Globals.clipboard_graph:
+		if Globals.clipboard_graph:			
 			var mouse_pos = graph.get_global_mouse_position()
-			
-			var paste_cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, self)
-			CommandManager.execute(paste_cmd)
+			var cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, self)
+			CommandManager.execute(cmd)
 			
 	# 11. Paste
 	if event.is_action_pressed("cut"):
-		if selection_buffer:
-			# Clean up old clipboard memory
-			if Globals.clipboard_graph:
-				Globals.clipboard_graph.queue_free()
+		if not selection_buffer.is_empty():
+			var cmd = CutCommand.new(graph, selection_buffer, self)
+			CommandManager.execute(cmd)
 			
-			# Create the snapshot
-			Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
-			print("Selection copied to clipboard.")		
-			
-			# Delete the selected sub-graph	
-			CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
-
-			
-
-
 ## ------------------------------------------------------------------------------
 ## MOUSE MOVEMENTS 
 ## ------------------------------------------------------------------------------
@@ -233,7 +230,7 @@ func _handle_left_click(mouse_global_pos: Vector2):
 		return
 		
 	# 2. CLICKED EMPTY SPACE INTERACTION WHILE VERTEX STATE
-	if  Globals.current_state == Globals.State.CREATE:
+	if Globals.current_state == Globals.State.CREATE:
 		if is_ctrl:
 			_handle_path_connection(mouse_global_pos) # Create & Connect
 
@@ -252,8 +249,26 @@ func _handle_left_release():
 ## ------------------------------------------------------------------------------
 ## RIGHT_CLICKS & RIGHT_RELEASES 
 ## ------------------------------------------------------------------------------
-func _handle_right_click(_mouse_global_pos: Vector2):
-	pass
+func _handle_right_click(mouse_global_pos: Vector2) -> void:
+	## 1. Check vertex at mouse
+	var v_id = graph.get_vertex_id_at(mouse_global_pos)
+	if v_id != Globals.NOT_FOUND:
+		var v: Vertex = graph.get_vertex(v_id)
+		if v and popup:
+			popup.open_for_vertex(v, mouse_global_pos)
+		return
+
+	## 2. Check edge at mouse
+	var edge = graph.get_edge_at(mouse_global_pos)
+	if edge != null:
+		if popup:
+			popup.open_for_edge(edge, mouse_global_pos)
+		return
+
+	## 3. Empty space
+	if popup:
+		popup.open_for_canvas(mouse_global_pos)
+
 	
 func _handle_right_release():
 	pass
@@ -264,10 +279,9 @@ func _handle_right_release():
 ## ------------------------------------------------------------------------------
 
 ## Creates and performs an add vertex command.
-func _handle_vertex_placement(pos:Vector2) -> void:
+func _handle_vertex_placement(pos: Vector2) -> void:
 	# Create and execute the command
 	CommandManager.execute(AddVertexCommand.new(graph, pos))
-
 
 
 ## Handles connecting a few vertices in a row.
@@ -310,6 +324,7 @@ func _clear_link_context() -> void:
 	# 1. Clean the visual feedback
 	for id in link_buffer:
 		var v = graph.get_vertex(id)
+
 		if v: v.color = Globals.VERTEX_COLOR
 	
 	# 2. Empty the logic container
@@ -419,3 +434,11 @@ func execute_algorithm(algo_class: GDScript, start_node: Vertex) -> void:
 	imposter_graph.queue_free()
 	
 	print("Algorithm logic finished. Timeline recorded with %d steps." % timeline.size())
+
+
+## Recieves the player from the Command
+func set_algorithm_player(new_player: AlgorithmPlayer) -> void:
+	self.player = new_player
+	print("New algorithm player")
+	# Trigger first step immidietly
+	player.step_forward()

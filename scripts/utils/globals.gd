@@ -29,9 +29,9 @@ var current_state: State:
 # Appearance
 # ------------
 const BUTTON_REGULAR_MODULATE = Color(1, 1, 1)
-const BUTTON_REGULAR_SCALE = Vector2(1,1)
+const BUTTON_REGULAR_SCALE = Vector2(1, 1)
 const BUTTON_HIGHLIGHT_MODULATE = Color("66b2ff")
-const BUTTON_HIGHLIGHT_SCALE = Vector2(1.2,1.2)
+const BUTTON_HIGHLIGHT_SCALE = Vector2(1.2, 1.2)
 
 # Vertices
 const VERTEX_RADIUS = 20.0
@@ -51,13 +51,19 @@ const EDGE_WIDTH = 5.0
 # Selection rectangle
 const SELECTION_BORDER_WIDTH: float = 2.0
 const SELECTION_BORDER_COLOR: Color = Color("4da1a9")
-const SELECTION_FILL_COLOR: Color = Color8(77, 161, 169,30) 
+const SELECTION_FILL_COLOR: Color = Color8(77, 161, 169, 30)
 
 # ------------
 # Input constants
 # ------------
 # How long (in seconds) until a click counts as a "Hold"
 const HOLD_THRESHOLD = 0.10
+
+# ------------
+# how close to a edge to trigger get_edge_at in graphController
+const EDGE_DISTANCE_THRESHOLD = 5
+# ------------
+
 
 # ------------
 # Drag state

@@ -42,13 +42,13 @@ func _on_edge_added(new_edge: Edge) -> void:
 
 	# Add to scene and ensure it's drawn BEHIND the vertices
 	add_child(line)
-	move_child(line, 0)	# Draw behind vertices
+	move_child(line, 0) # Draw behind vertices
 	
 	# The ONLY place we increase the global count. After we draw successfuly.
 	num_edges += 1
 
 ## This runs whenever a vertex emits 'edge_removed'
-func _on_edge_removed(edge_to_remove: Edge) -> void:	
+func _on_edge_removed(edge_to_remove: Edge) -> void:
 	# Ensures we only run when the id is lower.
 	if edge_to_remove.src.id > edge_to_remove.dst.id:
 		return
@@ -61,12 +61,12 @@ func _on_edge_removed(edge_to_remove: Edge) -> void:
 ## ------------------------------------------------------------------------------
 	
 	
-	
 ## ------------------------------------------------------------------------------
 ## ADD VERTEX
 ## ------------------------------------------------------------------------------
 
 ## Public: Create brand new vertex
+
 func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR) -> Vertex:
 	var id = _next_vertex_id
 	_next_vertex_id += 1
@@ -90,7 +90,7 @@ func _register_and_visualize(v: Vertex) -> void:
 	vertices[v.id] = v
 	
 	var view: UIVertexView = VERTEX_VIEW_SCENE.instantiate()
-	view.vertex_data = v 
+	view.vertex_data = v
 	add_child(view)
 	
 	
@@ -141,8 +141,8 @@ func add_edge(src_id: int, dst_id: int, weight: int = 1) -> void:
 	var second = v_dst if src_id < dst_id else v_src
 
 	# The lower ID always 'shouts' and creates the UI line
-	first.connect_vertices(second, weight, true) 
-	second.connect_vertices(first, weight, false)	
+	first.connect_vertices(second, weight, true)
+	second.connect_vertices(first, weight, false)
 
 ## Adds an edge without triggering any UI signals or spawning EdgeViews.
 ## Used for imposter graphs and internal calculations.
@@ -192,7 +192,6 @@ func clear() -> void:
 	num_edges = 0
 
 
-
 ## ------------------------------------------------------------------------------
 ## GETTERS
 ## ------------------------------------------------------------------------------
@@ -218,6 +217,48 @@ func get_vertex_id_at(pos: Vector2) -> int:
 		if v.pos.distance_to(pos) <= Globals.VERTEX_RADIUS:
 			return v.id
 	return Globals.NOT_FOUND
+
+## Returns the closest Edge under the mouse, or null if none is close enough.
+## threshold is in world units (same coordinate space as Vertex.pos).
+func get_edge_at(mouse_pos: Vector2, threshold: float = 12.0) -> Edge:
+	var best: Edge = null
+	var best_d2: float = threshold * threshold
+
+	## Deduplicate undirected edges using a typed key (lo_id, hi_id)
+	var seen: Dictionary = {}
+
+	for v: Vertex in vertices.values():
+		var e: Edge = v.edges
+		while e:
+			var a_id: int = e.src.id
+			var b_id: int = e.dst.id
+
+			var lo: int
+			var hi: int
+			if a_id < b_id:
+				lo = a_id
+				hi = b_id
+			else:
+				lo = b_id
+				hi = a_id
+
+			var key: Vector2i = Vector2i(lo, hi)
+
+			if not seen.has(key):
+				seen[key] = true
+
+				var a: Vector2 = e.src.pos
+				var b: Vector2 = e.dst.pos
+				var closest: Vector2 = Geometry2D.get_closest_point_to_segment(mouse_pos, a, b)
+				var d2: float = (mouse_pos - closest).length_squared()
+
+				if d2 <= best_d2:
+					best_d2 = d2
+					best = e
+
+			e = e.next
+
+	return best
 
 
 ## Returns true if an edge exists between two vertices.
@@ -254,7 +295,7 @@ func reset_for_algorithm() -> void:
 	reset_distances()
 	reset_parents()
 	reset_keys()
-	
+
 	# Additionally, reset all the colors
 	for v in vertices.values():
 		v.color = Globals.VERTEX_COLOR
@@ -281,7 +322,7 @@ func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> Un
 			# We only connect if the neighbor is ALSO in our selection
 			# and we use ID comparison to avoid connecting the same edge twice
 			if imposter_graph.vertices.has(neighbor.id) and v.id < neighbor.id:
-				imposter_graph.add_edge_silently(v.id, neighbor.id)		
+				imposter_graph.add_edge_silently(v.id, neighbor.id)
 	return imposter_graph
 
 
@@ -293,7 +334,7 @@ func _notification(what: int) -> void:
 		for v in vertices.values():
 			# Check if valid instance(not been deleted yet)
 			if is_instance_valid(v):
-				v.vanished.emit(v)	
+				v.vanished.emit(v)
 					
 		vertices.clear()
 		

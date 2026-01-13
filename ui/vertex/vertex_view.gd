@@ -4,7 +4,7 @@ extends Node2D
 class_name UIVertexView
 
 ## Data the view pulls from
-var vertex_data: Vertex 
+var vertex_data: Vertex
 
 @onready var label: Label = $Label
 @onready var collision_circle: CollisionShape2D = $MouseDetectionArea/CollisionShape2D
@@ -21,6 +21,7 @@ var tween: Tween = null
 func _ready() -> void:
 	if vertex_data:
 		self.name = str(vertex_data.id)
+
 		# Listen for vertex updates (like if the nodes move)
 		vertex_data.state_changed.connect(refresh)
 
@@ -129,7 +130,7 @@ func _stop_hover_animation() -> void:
 	tween.tween_property(
 		self,
 		"draw_color_hovered",
-		vertex_data.color,	
+		vertex_data.color,
 		Globals.VERTEX_TWEEN_TIME
 	)
 	# Set is hovered to false when finished

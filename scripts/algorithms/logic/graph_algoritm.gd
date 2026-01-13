@@ -34,19 +34,16 @@ func run(_start_vertex: Vertex) -> Array[Command]:
 
 ## Changes a vertex color and records the Command in the timeline.
 func change_and_log_vertex_color(target_vertex: Vertex, target_color: Color) -> void:
-	var previous_color = target_vertex.color
 	var real_v = real_graph.get_vertex(target_vertex.id)
 	
 	if real_v:
-		timeline.append(ChangeVertexColorCommand.new(real_v, target_color, previous_color))
+		timeline.append(ChangeVertexColorCommand.new(real_v, target_color))
 		
 	target_vertex.color = target_color
 
 ## Changes an edge color and records the Command in the timeline.
 ## Changes an edge color and records the Command in the timeline.
 func change_and_log_edge_color(target_edge: Edge, target_color: Color) -> void:
-	var previous_color = target_edge.color
-	
 	# 1. Normalize the IDs to find the 'Real' (shouting) edge
 	var u_id = target_edge.src.id
 	var v_id = target_edge.dst.id
@@ -63,17 +60,16 @@ func change_and_log_edge_color(target_edge: Edge, target_color: Color) -> void:
 	
 	if real_edge:
 		# Record the command targeting the visual edge
-		timeline.append(ChangeEdgeColorCommand.new(real_edge, target_color, previous_color))
+		timeline.append(ChangeEdgeColorCommand.new(real_edge, target_color))
 	
 	# Update the imposter edge so the algorithm's state stays consistent
 	target_edge.color = target_color
 	
 ## Changes a vertex key and records the Command in the timeline.
 func change_and_log_vertex_key(target_vertex: Vertex, target_key: float) -> void:
-	var previous_key = target_vertex.key
 	var real_vertex = real_graph.get_vertex(target_vertex.id)
 	
 	if real_vertex:
-		timeline.append(ChangeVertexKeyCommand.new(real_vertex, target_key, previous_key))
+		timeline.append(ChangeVertexKeyCommand.new(real_vertex, target_key))
 	
 	target_vertex.key = target_key
