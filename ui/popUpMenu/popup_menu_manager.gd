@@ -49,16 +49,9 @@ var mode: String = "general"
 ## Store them so we can free them next time (avoid leaks / duplicates).
 var _dynamic_menus: Array[PopupMenu] = []
 
-
 func _ready() -> void:
-	print("GraphContextMenuManager running at: ", get_path())
-	print("Children: ", get_children())
-
-	if MainMenu == null:
-		push_error("Missing MainMenu under: %s" % [get_path()])
-		return
-	_wire_menu(MainMenu)
-
+	if MainMenu:
+			_wire_menu(MainMenu)
 	
 ## -----------------------------------------------------------------------------
 ## PUBLIC API: GraphController calls exactly ONE of these
@@ -216,8 +209,12 @@ func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
 		var algo_script = ALGO_REGISTRY[algo_name]
 		
 		# Create the command automatically using the shared params
-		var cmd = ExecuteAlgorithm.new(algo_script, v, buffer_snapshot, graph, controller)
+		var cmd = null
 		
+		# ONLY create the command if we actually have nodes selected.
+		if not buffer_snapshot.is_empty() and v in buffer_snapshot:
+			cmd = ExecuteAlgorithm.new(algo_script, v, buffer_snapshot, graph, controller)	
+				
 		# Add to the list
 		algo_submenu.append([algo_name, cmd])
 		
@@ -237,11 +234,10 @@ func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
 			["Algorithms", algo_submenu],
 			["---", null],
 			
-			# CLIPBOARD
+			# ClipBoard
 			["Copy", CopyCommand.new(graph, buffer_snapshot)],
 			["Paste", paste_cmd],
 			["Cut", CutCommand.new(graph, buffer_snapshot, controller)],
-			
 			["---", null],
 			
 			# Color
@@ -292,11 +288,6 @@ func find_vertex_view(node: Node) -> UIVertexView:
 			return current
 		current = current.get_parent()
 	return null
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
-		pick_at_position(event.position)
 
 
 func pick_at_position(pos: Vector2) -> void:

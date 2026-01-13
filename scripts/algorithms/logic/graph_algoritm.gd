@@ -67,10 +67,9 @@ func change_and_log_edge_color(target_edge: Edge, target_color: Color) -> void:
 	
 ## Changes a vertex key and records the Command in the timeline.
 func change_and_log_vertex_key(target_vertex: Vertex, target_key: float) -> void:
-	var previous_key = target_vertex.key
 	var real_vertex = real_graph.get_vertex(target_vertex.id)
 	
 	if real_vertex:
-		timeline.append(ChangeVertexKeyCommand.new(real_vertex, target_key, previous_key))
+		timeline.append(ChangeVertexKeyCommand.new(real_vertex, target_key))
 	
 	target_vertex.key = target_key

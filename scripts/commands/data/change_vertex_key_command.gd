@@ -6,11 +6,11 @@ var target_vertex: Vertex
 var new_key: float # Changed to float as Keys in algorithms are often INF
 var old_key: float
 
-func _init(vertex: Vertex, target_key: float, previous_key: float):
+func _init(vertex: Vertex, target_key: float):
 	# Note: Modifies the Vertex object directly; does not require graph structural changes.
 	target_vertex = vertex
 	new_key = target_key
-	old_key = previous_key
+	old_key = vertex.key
 
 func execute() -> void:
 	target_vertex.key = new_key

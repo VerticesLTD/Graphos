@@ -8,6 +8,7 @@ var _selection: Array[Vertex]
 func _init(_graph: UndirectedGraph, selection: Array[Vertex]):
 	super(_graph)
 	_selection = selection
+	add_to_history = false
 
 func execute() -> void:
 	if _selection.is_empty():

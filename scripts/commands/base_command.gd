@@ -7,6 +7,9 @@ class_name Command
 ## Pass the = null graph because the command needs it for the change
 var graph: UndirectedGraph
 
+## Determines if this command should be added to the Undo Stack
+var add_to_history: bool = true
+
 ## Initialize the command, make UndirectedGraph null in def so its optional.
 func _init(_graph: UndirectedGraph = null):
 	self.graph = _graph

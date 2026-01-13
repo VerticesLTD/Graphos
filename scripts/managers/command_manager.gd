@@ -7,10 +7,10 @@ var redo_stack: Array[Command] = []
 ## execute one command
 func execute(cmd: Command) -> void:
 	cmd.execute()
-	undo_stack.append(cmd)
-	# IMPORTANT: If the user does a NEW action, you must clear the redo stack.
-	# You can't redo into a "branching" timeline.
-	redo_stack.clear()
+	
+	if cmd.add_to_history:
+		undo_stack.append(cmd)
+		redo_stack.clear()
 
 ## Reverse the last action
 func undo() -> void:
@@ -18,16 +18,18 @@ func undo() -> void:
 	
 	var cmd = undo_stack.pop_back()
 	cmd.undo()
-	redo_stack.append(cmd) # Move it here so we can "Redo" it
+	redo_stack.append(cmd)
 
 ## Re-apply the last undone action
 func redo() -> void:
 	if redo_stack.is_empty(): return
 	
 	var cmd = redo_stack.pop_back()
-	cmd.execute() # Run the logic again
-	undo_stack.append(cmd) # Put it back on the undo stack
+	cmd.execute() 
+	undo_stack.append(cmd)
 		
 ## Push new command to stack
 func push_to_stack(cmd) -> void:
-	undo_stack.append(cmd)
+	if cmd.add_to_history:
+		undo_stack.append(cmd)
+		redo_stack.clear()

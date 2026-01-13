@@ -51,6 +51,14 @@ func _process(_delta: float) -> void:
 ## ------------------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
+	# If the menu closed less than 200ms ago, ignore ALL clicks.
+	# This prevents "Accidental Vertices" (Left Click)
+	if popup and popup.MainMenu.visible:
+			# If it's a mouse click, we consume it so it doesn't create vertices or re-open menus
+			if event is InputEventMouseButton and event.pressed:
+				get_viewport().set_input_as_handled()
+			return		
+		
 	# 1. MOTION (Dragging)
 	# Handled first because its the most frequent one.
 	if event is InputEventMouseMotion:
