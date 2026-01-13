@@ -20,6 +20,28 @@ var selection_buffer: Array[Vertex] = []
 ## A class which holds a player with all the algorithm commands.
 var player: AlgorithmPlayer
 
+## A map linking actions to the functions handling them
+## <ACTION> : [<PRESS FUNCTION>, <RELEASE FUNCTION>]
+var action_map: Dictionary = {
+	&"left_click" : [_handle_left_click, _handle_left_release],
+	&"left_click_ctrl" : [null, null],
+	&"right_click" : [_handle_right_click, _handle_left_release],
+	&"right_click_ctrl" : [null, null],
+	&"ctrl" : [null, _clear_link_context],
+	&"press_B" : [null, null],
+	&"undo" : [func(): CommandManager.undo(), null],
+	&"redo" : [func(): CommandManager.redo(), null],
+	&"delete" : [_handle_delete_pressed, null],
+	&"copy" : [_handle_copy_pressed, null],
+	&"paste" : [_handle_paste_pressed, null],
+	&"cut" : [_handle_cut_pressed, null]
+}
+
+var action_map_algorithm_player: Dictionary = {
+	&"ui_right" : [func(_event): player.step_forward(), null],
+	&"ui_left" : [func(_event): player.step_backward(), null],
+}
+
 ## Vars to handle dragging
 ## Stores { Vertex: Vector2_Initial_Pos } for whatever is being dragged
 var drag_snapshot: Dictionary = {}
@@ -58,89 +80,47 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 			return		
 		
-	# 1. MOTION (Dragging)
-	# Handled first because its the most frequent one.
+	# Special case we explicitly check for
 	if event is InputEventMouseMotion:
 		_handle_mouse_movement(event)
 		return
 
-	# 2. LEFT_CLICKS & LEFT_RELEASES
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.is_pressed():
-			_handle_left_click(event.global_position)
-		else:
-			_handle_left_release()
-			
 	# MacOs ctrl+left_click is right click. Needs to be handled.
-	if event is InputEventMouseButton and \
-	event.button_index == MOUSE_BUTTON_RIGHT and \
-	event.ctrl_pressed and \
-	OS.get_name() == "macOS":
-		if event.is_pressed():
-			_handle_left_click(event.global_position)
-		else:
-			_handle_left_release()
+	if event.is_action_pressed("right_click_ctrl") and OS.get_name() == "macOS":
+		_handle_left_click(event)
+		return
 
-	# 3. RIGHT_CLICKS & RIGHT_RELEASES
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT \
-		and not event.ctrl_pressed:
-		if event.is_pressed():
-			_handle_right_click(event.global_position)
-		else:
-			_handle_right_release()
-			
-	# 4. RELEASE CTRL
-	if event is InputEventKey and event.keycode == KEY_CTRL:
-		if not event.is_pressed():
-			# If they let go of Ctrl, wipe the selection
-			_clear_link_context()
+	if event.is_action_released("right_click_ctrl") and OS.get_name() == "macOS":
+		_handle_left_release(event)
+		return
+	
+	for action: StringName in action_map.keys():
+		# Callables from action map
+		var pressed_handler = action_map[action].get(0)
+		var release_handler = action_map[action].get(1)
+
+		if event.is_action_pressed(action) and pressed_handler:
+			pressed_handler.call(event)
 			return
-			
-	# 5. Handle Undo
-	if event.is_action_pressed("undo"):
-		CommandManager.undo()
-		return
-		
-	# 6. Handle Redo
-	if event.is_action_pressed("redo"):
-		CommandManager.redo()
-		return
-		
-		
-	# 8. Algorithm Playing
+
+		if event.is_action_released(action) and release_handler:
+			release_handler.call(event)
+			return	
+	
 	if player:
-		if event.is_action_pressed("ui_right"): # right key
-			player.step_forward()
-			
-		if event.is_action_pressed("ui_left"): # left key
-			player.step_backward()
-		
-	# 9. Delete selection
-	if event.is_action_pressed("delete"):
-		if selection_buffer:
-			var cmd = DeleteSelectionCommand.new(graph, selection_buffer)
-			CommandManager.execute(cmd)
-	
-	# 10. Copy
-	if event.is_action_pressed("copy"):
-		if selection_buffer:
-			# Copy doesn't change the state so we dont need CommandManager.execute()
-			var cmd = CopyCommand.new(graph, selection_buffer)
-			cmd.execute()
-	
-	# 11. Paste
-	if event.is_action_pressed("paste"):
-		if Globals.clipboard_graph:			
-			var mouse_pos = graph.get_global_mouse_position()
-			var cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, self)
-			CommandManager.execute(cmd)
-			
-	# 11. Paste
-	if event.is_action_pressed("cut"):
-		if not selection_buffer.is_empty():
-			var cmd = CutCommand.new(graph, selection_buffer, self)
-			CommandManager.execute(cmd)
-			
+		for action: StringName in action_map_algorithm_player.keys():
+			# Callables from action map
+			var pressed_handler = action_map_algorithm_player[action].get(0)
+			var release_handler = action_map_algorithm_player[action].get(1)
+
+			if event.is_action_pressed(action) and pressed_handler:
+				pressed_handler.call(event)
+				return
+
+			if event.is_action_released(action) and release_handler:
+				release_handler.call(event)
+				return	
+
 ## ------------------------------------------------------------------------------
 ## MOUSE MOVEMENTS 
 ## ------------------------------------------------------------------------------
@@ -216,7 +196,9 @@ func _stop_dragging() -> void:
 ## LEFT_CLICKS & LEFT_RELEASES 
 ## ------------------------------------------------------------------------------
 
-func _handle_left_click(mouse_global_pos: Vector2):
+func _handle_left_click(event: InputEventMouseButton):
+	var mouse_global_pos = event.global_position
+
 	# Get the vertex in the position of the mouse(or not found)
 	var id = graph.get_vertex_id_at(mouse_global_pos)
 	var is_ctrl = Input.is_key_pressed(KEY_CTRL)
@@ -241,7 +223,7 @@ func _handle_left_click(mouse_global_pos: Vector2):
 	# Clearing node selection on an empty click
 	_clear_selection_buffer()
 	
-func _handle_left_release():
+func _handle_left_release(_event: InputEventMouseButton):
 	# Always stop dragging when the mouse is let go
 	_stop_dragging()
 
@@ -249,7 +231,9 @@ func _handle_left_release():
 ## ------------------------------------------------------------------------------
 ## RIGHT_CLICKS & RIGHT_RELEASES 
 ## ------------------------------------------------------------------------------
-func _handle_right_click(mouse_global_pos: Vector2) -> void:
+func _handle_right_click(event: InputEventMouseButton):
+	var mouse_global_pos = event.global_position
+
 	## 1. Check vertex at mouse
 	var v_id = graph.get_vertex_id_at(mouse_global_pos)
 	if v_id != Globals.NOT_FOUND:
@@ -268,9 +252,9 @@ func _handle_right_click(mouse_global_pos: Vector2) -> void:
 	## 3. Empty space
 	if popup:
 		popup.open_for_canvas(mouse_global_pos)
-
+	pass
 	
-func _handle_right_release():
+func _handle_right_release(_event: InputEventMouseButton):
 	pass
 	
 
@@ -320,7 +304,7 @@ func _handle_path_connection(pos: Vector2) -> void:
 
 
 ## Clears the seletion buffer for linking nodes.
-func _clear_link_context() -> void:
+func _clear_link_context(_event: InputEvent) -> void:
 	# 1. Clean the visual feedback
 	for id in link_buffer:
 		var v = graph.get_vertex(id)
@@ -373,6 +357,42 @@ func _clear_selection_buffer() -> void:
 
 	selection_buffer.clear()
 
+func _handle_delete_pressed(_event: InputEvent) -> void:
+	if selection_buffer:
+		CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
+
+func _handle_copy_pressed(_event: InputEvent) -> void:
+	if selection_buffer:
+		# Clean up old clipboard memory
+		if Globals.clipboard_graph:
+			Globals.clipboard_graph.queue_free()
+		
+		# Create the snapshot
+		Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
+		GLogger.debug("Selection copied to clipboard.","CLIPBORAD")
+
+func _handle_paste_pressed(_event: InputEvent) -> void:
+	if Globals.clipboard_graph:
+		var mouse_pos = graph.get_global_mouse_position()
+		
+		var paste_cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, self)
+
+		GLogger.debug("Selection pasted.","CLIPBORAD")
+
+		CommandManager.execute(paste_cmd)
+
+func _handle_cut_pressed(_event: InputEvent) -> void:
+	if selection_buffer:
+		# Clean up old clipboard memory
+		if Globals.clipboard_graph:
+			Globals.clipboard_graph.queue_free()
+		
+		# Create the snapshot
+		Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
+		GLogger.debug("Selection copied to clipboard.","CLIPBOARD")
+		
+		# Delete the selected sub-graph	
+		CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
 
 ## ONLY refreshes the link buffer colors. It doesn't touch the Array logic.
 func _refresh_link_buffer_colors() -> void:
@@ -435,10 +455,9 @@ func execute_algorithm(algo_class: GDScript, start_node: Vertex) -> void:
 	
 	print("Algorithm logic finished. Timeline recorded with %d steps." % timeline.size())
 
-
 ## Recieves the player from the Command
 func set_algorithm_player(new_player: AlgorithmPlayer) -> void:
 	self.player = new_player
-	print("New algorithm player")
+	GLogger.debug("New algorithm player")
 	# Trigger first step immidietly
 	player.step_forward()
