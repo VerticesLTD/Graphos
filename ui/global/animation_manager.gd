@@ -24,11 +24,8 @@ func update_selected_elements_hover_animations() -> void:
 
 		while edges:
 			if edges.src in current_selection and edges.dst in current_selection:
-				var src_idx = current_selection.find(edges.src)
-				var dst_idx = current_selection.find(edges.dst)
-				var flow_forward = src_idx < dst_idx
-				
-				edges.view.start_flow_animation(flow_forward)
+				edges.view.manual_hover_start()
+
 			edges = edges.next
 	
 	# Finding elements that no longer need highlighting
@@ -39,5 +36,5 @@ func update_selected_elements_hover_animations() -> void:
 
 			# This does go over each view twice - Could be optimized
 			while edges:
-				edges.view.stop_flow_animation()
+				edges.view.manual_hover_stop()
 				edges = edges.next
