@@ -52,7 +52,8 @@ var _dynamic_menus: Array[PopupMenu] = []
 func _ready() -> void:
 	if MainMenu:
 			_wire_menu(MainMenu)
-	
+			
+		
 ## -----------------------------------------------------------------------------
 ## PUBLIC API: GraphController calls exactly ONE of these
 ## -----------------------------------------------------------------------------
