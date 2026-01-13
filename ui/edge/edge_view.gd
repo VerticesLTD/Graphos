@@ -44,15 +44,21 @@ func _process(_delta: float) -> void:
 	# Could perhaps be optimized
 	queue_redraw()
 
+## Draws the edge's mouse detection area accurately to how it is drawn.
 func _setup_detection_area() -> void:
 	# Assumes edge_data exists
 	var pos1 = edge_data.src.pos
 	var pos2  = edge_data.dst.pos
+
+	var draw_positions = _get_visual_start_end(pos1,pos2)
+	var visual_start = draw_positions[0]
+	var visual_end = draw_positions[1]
+
 	var width = Globals.EDGE_WIDTH + MOUSE_DETECT_SENSITIVITY
 
-	var length: float = pos1.distance_to(pos2)
+	var length: float = visual_start.distance_to(visual_end)
 	var midpoint: Vector2 = (pos1 + pos2) / 2.0
-	var rotation_angle: float = pos1.angle_to_point(pos2)
+	var rotation_angle: float = visual_start.angle_to_point(visual_end)
 
 	mouse_detection_area.position = midpoint
 	mouse_detection_area.rotation = rotation_angle
@@ -63,6 +69,17 @@ func _setup_detection_area() -> void:
 	var shape: RectangleShape2D = collision_shape.shape as RectangleShape2D
 
 	shape.size = Vector2(length, width)
+
+## Calculates exactly where in the vertex the edge should start.
+## This makes the edge not be "below" the vertex, which causes some
+## mouse detection issues.
+func _get_visual_start_end(pos1: Vector2, pos2: Vector2) -> Array[Vector2]:
+	var direction = pos1.direction_to(pos2)
+
+	var visual_start = pos1 + (direction * Globals.VERTEX_RADIUS)
+	var visual_end = pos2 - (direction * Globals.VERTEX_RADIUS)
+
+	return [visual_start,visual_end]
 
 
 func refresh() -> void:
@@ -75,25 +92,30 @@ func _draw() -> void:
 	# Stop if the brain or its endpoints are missing.
 	if not edge_data or not edge_data.src or not edge_data.dst:
 		return
+	var pos1 = edge_data.src.pos
+	var pos2 = edge_data.dst.pos
+
+	var draw_positions = _get_visual_start_end(pos1,pos2)
+	var visual_start = draw_positions[0]
+	var visual_end = draw_positions[1]
 
 	if is_hovered:
-		draw_line(edge_data.src.pos, edge_data.dst.pos, draw_color_hovered, draw_width_hovered)
+		draw_line(visual_start, visual_end, draw_color_hovered, draw_width_hovered)
 	else:
-		draw_line(edge_data.src.pos, edge_data.dst.pos, edge_data.color, Globals.EDGE_WIDTH)
+		draw_line(visual_start, visual_end, edge_data.color, Globals.EDGE_WIDTH)
 		
 	# Flow animation (growing highlight)
 	if highlight_progress > 0.0:
-		var start = edge_data.src.pos
-		var end = edge_data.dst.pos
-		
-		if not highlight_direction:
-			var temp = start
-			start = end
-			end = temp
-			
-		var highlight_end = start.lerp(end, highlight_progress)
-		draw_line(start, highlight_end, Globals.EDGE_HOVER_COLOR, draw_width_hovered)
+		_draw_flow_animation_line(visual_start,visual_end)
 
+func _draw_flow_animation_line(start_pos: Vector2, end_pos: Vector2) -> void:
+	if not highlight_direction:
+		var temp = start_pos
+		start_pos = end_pos
+		end_pos = temp
+		
+	var highlight_end = start_pos.lerp(end_pos, highlight_progress)
+	draw_line(start_pos, highlight_end, Globals.EDGE_HOVER_COLOR, draw_width_hovered)
 
 func _on_mouse_entered() -> void:
 	is_hovered = true
