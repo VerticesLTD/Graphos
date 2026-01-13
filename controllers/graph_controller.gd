@@ -67,7 +67,7 @@ func _ready() -> void:
 		push_warning("GraphController: popup manager not assigned in Inspector.")
 
 func _process(_delta: float) -> void:
-	# If we are currently draggin nodes, we do not want to touch
+	# If we are currently dragging nodes, we do not want to touch
 	# the selection buffer.
 	if Globals.is_mass_select and not is_dragging:
 		_populate_selection_buffer()
@@ -319,22 +319,31 @@ func _clear_link_context(_event: InputEvent) -> void:
 	# 2. Empty the logic container
 	link_buffer.clear()
 
-# TODO: Highlighting in the populate/clear functions below could
-# be optimized.
-
 ## Looks for nodes inside Globals.selection_rectangle and adds them
 ## to buffer.
+## This function preserves the order of selection, which is important for animations.
 func _populate_selection_buffer() -> void:
-	# Clean slate - If selection updated and no longer includes 
-	# some nodes.
-	_clear_selection_buffer()
+	# OPTIMIZE: Lookups can be O(1) with dicts
+	var new_selection: Array[Vertex] = []
 
+	# Check what is selected
 	var rect = Rect2(Globals.selection_rectangle)
 	for v: Vertex in graph.vertices.values():
 		if rect.has_point(v.pos):
 			# Setting drawing on top
 			v.z_idx = VERTEX_ON_TOP
 
+			new_selection.append(v)
+	
+	# Check what needs to be removed from the previous selection state and update
+	# Iterating BACKWARDS to preserve order
+	for i in range(selection_buffer.size() -1, -1, -1):
+		var v = selection_buffer[i]
+		if v not in new_selection:
+			selection_buffer.remove_at(i)
+
+	for v in new_selection:
+		if v not in selection_buffer:
 			selection_buffer.append(v)
 
 	animation_manager.update_current_selection(selection_buffer)

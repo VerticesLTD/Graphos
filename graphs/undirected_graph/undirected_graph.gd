@@ -49,7 +49,6 @@ func _on_edge_added(new_edge: Edge) -> void:
 		# Create the visual Body
 		edge_view = EDGE_VIEW_SCENE.instantiate()
 		edge_view.edge_data = new_edge
-		GLogger.debug("Add child!")
 		add_child(edge_view)
 
 		# The ONLY place we increase the global count. When a view was created.
