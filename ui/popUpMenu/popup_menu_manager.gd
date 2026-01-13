@@ -36,6 +36,11 @@ var ALGO_REGISTRY = {
 	"Breadth First Search": BFS,
 }
 
+## Helper to generate the color square icon
+func _get_swatch(c: Color) -> Texture2D:
+	return IconGenerator.make_color_swatch(c)
+	
+	
 ## Active context (what was clicked)
 var active = null
 var mode: String = "general"
@@ -72,7 +77,7 @@ func open_for_edge(e: Edge, mouse_pos: Vector2) -> void:
 func open_for_canvas(mouse_pos: Vector2) -> void:
 	active = null
 	mode = "general"
-	_open_at(mouse_pos, _make_canvas_menu())
+	_open_at(mouse_pos, _make_canvas_menu(mouse_pos))
 
 
 ## -----------------------------------------------------------------------------
@@ -101,12 +106,21 @@ func _build_menu_recursive(menu: PopupMenu, menu_def: Array) -> void:
 	for item in menu_def:
 		var label = item[0]
 		var value = item[1] if item.size() > 1 else null ## allow ["test"] too
+		var icon  = item[2] if item.size() > 2 else null ## Icon
 
+		## Add seperator
+		if label == "---":
+				menu.add_separator()
+				continue # Skip the rest of the loop for this item
+				
 		## CASE 1: Real Command instance -> clickable item
 		if value is Command:
 			var idx = menu.item_count
 			menu.add_item(label)
 			menu.set_item_metadata(idx, value) ## store command object here
+			
+			if icon:
+				menu.set_item_icon(idx, icon)
 
 		## CASE 2: Submenu -> nested Array
 		elif value is Array:
@@ -135,6 +149,9 @@ func _build_menu_recursive(menu: PopupMenu, menu_def: Array) -> void:
 			var idx = menu.item_count
 			menu.add_item(label)
 			menu.set_item_metadata(idx, null) ## no action
+			
+			if value == null:
+				menu.set_item_disabled(idx, true)
 
 
 ## Connects a PopupMenu's clicks to a handler that reads metadata and executes command.
@@ -182,8 +199,12 @@ func _clear_context() -> void:
 ## -----------------------------------------------------------------------------
 
 
-
 func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
+	# Determine if we cal paste
+	var paste_cmd = null
+	if Globals.clipboard_graph != null:
+		paste_cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, controller)
+
 	## You can put placeholders (null) while implementing commands.
 	## This lets you test menu opening immediately.
 	var buffer_snapshot = controller.selection_buffer.duplicate() if controller else []
@@ -199,37 +220,70 @@ func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
 		
 		# Add to the list
 		algo_submenu.append([algo_name, cmd])
+		
+		
+	var color_vertex_submenu = [
+	["Black",  ChangeVertexColorCommand.new(v, Color.BLACK),  _get_swatch(Color.BLACK)],
+	["Red",    ChangeVertexColorCommand.new(v, Color.RED),    _get_swatch(Color.RED)],
+	["Blue",   ChangeVertexColorCommand.new(v, Color.BLUE),   _get_swatch(Color.BLUE)],
+	["White",  ChangeVertexColorCommand.new(v, Color.WHITE),  _get_swatch(Color.WHITE)],
+	["Yellow", ChangeVertexColorCommand.new(v, Color.YELLOW), _get_swatch(Color.YELLOW)],
+	["Green",  ChangeVertexColorCommand.new(v, Color.GREEN),  _get_swatch(Color.GREEN)]
+	]	
+
 
 	return [
+			# Algorithms
 			["Algorithms", algo_submenu],
+			["---", null],
+			
+			# CLIPBOARD
 			["Copy", CopyCommand.new(graph, buffer_snapshot)],
-			["Paste", PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, controller)],
-			["Cut", CutCommand.new(graph, Globals.clipboard_graph, mouse_pos, controller)],
+			["Paste", paste_cmd],
+			["Cut", CutCommand.new(graph, buffer_snapshot, controller)],
+			
+			["---", null],
+			
+			# Color
+			["Color Vertex", color_vertex_submenu], 
+			["---", null],
+			
+			# Delete
 			["Delete Vertex", DeleteVertexCommand.new(graph, v)]
 		]
 	
 
 
 func _make_edge_menu(e: Edge) -> Array:
-	return [
-		["test (no command)", null],
-		["Delete Edge (placeholder)", null], ## swap to DeleteEdgeCommand when ready
-		["Algorithms", [
-			["Bridge Check (placeholder)", null],
-		]]
+	# 1. Create the Submenu for Colors
+	var color_edge_submenu = [
+		["Black",  ChangeEdgeColorCommand.new(e, Color.BLACK),  _get_swatch(Color.BLACK)],
+		["Red",    ChangeEdgeColorCommand.new(e, Color.RED),    _get_swatch(Color.RED)],
+		["Blue",   ChangeEdgeColorCommand.new(e, Color.BLUE),   _get_swatch(Color.BLUE)],
+		["White",  ChangeEdgeColorCommand.new(e, Color.WHITE),  _get_swatch(Color.WHITE)],
+		["Yellow", ChangeEdgeColorCommand.new(e, Color.YELLOW), _get_swatch(Color.YELLOW)],
+		["Green",  ChangeEdgeColorCommand.new(e, Color.GREEN),  _get_swatch(Color.GREEN)]
 	]
 
+	# 2. Return the Main Edge Menu
+	return [		
+		# Add the submenu here
+		["Color Edge", color_edge_submenu],
+		["---", null],
 
-func _make_canvas_menu() -> Array:
-	return [
-		["Canvas test", null],
-		["Algorithms", [
-			["Global MST (placeholder)", null],
-		]]
+		["Delete Edge", DeleteEdgeCommand.new(graph, e.src.id, e.dst.id)],
 	]
-	
-	
-	
+
+func _make_canvas_menu(mouse_pos: Vector2) -> Array:
+	var paste_cmd = null
+	if Globals.clipboard_graph != null:
+		paste_cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, controller)
+
+	return [
+			["Create Vertex", AddVertexCommand.new(graph, mouse_pos)],
+			["Paste", paste_cmd]		
+		]
+
 
 func find_vertex_view(node: Node) -> UIVertexView:
 	var current = node

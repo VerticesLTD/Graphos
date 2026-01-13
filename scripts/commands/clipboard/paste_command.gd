@@ -51,7 +51,7 @@ func execute() -> void:
 	for old_v in clipboard_ref.vertices.values():
 		for neighbor in old_v.get_neighbor_vertices():
 			# Avoid double-adding edges (only process if ID is smaller)
-			if old_v.id < neighbor.id:
+			if old_v.id < neighbor.id and id_map.has(neighbor.id):
 				var new_src = id_map[old_v.id]
 				var new_dst = id_map[neighbor.id]
 				var e_cmd = AddEdgeCommand.new(graph, new_src.id, new_dst.id)

@@ -5,8 +5,8 @@ extends Command
 var _selection: Array[Vertex]
 
 # We pass the graph and the specific selection we want to copy
-func _init(graph: UndirectedGraph, selection: Array[Vertex]):
-	super(graph) # Assuming your base Command class takes the graph
+func _init(_graph: UndirectedGraph, selection: Array[Vertex]):
+	super(_graph)
 	_selection = selection
 
 func execute() -> void:

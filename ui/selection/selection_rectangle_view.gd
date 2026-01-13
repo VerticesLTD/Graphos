@@ -1,5 +1,5 @@
-extends Node2D
 class_name UISelectionRect
+extends Node2D
 
 var initial_click_position: Vector2
 var current_mouse_position: Vector2

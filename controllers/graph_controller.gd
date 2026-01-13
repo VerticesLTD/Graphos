@@ -111,34 +111,28 @@ func _unhandled_input(event: InputEvent) -> void:
 	# 9. Delete selection
 	if event.is_action_pressed("delete"):
 		if selection_buffer:
-			CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
+			var cmd = DeleteSelectionCommand.new(graph, selection_buffer)
+			CommandManager.execute(cmd)
 	
 	# 10. Copy
 	if event.is_action_pressed("copy"):
 		if selection_buffer:
-			CommandManager.execute(CopyCommand.new(graph, selection_buffer))
-
+			# Copy doesn't change the state so we dont need CommandManager.execute()
+			var cmd = CopyCommand.new(graph, selection_buffer)
+			cmd.execute()
 	
 	# 11. Paste
 	if event.is_action_pressed("paste"):
 		if Globals.clipboard_graph:			
-			var paste_cmd = PasteCommand.new(graph, Globals.clipboard_graph, graph.get_global_mouse_position(), self)
-			CommandManager.execute(paste_cmd)
+			var mouse_pos = graph.get_global_mouse_position()
+			var cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, self)
+			CommandManager.execute(cmd)
 			
 	# 11. Paste
 	if event.is_action_pressed("cut"):
-		if selection_buffer:
-			# Clean up old clipboard memory
-			if Globals.clipboard_graph:
-				Globals.clipboard_graph.queue_free()
-			
-			# Create the snapshot
-			Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
-			print("Selection copied to clipboard.")
-			
-			# Delete the selected sub-graph	
-			CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
-
+		if not selection_buffer.is_empty():
+			var cmd = CutCommand.new(graph, selection_buffer, self)
+			CommandManager.execute(cmd)
 			
 ## ------------------------------------------------------------------------------
 ## MOUSE MOVEMENTS 

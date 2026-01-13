@@ -1,75 +1,52 @@
-## Command to paste a sub-graph.
 class_name CutCommand
 extends Command
 
-var clipboard_ref: UndirectedGraph
-var created_vertex_cmds: Array[AddVertexCommand] = []
-var created_edge_cmds: Array[AddEdgeCommand] = []
+var selection_to_cut: Array[Vertex]
 var graph_controller: GraphController
 
-func _init(g: UndirectedGraph, _clipboard: UndirectedGraph, _mouse_global_pos: Vector2, _ctrl: GraphController):
+# Store sub-commands to handle the actual deletion logic
+var delete_cmds: Array[DeleteVertexCommand] = []
+
+func _init(g: UndirectedGraph, _selection: Array[Vertex], _ctrl: GraphController):
 	super(g)
-	clipboard_ref = _clipboard
+	# Deep copy the array so we remember exactly what was selected at this moment
+	selection_to_cut = _selection.duplicate()
 	graph_controller = _ctrl
-	
-	# 1. Map: { Old_ID : New_ID }
-	var id_map = {}
-	
-	
-	# --- Step 1: Find the box ---
-	var bounds = Rect2(clipboard_ref.vertices.values()[0].pos, Vector2.ZERO)
-	for v in clipboard_ref.vertices.values():
-		bounds = bounds.expand(v.pos)
-	
-	var center = bounds.get_center()
-	
-	# 2. Create Vertex Commands
-	for old_v in clipboard_ref.vertices.values():	
-		# get the vertex offset relative to the bounds center
-		var offset = old_v.pos - center
-		
-		
-		var new_pos = _mouse_global_pos + offset
-		var v_cmd = AddVertexCommand.new(graph, new_pos)
-		
-		# Execute immediately (internally) to get the new ID assigned by the graph
-		v_cmd.execute()
-		created_vertex_cmds.append(v_cmd)
-		
-		id_map[old_v.id] = v_cmd.vertex.id
-		
-	# Create add edges commands
-	for old_v in clipboard_ref.vertices.values():
-		for neighbor in old_v.get_neighbor_vertices():
-			# Avoid double-adding edges (only process if ID is smaller)
-			if old_v.id < neighbor.id:
-				var new_src = id_map[old_v.id]
-				var new_dst = id_map[neighbor.id]
-				created_edge_cmds.append(AddEdgeCommand.new(graph, new_src, new_dst))
-		
-	
+
 func execute() -> void:
-	for v_cmd in created_vertex_cmds:
-		# We use restore here because the vertex objects already exist
-		graph.restore_vertex(v_cmd.vertex)	
-		
-	for e_cmd in created_edge_cmds:
-		e_cmd.execute()
-		
-	# Clear the selection
-	graph_controller._clear_selection_buffer()
-	var new_vertices: Array[Vertex]
-	for v_cmd in created_vertex_cmds:
-		new_vertices.append(v_cmd.vertex)
+	if selection_to_cut.is_empty():
+		return
 
-	# Trigger the purple highlights and z-index update
-	graph_controller.select_vertices(new_vertices)		
-
-		
-func undo() -> void:
-	# Delete in reverse: Edges first, then Vertices
-	for e_cmd in created_edge_cmds:
-		e_cmd.undo()
+	# Update clipboard
+	if Globals.clipboard_graph:
+		Globals.clipboard_graph.queue_free()
 	
-	for v_cmd in created_vertex_cmds:
-		v_cmd.undo()
+	# Create snapshot of the vertices we are about to delete
+	Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_to_cut)
+	print("Cut: Selection copied to clipboard.")
+
+	# Delete logic
+	if delete_cmds.is_empty():
+		# First run: Create the delete commands
+		for v in selection_to_cut:
+			# DeleteVertexCommand handles removing edges connected to v
+			var cmd = DeleteVertexCommand.new(graph, v)
+			cmd.execute()
+			delete_cmds.append(cmd)
+	else:
+		# Redo run: Just re-execute existing commands
+		for cmd in delete_cmds:
+			cmd.execute()
+
+	# Cleanup UI
+	if graph_controller:
+		graph_controller._clear_selection_buffer()
+
+func undo() -> void:
+	# Undo deletion in reverse order
+	for i in range(delete_cmds.size() - 1, -1, -1):
+		delete_cmds[i].undo()
+		
+	# Restore selection so the user sees the nodes came back
+	if graph_controller:
+		graph_controller.select_vertices(selection_to_cut)
