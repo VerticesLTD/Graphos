@@ -32,7 +32,6 @@ func _ready() -> void:
 
 	## Inject graph into popup manager so it can create commands like DeleteVertexCommand.new(graph, v)
 	if popup:
-		print("there's a popup")
 		popup.graph = graph
 		popup.controller = self 
 	else:
@@ -260,10 +259,10 @@ func _handle_right_click(mouse_global_pos: Vector2) -> void:
 		return
 
 	## 2. Check edge at mouse
-	var e_ins = graph.get_edge_at(mouse_global_pos)
-	if e_ins != null:
+	var edge = graph.get_edge_at(mouse_global_pos)
+	if edge != null:
 		if popup:
-			popup.open_for_edge(e_ins, mouse_global_pos)
+			popup.open_for_edge(edge, mouse_global_pos)
 		return
 
 	## 3. Empty space
