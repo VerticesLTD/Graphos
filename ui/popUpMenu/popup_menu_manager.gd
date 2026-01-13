@@ -27,6 +27,15 @@ extends Control
 ## We inject it from GraphController in _ready().
 var graph: UndirectedGraph
 
+## Save the controller in order to access its properties
+var controller: GraphController 
+
+
+## Format: { "Menu Label": ScriptResource }
+var ALGO_REGISTRY = {
+	"Breadth First Search": BFS,
+}
+
 ## Active context (what was clicked)
 var active = null
 var mode: String = "general"
@@ -150,7 +159,7 @@ func _on_any_menu_item_pressed(index: int, menu: PopupMenu) -> void:
 	if cmd is Command:
 		CommandManager.execute(cmd)
 		return
-
+	
 	## If someone accidentally stored something else, fail safely
 	push_warning("Popup item metadata is not a Command: %s" % [str(cmd)])
 
@@ -172,19 +181,31 @@ func _clear_context() -> void:
 ## MENU FACTORIES (ALL MENUS DEFINED HERE, SOLID)
 ## -----------------------------------------------------------------------------
 
+
+
 func _make_vertex_menu(v: Vertex) -> Array:
 	## You can put placeholders (null) while implementing commands.
 	## This lets you test menu opening immediately.
+	var buffer_snapshot = controller.selection_buffer.duplicate() if controller else []
+
+	## Create the algorithm sub-menu
+	var algo_submenu = [] 
+	
+	for algo_name in ALGO_REGISTRY:
+		var algo_script = ALGO_REGISTRY[algo_name]
+		
+		# Create the command automatically using the shared params
+		var cmd = ExecuteAlgorithm.new(algo_script, v, buffer_snapshot, graph, controller)
+		
+		# Add to the list
+		algo_submenu.append([algo_name, cmd])
+	
 	return [
-		["test (no command)", null],
-		["Delete Vertex", DeleteVertexCommand.new(graph, v)],
-		["Algorithms", [
-			["MST (placeholder)", null],
-			["More", [
-				["Deep placeholder", null],
-			]]
-		]]
-	]
+			["Algorithms", algo_submenu],
+			["Copy selection, Cop"]
+			["Delete Vertex", DeleteVertexCommand.new(graph, v)]
+		]
+	
 
 
 func _make_edge_menu(e: Edge) -> Array:

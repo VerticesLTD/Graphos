@@ -12,7 +12,7 @@ func _init(_imposter_graph: UndirectedGraph, _real_graph: UndirectedGraph):
 ## @param _start_vertex    The vertex the algorithm starts from
 func run(_start_vertex: Vertex) -> Array[Command]:
 	# Step 1: Initialize the veritces state
-	for v in real_graph.vertices.values():
+	for v in imposter_graph.vertices.values():
 		v.color = COLOR_NOT_DISCOVERED # NOT LOGGING so we start AFTER initialization
 		v.parent = null
 		

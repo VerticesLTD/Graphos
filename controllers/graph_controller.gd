@@ -34,6 +34,7 @@ func _ready() -> void:
 	if popup:
 		print("there's a popup")
 		popup.graph = graph
+		popup.controller = self 
 	else:
 		print("there's no popup")
 		push_warning("GraphController: popup manager not assigned in Inspector.")
@@ -99,15 +100,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 		
 		
-	# 7. Run algorithm
-	if event is InputEventKey and event.keycode == KEY_B:
-		var mouse_pos = graph.get_global_mouse_position()
-		var start_v_id = graph.get_vertex_id_at(mouse_pos)
-		if start_v_id != Globals.NOT_FOUND:
-			var start_v = graph.get_vertex(start_v_id)
-			execute_algorithm(BFS, start_v)
-			player.step_forward() # Do one step to give visual fidback for the start
-		
 	# 8. Algorithm Playing
 	if player:
 		if event.is_action_pressed("ui_right"): # right key
@@ -123,6 +115,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	
 	# 10. Copy
 	if event.is_action_pressed("copy"):
+		CommandManager.execute(CopySelection)
 		if selection_buffer:
 			# Clean up old clipboard memory
 			if Globals.clipboard_graph:
@@ -448,3 +441,11 @@ func execute_algorithm(algo_class: GDScript, start_node: Vertex) -> void:
 	imposter_graph.queue_free()
 	
 	print("Algorithm logic finished. Timeline recorded with %d steps." % timeline.size())
+
+
+## Recieves the player from the Command
+func set_algorithm_player(new_player: AlgorithmPlayer) -> void:
+	self.player = new_player
+	print("New algorithm player")
+	# Trigger first step immidietly
+	player.step_forward()
