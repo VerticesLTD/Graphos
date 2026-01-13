@@ -62,7 +62,7 @@ func _ready() -> void:
 func open_for_vertex(v: Vertex, mouse_pos: Vector2) -> void:
 	active = v
 	mode = "vertex"
-	_open_at(mouse_pos, _make_vertex_menu(v))
+	_open_at(mouse_pos, _make_vertex_menu(v, mouse_pos))
 
 func open_for_edge(e: Edge, mouse_pos: Vector2) -> void:
 	active = e
@@ -183,7 +183,7 @@ func _clear_context() -> void:
 
 
 
-func _make_vertex_menu(v: Vertex) -> Array:
+func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
 	## You can put placeholders (null) while implementing commands.
 	## This lets you test menu opening immediately.
 	var buffer_snapshot = controller.selection_buffer.duplicate() if controller else []
@@ -199,10 +199,12 @@ func _make_vertex_menu(v: Vertex) -> Array:
 		
 		# Add to the list
 		algo_submenu.append([algo_name, cmd])
-	
+
 	return [
 			["Algorithms", algo_submenu],
-			["Copy selection, Cop"]
+			["Copy", CopyCommand.new(graph, buffer_snapshot)],
+			["Paste", PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, controller)],
+			["Cut", CutCommand.new(graph, Globals.clipboard_graph, mouse_pos, controller)],
 			["Delete Vertex", DeleteVertexCommand.new(graph, v)]
 		]
 	
