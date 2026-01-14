@@ -31,21 +31,34 @@ var _next_vertex_id: int = 0
 	
 ## This runs whenever a vertex emits 'edge_added'
 func _on_edge_added(new_edge: Edge) -> void:
-	# SAFETY CHECK: Even if both vertices shouted, we only draw the 
-	# edge where the source ID is lower to prevent visual duplicates.
+	var edge_view: UIEdgeView = null
+
+	# Only one view needs to be created. If one was already created,
+	# we make sure both edges reference the same view.
 	if new_edge.src.id > new_edge.dst.id:
-		return
+		var dst_edges = new_edge.dst.edges
+		while dst_edges:
+			if dst_edges.dst == new_edge.src:
+				edge_view = dst_edges.view
+				break
 
-	# Create the visual Body
-	var line: UIEdgeView = EDGE_VIEW_SCENE.instantiate()
-	line.edge_data = new_edge
+			dst_edges = dst_edges.next
+		assert(edge_view != null, "Couldn't find the proper view for this edge!")
 
-	# Add to scene and ensure it's drawn BEHIND the vertices
-	add_child(line)
-	move_child(line, 0) # Draw behind vertices
+	else:
+		# Create the visual Body
+		edge_view = EDGE_VIEW_SCENE.instantiate()
+		edge_view.edge_data = new_edge
+		add_child(edge_view)
+
+		# The ONLY place we increase the global count. When a view was created.
+		num_edges += 1
+
+	# Dependency injection
+	new_edge.view = edge_view
+
+	move_child(edge_view, 0)	# Draw behind vertices
 	
-	# The ONLY place we increase the global count. After we draw successfuly.
-	num_edges += 1
 
 ## This runs whenever a vertex emits 'edge_removed'
 func _on_edge_removed(edge_to_remove: Edge) -> void:
@@ -90,7 +103,11 @@ func _register_and_visualize(v: Vertex) -> void:
 	vertices[v.id] = v
 	
 	var view: UIVertexView = VERTEX_VIEW_SCENE.instantiate()
-	view.vertex_data = v
+
+	# Dependency injection
+	view.vertex_data = v 
+	v.view = view
+
 	add_child(view)
 	
 	
@@ -136,13 +153,9 @@ func add_edge(src_id: int, dst_id: int, weight: int = 1) -> void:
 	
 	if not v_src or not v_dst: return
 
-	# Determine who shouts based on ID 
-	var first = v_src if src_id < dst_id else v_dst
-	var second = v_dst if src_id < dst_id else v_src
-
-	# The lower ID always 'shouts' and creates the UI line
-	first.connect_vertices(second, weight, true)
-	second.connect_vertices(first, weight, false)
+	# Both vertices "Shout" since `on_edge_added` knows to create only one view
+	v_src.connect_vertices(v_dst, weight, true) 
+	v_dst.connect_vertices(v_src, weight, true)	
 
 ## Adds an edge without triggering any UI signals or spawning EdgeViews.
 ## Used for imposter graphs and internal calculations.

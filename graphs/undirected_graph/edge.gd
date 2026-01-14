@@ -26,6 +26,10 @@ var next: Edge = null
 ## Lets the edge know if its an imposter to not emit drawing signals.
 var is_imposter: bool = false
 
+## Viewer refernce. Useful for animations.
+## This is injected at the graph level
+var view: UIEdgeView
+
 
 ## Constructs a new Edge.
 ## @param _weight Weight of the edge.

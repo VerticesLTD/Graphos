@@ -15,7 +15,14 @@ const VERTEX_BELOW = 1
 var link_buffer: Array[int] = []
 
 ## Holds nodes selected by user mass select
-var selection_buffer: Array[Vertex] = []
+var selection_buffer: Array[Vertex] = []:
+	set(value):
+		selection_buffer = value
+		# Keeps animation manager updated with selected vertices
+		animation_manager.update_current_selection(selection_buffer)
+
+## Animation manager responsible for animations at the controller level
+@onready var animation_manager: AnimationManager = $AnimationManager
 
 ## A class which holds a player with all the algorithm commands.
 var player: AlgorithmPlayer
@@ -57,12 +64,10 @@ func _ready() -> void:
 		popup.graph = graph
 		popup.controller = self 
 	else:
-		print("there's no popup")
 		push_warning("GraphController: popup manager not assigned in Inspector.")
 
-
 func _process(_delta: float) -> void:
-	# If we are currently draggin nodes, we do not want to touch
+	# If we are currently dragging nodes, we do not want to touch
 	# the selection buffer.
 	if Globals.is_mass_select and not is_dragging:
 		_populate_selection_buffer()
@@ -314,26 +319,34 @@ func _clear_link_context(_event: InputEvent) -> void:
 	# 2. Empty the logic container
 	link_buffer.clear()
 
-# TODO: Highlighting in the populate/clear functions below could
-# be optimized.
-
 ## Looks for nodes inside Globals.selection_rectangle and adds them
 ## to buffer.
+## This function preserves the order of selection, which is important for animations.
 func _populate_selection_buffer() -> void:
-	# Clean slate - If selection updated and no longer includes 
-	# some nodes.
-	_clear_selection_buffer()
+	# OPTIMIZE: Lookups can be O(1) with dicts
+	var new_selection: Array[Vertex] = []
 
+	# Check what is selected
 	var rect = Rect2(Globals.selection_rectangle)
 	for v: Vertex in graph.vertices.values():
 		if rect.has_point(v.pos):
-			# Setting highlight color
-			v.color = Color.PURPLE
-
 			# Setting drawing on top
 			v.z_idx = VERTEX_ON_TOP
 
+			new_selection.append(v)
+	
+	# Check what needs to be removed from the previous selection state and update
+	# Iterating BACKWARDS to preserve order
+	for i in range(selection_buffer.size() -1, -1, -1):
+		var v = selection_buffer[i]
+		if v not in new_selection:
+			selection_buffer.remove_at(i)
+
+	for v in new_selection:
+		if v not in selection_buffer:
 			selection_buffer.append(v)
+
+	animation_manager.update_current_selection(selection_buffer)
 
 ## Manually sets the selection buffer to a specific set of vertices.
 ## Useful for PasteCommand.
@@ -341,11 +354,13 @@ func select_vertices(vertices_to_select: Array[Vertex]) -> void:
 	# 1. Start fresh
 	_clear_selection_buffer()
 	
-	# 2. Add and highlight each vertex
+	# 2. Add each vertex to selection (AnimationManager will highlight)
 	for v in vertices_to_select:
-		v.color = Color.PURPLE
 		v.z_idx = VERTEX_ON_TOP
 		selection_buffer.append(v)
+	
+	animation_manager.update_current_selection(selection_buffer)
+	
 
 
 ## Clears selection buffer.
@@ -356,6 +371,7 @@ func _clear_selection_buffer() -> void:
 		v.z_idx = VERTEX_BELOW
 
 	selection_buffer.clear()
+	animation_manager.update_current_selection(selection_buffer)
 
 func _handle_delete_pressed(_event: InputEvent) -> void:
 	if selection_buffer:
