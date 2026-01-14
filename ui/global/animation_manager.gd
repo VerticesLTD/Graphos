@@ -30,6 +30,10 @@ func update_selected_elements_hover_animations() -> void:
 	
 	# Finding elements that no longer need highlighting
 	for v in old_selection:
+		# This check is important, as things might have been removed by the user!
+		if not v or not v.view:
+			continue
+
 		if v not in current_selection:
 			v.view.manual_hover_stop()
 			var edges = v.edges

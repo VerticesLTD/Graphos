@@ -15,6 +15,7 @@ var draw_color_hovered = Globals.VERTEX_COLOR
 
 # Animations
 var is_hovered: bool = false
+var is_manual_hover: bool = false
 var _tween: Tween = null
 
 ## Called only once in the start, connects signals, and draws once.
@@ -91,6 +92,7 @@ func _on_mouse_entered() -> void:
 ## This function is used when external forces demand animation to start
 func manual_hover_start() -> void:
 	is_hovered = true
+	is_manual_hover = true
 	_start_hover_animation()
 
 func _start_hover_animation() -> void:
@@ -116,7 +118,7 @@ func _start_hover_animation() -> void:
 	)
 
 func _on_mouse_exited() -> void:
-	if not is_hovered:
+	if not is_hovered or is_manual_hover:
 		return
 	# is_hovered will be set by the _tween!
 	_stop_hover_animation()
@@ -146,7 +148,9 @@ func _stop_hover_animation() -> void:
 		vertex_data.color,
 		Globals.VERTEX_TWEEN_TIME
 	)
+
 	# Set is hovered to false when finished
 	_tween.chain().tween_callback(func(): is_hovered = false)
+	_tween.chain().tween_callback(func(): is_manual_hover = false)
 	# Prevents some bug with chaining color
 	_tween.chain().tween_callback(func(): draw_color_hovered = Globals.VERTEX_COLOR)

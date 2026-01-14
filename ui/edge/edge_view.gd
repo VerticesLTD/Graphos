@@ -18,7 +18,7 @@ var draw_color_hovered = Globals.EDGE_COLOR
 
 # Animations
 var is_hovered: bool = false
-var is_manual_set: bool = false
+var is_manual_hover: bool = false
 var _tween: Tween
 
 
@@ -124,7 +124,7 @@ func _on_mouse_entered() -> void:
 ## This function is used when external forces demand animation to start
 func manual_hover_start() -> void:
 	is_hovered = true
-	is_manual_set = true
+	is_manual_hover = true
 	_start_hover_animation()
 
 func _start_hover_animation() -> void:
@@ -152,7 +152,7 @@ func _start_hover_animation() -> void:
 
 func _on_mouse_exited() -> void:
 	# Hover was manually set, we don't want to stop it
-	if is_manual_set:
+	if not is_hovered or is_manual_hover:
 		return
 
 	# is_hovered will be set by the _tween!
@@ -160,7 +160,7 @@ func _on_mouse_exited() -> void:
 
 ## This function is used when external forces demand animation to stop
 func manual_hover_stop() -> void:
-	is_manual_set = false
+	is_manual_hover = false
 	_stop_hover_animation()
 
 func _stop_hover_animation() -> void:
