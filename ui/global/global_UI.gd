@@ -58,10 +58,9 @@ func _start_drag():
 
 func _on_click():
 	GLogger.debug("User clicked.", LOG_TAG)
-	# It was a click! Stop selection
-	remove_child(selection_rect)
 
 	if selection_rect != null:
+		remove_child(selection_rect)
 		selection_rect.queue_free()
 		selection_rect = null
 

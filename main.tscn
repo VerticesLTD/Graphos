@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://yxcr5kwlindq"]
+[gd_scene load_steps=7 format=3 uid="uid://yxcr5kwlindq"]
 
 [ext_resource type="Script" uid="uid://c2yhxp7188k8k" path="res://graphs/undirected_graph/undirected_graph.gd" id="1_0xm2m"]
 [ext_resource type="Script" uid="uid://bi4h7vrxw31jb" path="res://controllers/graph_controller.gd" id="2_0xm2m"]
@@ -20,7 +20,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
-color = Color(0.120550476, 0.1708557, 0.33700082, 0.12941177)
+color = Color(0.02745098, 0.050980393, 0.12941177, 0.90588236)
 
 [node name="UndirectedGraph" type="Node2D" parent="."]
 script = ExtResource("1_0xm2m")
