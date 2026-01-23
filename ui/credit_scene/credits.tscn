@@ -1,46 +1,24 @@
-[gd_scene load_steps=7 format=3 uid="uid://c1t7e0pf81xoe"]
+[gd_scene load_steps=20 format=3 uid="uid://c1t7e0pf81xoe"]
 
 [ext_resource type="Script" uid="uid://dt68dhim4j5yy" path="res://ui/credit_scene/credits.gd" id="1_aw5ok"]
 [ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="2_3uubd"]
-[ext_resource type="Texture2D" uid="uid://c4kcswmb35gkq" path="res://assets/logo/SplashLogo.png" id="3_esyp2"]
-
-[sub_resource type="Animation" id="Animation_g4wvt"]
-resource_name = "Logo"
-length = 4.0
-loop_mode = 1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Logo/SplashLogo:scale")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 2, 4),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [Vector2(1, 1), Vector2(1.13, 1.13), Vector2(1, 1)]
-}
-
-[sub_resource type="Animation" id="Animation_pjc1l"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Logo/SplashLogo:scale")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector2(1, 1)]
-}
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_j6beo"]
-_data = {
-&"Logo": SubResource("Animation_g4wvt"),
-&"RESET": SubResource("Animation_pjc1l")
-}
+[ext_resource type="Texture2D" uid="uid://dluhmqg4b5ts5" path="res://assets/credit_animation/Ellipse 1.svg" id="3_uilw7"]
+[ext_resource type="Texture2D" uid="uid://dcyh1dbmw6xfc" path="res://assets/credit_animation/Vector 1.svg" id="4_gvy1s"]
+[ext_resource type="Texture2D" uid="uid://bnp2pibi5l7fq" path="res://assets/credit_animation/Ellipse 2.svg" id="5_v3g6l"]
+[ext_resource type="Texture2D" uid="uid://pvn28g42784t" path="res://assets/credit_animation/Vector 2.svg" id="6_ma0xm"]
+[ext_resource type="Texture2D" uid="uid://cwbig3loamgxw" path="res://assets/credit_animation/Ellipse 3.svg" id="7_shgwt"]
+[ext_resource type="Texture2D" uid="uid://bnlfc8dva16or" path="res://assets/credit_animation/Vector 3.svg" id="8_o66gw"]
+[ext_resource type="Texture2D" uid="uid://kvjxaareik5f" path="res://assets/credit_animation/Ellipse 4.svg" id="9_qi2tt"]
+[ext_resource type="Texture2D" uid="uid://och8o6vilocb" path="res://assets/credit_animation/Vector 4.svg" id="10_y55pp"]
+[ext_resource type="Texture2D" uid="uid://i5y1fe7w8l6f" path="res://assets/credit_animation/Vector 5.svg" id="11_2gle2"]
+[ext_resource type="Texture2D" uid="uid://cl1breby77n52" path="res://assets/credit_animation/Vector 6.svg" id="12_p2tx4"]
+[ext_resource type="Texture2D" uid="uid://brpmjcnr4u0md" path="res://assets/credit_animation/Vector 7.svg" id="13_upphl"]
+[ext_resource type="Texture2D" uid="uid://cjvlk7pydmcvo" path="res://assets/credit_animation/Vector 8.svg" id="14_wady5"]
+[ext_resource type="Texture2D" uid="uid://li4rhaei72d2" path="res://assets/credit_animation/Vector 9.svg" id="15_5lfaw"]
+[ext_resource type="Texture2D" uid="uid://tgf1dott0brr" path="res://assets/credit_animation/Vector 10.svg" id="16_nkt36"]
+[ext_resource type="Texture2D" uid="uid://b0wfnkmmitdkf" path="res://assets/credit_animation/Vector 11.svg" id="17_vl8v5"]
+[ext_resource type="Texture2D" uid="uid://bgfgauvao0e2m" path="res://assets/credit_animation/Vector 12.svg" id="18_87mpj"]
+[ext_resource type="Texture2D" uid="uid://c1p0qrntcsbma" path="res://assets/credit_animation/Vector 13.svg" id="19_20i0b"]
 
 [node name="Credits" type="Node2D"]
 script = ExtResource("1_aw5ok")
@@ -85,20 +63,143 @@ Yarden, Yotam, Elad
 Press any key to continue."
 horizontal_alignment = 1
 
-[node name="Logo" type="Control" parent="CanvasLayer"]
-layout_mode = 3
-anchor_left = 0.5
-anchor_top = 0.73
-anchor_right = 0.5
-anchor_bottom = 0.73
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="AnimationComponents" type="Node2D" parent="CanvasLayer"]
 
-[node name="SplashLogo" type="Sprite2D" parent="CanvasLayer/Logo"]
-texture = ExtResource("3_esyp2")
+[node name="Ellipse1" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(130, 969)
+texture = ExtResource("3_uilw7")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer"]
-libraries = {
-&"": SubResource("AnimationLibrary_j6beo")
-}
-autoplay = "Logo"
+[node name="Vector1" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(218, 863)
+texture = ExtResource("4_gvy1s")
+
+[node name="Ellipse2" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(300, 754)
+texture = ExtResource("5_v3g6l")
+
+[node name="Vector2" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(210, 701)
+rotation = -0.11006591
+texture = ExtResource("6_ma0xm")
+
+[node name="Ellipse3" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(129, 647)
+rotation = -0.099665485
+texture = ExtResource("7_shgwt")
+
+[node name="Vector3" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(257, 649)
+rotation = -0.09193128
+texture = ExtResource("8_o66gw")
+
+[node name="Ellipse4" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(388, 648)
+texture = ExtResource("9_qi2tt")
+
+[node name="Vector4" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(299, 571.00006)
+rotation = -6.424911
+texture = ExtResource("10_y55pp")
+
+[node name="Ellipse5" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(198, 484)
+texture = ExtResource("3_uilw7")
+
+[node name="Vector5" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(442, 596)
+texture = ExtResource("11_2gle2")
+
+[node name="Ellipse6" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(690, 704)
+texture = ExtResource("5_v3g6l")
+
+[node name="Vector6" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(574, 809)
+texture = ExtResource("12_p2tx4")
+
+[node name="Ellipse7" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(468, 897)
+texture = ExtResource("7_shgwt")
+
+[node name="Vector7" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(683, 858)
+texture = ExtResource("13_upphl")
+
+[node name="Ellipse8" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(903, 807)
+texture = ExtResource("9_qi2tt")
+
+[node name="Vector8" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(863, 739)
+texture = ExtResource("14_wady5")
+
+[node name="Ellipse9" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(823, 656)
+texture = ExtResource("3_uilw7")
+
+[node name="Vector9" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(974, 693)
+texture = ExtResource("15_5lfaw")
+
+[node name="Ellipse10" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(1121, 721)
+texture = ExtResource("5_v3g6l")
+
+[node name="Vector10" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(1204, 816)
+texture = ExtResource("16_nkt36")
+
+[node name="Ellipse11" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(1277, 898)
+texture = ExtResource("7_shgwt")
+
+[node name="Vector11" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(1394, 695)
+texture = ExtResource("17_vl8v5")
+
+[node name="Ellipse12" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(1505, 484)
+texture = ExtResource("9_qi2tt")
+
+[node name="Vector12" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(1506, 711)
+texture = ExtResource("18_87mpj")
+
+[node name="Ellipse13" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(1505, 929)
+texture = ExtResource("3_uilw7")
+
+[node name="Vector13" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(1641, 782)
+texture = ExtResource("19_20i0b")
+
+[node name="Ellipse14" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+modulate = Color(1, 1, 1, 0)
+position = Vector2(1781, 616)
+texture = ExtResource("5_v3g6l")
