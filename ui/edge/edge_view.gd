@@ -3,6 +3,8 @@ class_name UIEdgeView
 ## This script controls the "Body" of a connection between two vertices.
 ## It draws a line between the source and destination provided by the Brain.
 
+@export var weight_gap: float = 10.0
+
 ## Higher value = Mouse detected from further away
 const MOUSE_DETECT_SENSITIVITY = 5.0
 
@@ -11,6 +13,9 @@ var edge_data: Edge
 
 @onready var mouse_detection_area: Area2D = $MouseDetectionArea
 @onready var collision_shape: CollisionShape2D = $MouseDetectionArea/CollisionShape2D
+@onready var line_1: Line2D = $Line1
+@onready var line_2: Line2D = $Line2
+@onready var weight_label: Label = $Weight
 
 # Drawing properties - Will be tweened for animations
 var draw_width_hovered = Globals.EDGE_WIDTH
@@ -25,6 +30,8 @@ var _tween: Tween
 ## Called only once in the start, connects signals, and draws once.
 func _ready() -> void:
 	if edge_data:
+		weight_label.text = str(edge_data.weight)
+
 		_setup_detection_area()
 
 		# 1. Listen for edge updates (like color changes)
@@ -40,9 +47,70 @@ func _ready() -> void:
 		queue_free()
 
 func _process(_delta: float) -> void:
-	# Redraw every frame is needed for animations.
-	# Could perhaps be optimized
-	queue_redraw()
+	_setup_lines_and_weight()
+
+	weight_label.text = str(edge_data.weight)
+
+	if is_hovered:
+		line_1.default_color = draw_color_hovered
+		line_2.default_color = draw_color_hovered
+		line_1.width = draw_width_hovered
+		line_2.width = draw_width_hovered
+	else:
+		line_1.default_color = edge_data.color
+		line_2.default_color = edge_data.color
+		line_1.width = Globals.EDGE_WIDTH
+		line_2.width = Globals.EDGE_WIDTH
+
+func _setup_lines_and_weight() -> void:
+	# Geometry shananigens for calculating the gap location
+	var pos1 = edge_data.src.pos
+	var pos2 = edge_data.dst.pos
+	var mid_point = pos1.lerp(pos2,0.5)
+	var direction = (pos2-pos1).normalized()
+	var offset = direction * (weight_gap / 2.0)
+	var length = pos1.distance_to(pos2)
+
+	var line_1_end = mid_point - offset
+	var line_2_start = mid_point + offset
+
+	# We only draw the gap+weight if there is enough space for it
+	if length > (weight_gap * 3):
+		weight_label.visible = true
+		_update_weight_label_transform()
+
+		line_1.clear_points()
+		line_2.clear_points()
+		line_1.add_point(pos1)
+		line_1.add_point(line_1_end)
+		line_2.add_point(line_2_start)
+		line_2.add_point(pos2)
+	else:
+		weight_label.visible = false
+		line_1.clear_points()
+		line_2.clear_points()
+		line_1.add_point(pos1)
+		line_1.add_point(pos2)
+
+func _update_weight_label_transform() -> void:
+	# Geometry shananigens to place the text in the gap
+	var pos1 = edge_data.src.pos
+	var pos2 = edge_data.dst.pos
+	var mid_point = (pos1 + pos2) / 2.0
+	var direction = pos2-pos1
+	var angle = direction.angle()
+
+	weight_label.pivot_offset = weight_label.size / 2.0
+	weight_label.position = mid_point - (weight_label.size / 2.0)
+
+	# Making sure the text is not upside down
+	if abs(angle) > PI / 2:
+		angle += PI
+
+	weight_label.rotation = angle
+
+func _should_display_weight() -> bool:
+	return true	
 
 ## Draws the edge's mouse detection area accurately to how it is drawn.
 func _setup_detection_area() -> void:
@@ -89,33 +157,8 @@ func refresh() -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	# Stop if the brain or its endpoints are missing.
-	if not edge_data or not edge_data.src or not edge_data.dst:
-		return
-	var pos1 = edge_data.src.pos
-	var pos2 = edge_data.dst.pos
+	return
 
-	var draw_positions = _get_visual_start_end(pos1,pos2)
-	var visual_start = draw_positions[0]
-	var visual_end = draw_positions[1]
-
-	if is_hovered:
-		draw_line(visual_start, visual_end, draw_color_hovered, draw_width_hovered)
-	else:
-		draw_line(visual_start, visual_end, edge_data.color, Globals.EDGE_WIDTH)
-		
-	# Flow animation (growing highlight)
-	if highlight_progress > 0.0:
-		_draw_flow_animation_line(visual_start,visual_end)
-
-func _draw_flow_animation_line(start_pos: Vector2, end_pos: Vector2) -> void:
-	if not highlight_direction:
-		var temp = start_pos
-		start_pos = end_pos
-		end_pos = temp
-		
-	var highlight_end = start_pos.lerp(end_pos, highlight_progress)
-	draw_line(start_pos, highlight_end, Globals.EDGE_HOVER_COLOR, draw_width_hovered)
 
 func _on_mouse_entered() -> void:
 	is_hovered = true
@@ -189,27 +232,3 @@ func _stop_hover_animation() -> void:
 	# Prevents some bug with chaining color
 	_tween.chain().tween_callback(func(): draw_color_hovered = Globals.VERTEX_COLOR)
 
-
-# --- FLOW ANIMATION --
-# This is a separate animation that "grows" a highlight from src to dst.
-# Originally meant to be used when mass selecting, I couldn't figure out how
-# to get the directions right. Keeping it here for future use.
-
-var highlight_progress: float = 0.0
-var highlight_direction: bool = true
-var _flow_tween: Tween
-
-func start_flow_animation(from_src_to_dst: bool = true) -> void:
-	highlight_direction = from_src_to_dst
-	if _flow_tween: _flow_tween.kill()
-	_flow_tween = create_tween()
-	
-	_flow_tween.tween_property(self, "highlight_progress", 1.0, Globals.EDGE_FLOW_TWEEN_TIME)\
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-
-func stop_flow_animation() -> void:
-	if _flow_tween: _flow_tween.kill()
-	_flow_tween = create_tween()
-	
-	_flow_tween.tween_property(self, "highlight_progress", 0.0, Globals.EDGE_FLOW_TWEEN_TIME)\
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
