@@ -31,32 +31,36 @@ var _next_vertex_id: int = 0
 	
 ## This runs whenever a vertex emits 'edge_added'
 func _on_edge_added(new_edge: Edge) -> void:
+	# IMPORTANT: This runs TWICE. One for the edge data from the src to dst, and once
+	# for the opposite direction. Since only one view should be instantiated for every edge,
+	# we need to find out which one of the two edges should create the view.
+
+	# Check if destination already has an edge/view to source
 	var edge_view: UIEdgeView = null
-
-	# Only one view needs to be created. If one was already created,
-	# we make sure both edges reference the same view.
-	if new_edge.src.id > new_edge.dst.id:
-		var dst_edges = new_edge.dst.edges
-		while dst_edges:
-			if dst_edges.dst == new_edge.src:
+	var dst_edges = new_edge.dst.edges
+	var dst_have_opposite_edge = false
+	while dst_edges:
+		if dst_edges.dst == new_edge.src:
+			dst_have_opposite_edge = true # Dst has an edge pointing at us
+			if dst_edges.view != null:
 				edge_view = dst_edges.view
-				break
+			break
 
-			dst_edges = dst_edges.next
-		assert(edge_view != null, "Couldn't find the proper view for this edge!")
-
-	else:
-		# Create the visual Body
+	# Destination didn't have a view
+	if edge_view == null:
 		edge_view = EDGE_VIEW_SCENE.instantiate()
 		edge_view.edge_data = new_edge
 		add_child(edge_view)
 
-		# The ONLY place we increase the global count. When a view was created.
+		# Incrementation of edge count only happens when a view is instantiated to ensure accuracy.
 		num_edges += 1
 
-	# Dependency injection
-	new_edge.view = edge_view
+		if dst_have_opposite_edge:
+			# Injecting the created view as a reference to the other edge.
+			dst_edges.view = edge_view
 
+	# Setting the view (new or old) as the view for the new edge
+	new_edge.view = edge_view
 	move_child(edge_view, 0)	# Draw behind vertices
 	
 
