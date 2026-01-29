@@ -3,10 +3,11 @@ class_name UIEdgeView
 ## This script controls the "Body" of a connection between two vertices.
 ## It draws a line between the source and destination provided by the Brain.
 
-@export var weight_gap: float = 10.0
+## Affects the gap for displaying the edge weight
+var weight_gap: float = 30.0
 
 ## Higher value = Mouse detected from further away
-const MOUSE_DETECT_SENSITIVITY = 5.0
+const MOUSE_DETECT_SENSITIVITY = 9.0
 
 ## This is the slot for our Brain. The Graph Manager fills this when we are born.
 var edge_data: Edge 
@@ -50,17 +51,25 @@ func _process(_delta: float) -> void:
 	_setup_lines_and_weight()
 
 	weight_label.text = str(edge_data.weight)
+	# Making sure there is enough space to display the weight
+	if weight_label.text.length() >= 3:
+		weight_gap = 43.0 # Just enough for -999
+	else:
+		weight_gap = 30.0
+	
+	# Making the edge's width affected by the weight
+	var width_by_weight = clampf(Globals.EDGE_WIDTH * edge_data.weight / 5, 5.0, 15.0)
 
 	if is_hovered:
 		line_1.default_color = draw_color_hovered
 		line_2.default_color = draw_color_hovered
-		line_1.width = draw_width_hovered
-		line_2.width = draw_width_hovered
+		line_1.width = max(draw_width_hovered, width_by_weight)
+		line_2.width = max(draw_width_hovered, width_by_weight)
 	else:
 		line_1.default_color = edge_data.color
 		line_2.default_color = edge_data.color
-		line_1.width = Globals.EDGE_WIDTH
-		line_2.width = Globals.EDGE_WIDTH
+		line_1.width = width_by_weight
+		line_2.width = width_by_weight
 
 func _setup_lines_and_weight() -> void:
 	# Geometry shananigens for calculating the gap location
@@ -91,7 +100,7 @@ func _setup_lines_and_weight() -> void:
 		line_2.clear_points()
 		line_1.add_point(pos1)
 		line_1.add_point(pos2)
-
+	
 func _update_weight_label_transform() -> void:
 	# Geometry shananigens to place the text in the gap
 	var pos1 = edge_data.src.pos

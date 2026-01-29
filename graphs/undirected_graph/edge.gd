@@ -64,7 +64,7 @@ func _init(
 
 var weight: int = 1:
 	set(value):
-		weight = value
+		weight = clampi(value, -999, 999)
 		state_changed.emit()
 		
 
