@@ -38,10 +38,6 @@ var action_map: Dictionary = {
 	&"press_B" : [null, null],
 	&"undo" : [func(_event): CommandManager.undo(), null],
 	&"redo" : [func(_event): CommandManager.redo(), null],
-	&"delete" : [_handle_delete_pressed, null],
-	&"copy" : [_handle_copy_pressed, null],
-	&"paste" : [_handle_paste_pressed, null],
-	&"cut" : [_handle_cut_pressed, null]
 }
 
 var action_map_algorithm_player: Dictionary = {
@@ -361,8 +357,6 @@ func select_vertices(vertices_to_select: Array[Vertex]) -> void:
 	
 	animation_manager.update_current_selection(selection_buffer)
 	
-
-
 ## Clears selection buffer.
 func _clear_selection_buffer() -> void:
 	# Resetting color
@@ -372,43 +366,6 @@ func _clear_selection_buffer() -> void:
 
 	selection_buffer.clear()
 	animation_manager.update_current_selection(selection_buffer)
-
-func _handle_delete_pressed(_event: InputEvent) -> void:
-	if selection_buffer:
-		CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
-
-func _handle_copy_pressed(_event: InputEvent) -> void:
-	if selection_buffer:
-		# Clean up old clipboard memory
-		if Globals.clipboard_graph:
-			Globals.clipboard_graph.queue_free()
-		
-		# Create the snapshot
-		Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
-		GLogger.debug("Selection copied to clipboard.","CLIPBORAD")
-
-func _handle_paste_pressed(_event: InputEvent) -> void:
-	if Globals.clipboard_graph:
-		var mouse_pos = graph.get_global_mouse_position()
-		
-		var paste_cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, self)
-
-		GLogger.debug("Selection pasted.","CLIPBORAD")
-
-		CommandManager.execute(paste_cmd)
-
-func _handle_cut_pressed(_event: InputEvent) -> void:
-	if selection_buffer:
-		# Clean up old clipboard memory
-		if Globals.clipboard_graph:
-			Globals.clipboard_graph.queue_free()
-		
-		# Create the snapshot
-		Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
-		GLogger.debug("Selection copied to clipboard.","CLIPBOARD")
-		
-		# Delete the selected sub-graph	
-		CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
 
 ## ONLY refreshes the link buffer colors. It doesn't touch the Array logic.
 func _refresh_link_buffer_colors() -> void:

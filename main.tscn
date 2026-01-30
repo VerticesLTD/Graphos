@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://yxcr5kwlindq"]
+[gd_scene load_steps=8 format=3 uid="uid://yxcr5kwlindq"]
 
 [ext_resource type="Script" uid="uid://c2yhxp7188k8k" path="res://graphs/undirected_graph/undirected_graph.gd" id="1_0xm2m"]
 [ext_resource type="Script" uid="uid://bi4h7vrxw31jb" path="res://controllers/graph_controller.gd" id="2_0xm2m"]
 [ext_resource type="Script" uid="uid://4boow4h1ajkt" path="res://ui/global/global_UI.gd" id="3_1bvp3"]
 [ext_resource type="Script" uid="uid://vvy7lpcojsga" path="res://ui/global/animation_manager.gd" id="3_lquwl"]
 [ext_resource type="PackedScene" uid="uid://b78ey3notmd7g" path="res://ui/global/tool_bar.tscn" id="4_1bvp3"]
+[ext_resource type="Script" uid="uid://hi52ujx73vn8" path="res://controllers/clipboard_actions.gd" id="4_272bh"]
 [ext_resource type="PackedScene" uid="uid://c232xbf42jyrl" path="res://ui/popUpMenu/pop_up_menu_layer.tscn" id="5_lquwl"]
 
 [node name="Main" type="Node2D"]
@@ -33,6 +34,9 @@ popup = NodePath("../CanvasLayer/PopupMenuLayer")
 
 [node name="AnimationManager" type="Node" parent="GraphController"]
 script = ExtResource("3_lquwl")
+
+[node name="ClipboardActions" type="Node" parent="GraphController"]
+script = ExtResource("4_272bh")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 script = ExtResource("3_1bvp3")
