@@ -60,7 +60,7 @@ func execute() -> void:
 
 	# 4. Update Selection UI
 	if graph_controller:
-		graph_controller._clear_selection_buffer()
+		graph_controller.clear_selection_buffer()
 		var new_vertices: Array[Vertex] = []
 		for v_cmd in created_vertex_cmds:
 			new_vertices.append(v_cmd.vertex)
