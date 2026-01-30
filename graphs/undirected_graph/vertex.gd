@@ -18,11 +18,6 @@ signal vanished(v: Vertex)
 ## The Graph hears this and spawns a new Line (EdgeView).
 signal edge_added(new_edge: Edge)
 
-## Emitted when a connection is broken. 
-## The Graph hears this and deletes the corresponding Line.
-@warning_ignore("UNUSED_SIGNAL") # Remove when signal is used
-signal edge_removed(target_edge: Edge)
-
 ## Constant used to represent infinity in graph algorithms.
 const INF: float = 1e18
 

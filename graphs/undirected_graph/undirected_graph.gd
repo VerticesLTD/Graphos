@@ -45,6 +45,7 @@ func _on_edge_added(new_edge: Edge) -> void:
 			if dst_edges.view != null:
 				edge_view = dst_edges.view
 			break
+		dst_edges = dst_edges.next
 
 	# Destination didn't have a view
 	if edge_view == null:
@@ -65,11 +66,7 @@ func _on_edge_added(new_edge: Edge) -> void:
 	
 
 ## This runs whenever a vertex emits 'edge_removed'
-func _on_edge_removed(edge_to_remove: Edge) -> void:
-	# Ensures we only run when the id is lower.
-	if edge_to_remove.src.id > edge_to_remove.dst.id:
-		return
-		
+func _on_edge_removed() -> void:
 	# The ONLY place we decrement the global count. After we draw successfuly.
 	num_edges -= 1
 	
@@ -92,7 +89,6 @@ func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR
 	
 	# Initial connections happen only here, not in redo/undo
 	v.edge_added.connect(_on_edge_added)
-	v.edge_removed.connect(_on_edge_removed)
 	
 	_register_and_visualize(v)
 	return v
@@ -189,18 +185,14 @@ func delete_edge(src_id: int, dst_id: int) -> void:
 	if not src_node or not dst_node:
 		return
 
-	var edge_a = src_node.delete_edge(dst_node)
-	var edge_b = dst_node.delete_edge(src_node)
+	var edge_a: Edge = src_node.delete_edge(dst_node)
+	var edge_b: Edge = dst_node.delete_edge(src_node)
 
-	# Choose only the right edge to delete
-	var edge_to_signal = edge_a if src_id < dst_id else edge_b
-
-	if edge_to_signal:
-		# 1. Manually trigger the graph's counter logic
-		_on_edge_removed(edge_to_signal)
-
-		# 2. Tell the EdgeView (Puppet) to delete itself
-		edge_to_signal.vanished.emit()
+	# Trigerring graph edge removal logic for one edge (Preserves count)
+	_on_edge_removed()
+	# Both edges now vanish
+	edge_a.vanished.emit()
+	edge_b.vanished.emit()
 
 			
 ## Removes all vertices and edges from the graph.
