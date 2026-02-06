@@ -24,6 +24,7 @@ var selection_buffer: Array[Vertex] = []:
 ## Animation manager responsible for animations at the controller level
 @onready var animation_manager: AnimationManager = $AnimationManager
 
+# TODO: Breakdown the player into a component after the visualization is integrated.
 ## A class which holds a player with all the algorithm commands.
 var player: AlgorithmPlayer
 
