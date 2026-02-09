@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      GODOT_VERSION_TAG: "4.5-stable" 
+      GODOT_VERSION_TAG: "4.6-stable" 
 
     steps:
       - name: Checkout repository
