@@ -5,8 +5,8 @@ extends Node2D
 class_name UndirectedGraph
 
 # We load our "Blueprints" (Scenes) here
-const VERTEX_VIEW_SCENE = preload("res://ui/vertex/vertex_view.tscn")
-const EDGE_VIEW_SCENE = preload("res://ui/edge/edge_view.tscn")
+const EDGE_VIEW_SCENE = preload("uid://bmti1ysdlhopk")
+const VERTEX_VIEW_SCENE = preload("uid://cxt6f2vgtos0c")
 
 
 ## Dictionary[int -> Vertex]

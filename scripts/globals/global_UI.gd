@@ -2,7 +2,7 @@ extends CanvasLayer
 
 @onready var graph_controller: GraphController = $"../GraphController"
 
-const SELECTION_RECT_BLUEPRINT = preload("res://ui/selection/selection_rect_view.tscn")
+const SELECTION_RECT_BLUEPRINT = preload("uid://c2dvxkd1y2wbs")
 
 const LOG_TAG = "GLOBAL_UI"
 

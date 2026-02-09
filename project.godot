@@ -18,9 +18,9 @@ boot_splash/image="uid://c4kcswmb35gkq"
 
 [autoload]
 
-Globals="*res://scripts/utils/globals.gd"
-CommandManager="*res://scripts/managers/command_manager.gd"
+Globals="*uid://b66flw6uqbdop"
 GLogger="*res://scripts/utils/logger.gd"
+CommandManager="*uid://bstobjaowschd"
 
 [display]
 
