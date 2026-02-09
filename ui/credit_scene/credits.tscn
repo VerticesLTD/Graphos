@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://c1t7e0pf81xoe"]
+[gd_scene format=3 uid="uid://c1t7e0pf81xoe"]
 
 [ext_resource type="Script" uid="uid://dt68dhim4j5yy" path="res://ui/credit_scene/credits.gd" id="1_aw5ok"]
 [ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="2_3uubd"]
@@ -20,12 +20,12 @@
 [ext_resource type="Texture2D" uid="uid://bgfgauvao0e2m" path="res://assets/credit_animation/Vector 12.svg" id="18_87mpj"]
 [ext_resource type="Texture2D" uid="uid://c1p0qrntcsbma" path="res://assets/credit_animation/Vector 13.svg" id="19_20i0b"]
 
-[node name="Credits" type="Node2D"]
+[node name="Credits" type="Node2D" unique_id=354880042]
 script = ExtResource("1_aw5ok")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2141208884]
 
-[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer" unique_id=1093836906]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -33,7 +33,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.02745098, 0.050980393, 0.12941177, 0.90588236)
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer"]
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer" unique_id=154157727]
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
@@ -44,7 +44,7 @@ offset_bottom = 610.0
 grow_horizontal = 2
 theme_override_constants/margin_top = 30
 
-[node name="Label" type="Label" parent="CanvasLayer/MarginContainer"]
+[node name="Label" type="Label" parent="CanvasLayer/MarginContainer" unique_id=477454342]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_3uubd")
 theme_override_font_sizes/font_size = 76
@@ -63,143 +63,143 @@ Yarden, Yotam, Elad
 Press any key to continue."
 horizontal_alignment = 1
 
-[node name="AnimationComponents" type="Node2D" parent="CanvasLayer"]
+[node name="AnimationComponents" type="Node2D" parent="CanvasLayer" unique_id=84190012]
 
-[node name="Ellipse1" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse1" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=61414518]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(130, 969)
 texture = ExtResource("3_uilw7")
 
-[node name="Vector1" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector1" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=706108333]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(218, 863)
 texture = ExtResource("4_gvy1s")
 
-[node name="Ellipse2" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse2" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=792415523]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(300, 754)
 texture = ExtResource("5_v3g6l")
 
-[node name="Vector2" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector2" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=923274605]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(210, 701)
 rotation = -0.11006591
 texture = ExtResource("6_ma0xm")
 
-[node name="Ellipse3" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse3" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=1734146745]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(129, 647)
 rotation = -0.099665485
 texture = ExtResource("7_shgwt")
 
-[node name="Vector3" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector3" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=301745428]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(257, 649)
 rotation = -0.09193128
 texture = ExtResource("8_o66gw")
 
-[node name="Ellipse4" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse4" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=1161089167]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(388, 648)
 texture = ExtResource("9_qi2tt")
 
-[node name="Vector4" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector4" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=632790246]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(299, 571.00006)
 rotation = -6.424911
 texture = ExtResource("10_y55pp")
 
-[node name="Ellipse5" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse5" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=1050308647]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(198, 484)
 texture = ExtResource("3_uilw7")
 
-[node name="Vector5" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector5" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=273383287]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(442, 596)
 texture = ExtResource("11_2gle2")
 
-[node name="Ellipse6" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse6" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=1481133731]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(690, 704)
 texture = ExtResource("5_v3g6l")
 
-[node name="Vector6" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector6" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=84983055]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(574, 809)
 texture = ExtResource("12_p2tx4")
 
-[node name="Ellipse7" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse7" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=116753259]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(468, 897)
 texture = ExtResource("7_shgwt")
 
-[node name="Vector7" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector7" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=873468369]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(683, 858)
 texture = ExtResource("13_upphl")
 
-[node name="Ellipse8" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse8" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=221643435]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(903, 807)
 texture = ExtResource("9_qi2tt")
 
-[node name="Vector8" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector8" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=1821115637]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(863, 739)
 texture = ExtResource("14_wady5")
 
-[node name="Ellipse9" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse9" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=687443402]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(823, 656)
 texture = ExtResource("3_uilw7")
 
-[node name="Vector9" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector9" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=2093473637]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(974, 693)
 texture = ExtResource("15_5lfaw")
 
-[node name="Ellipse10" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse10" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=597525454]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(1121, 721)
 texture = ExtResource("5_v3g6l")
 
-[node name="Vector10" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector10" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=68107315]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(1204, 816)
 texture = ExtResource("16_nkt36")
 
-[node name="Ellipse11" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse11" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=1057672441]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(1277, 898)
 texture = ExtResource("7_shgwt")
 
-[node name="Vector11" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector11" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=2080008455]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(1394, 695)
 texture = ExtResource("17_vl8v5")
 
-[node name="Ellipse12" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse12" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=714141690]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(1505, 484)
 texture = ExtResource("9_qi2tt")
 
-[node name="Vector12" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector12" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=649231876]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(1506, 711)
 texture = ExtResource("18_87mpj")
 
-[node name="Ellipse13" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse13" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=113870336]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(1505, 929)
 texture = ExtResource("3_uilw7")
 
-[node name="Vector13" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Vector13" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=2103865883]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(1641, 782)
 texture = ExtResource("19_20i0b")
 
-[node name="Ellipse14" type="Sprite2D" parent="CanvasLayer/AnimationComponents"]
+[node name="Ellipse14" type="Sprite2D" parent="CanvasLayer/AnimationComponents" unique_id=710657991]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(1781, 616)
 texture = ExtResource("5_v3g6l")
