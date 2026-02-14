@@ -1,0 +1,178 @@
+extends Node
+
+var controller: GraphController
+
+var action_map: Dictionary = {
+	&"left_click" : [_handle_left_click, _handle_left_release],
+	&"left_click_ctrl" : [null, null],
+	&"right_click" : [_handle_right_click, _handle_left_release],
+	&"right_click_ctrl" : [null, null],
+	&"ctrl" : [null, func(_event): controller.clear_link_context(_event)],
+}
+
+func _ready() -> void:
+	var par_node = get_parent()
+	if par_node is not GraphController:
+		push_error("Mouse actions node must be a child of the graph controller!")
+		queue_free()
+	
+	controller = par_node
+
+func _unhandled_input(event: InputEvent) -> void:
+	# If the menu closed less than 200ms ago, ignore ALL clicks.
+	# This prevents "Accidental Vertices" (Left Click)
+	if controller.popup and controller.popup.MainMenu.visible:
+			# If it's a mouse click, we consume it so it doesn't create vertices or re-open menus
+			if event is InputEventMouseButton and event.pressed:
+				get_viewport().set_input_as_handled()
+			return		
+
+	if event is InputEventMouseMotion:
+		_handle_mouse_movement(event)
+		return
+	# MacOs ctrl+left_click is right click. Needs to be handled.
+	if event.is_action_pressed("right_click_ctrl") and OS.get_name() == "macOS":
+		_handle_left_click(event)
+		return
+
+	if event.is_action_released("right_click_ctrl") and OS.get_name() == "macOS":
+		_handle_left_release(event)
+		return
+
+	for action: StringName in action_map.keys():
+		# Callables from action map
+		var pressed_handler = action_map[action].get(0)
+		var release_handler = action_map[action].get(1)
+
+		if event.is_action_pressed(action) and pressed_handler:
+			pressed_handler.call(event)
+			return
+
+		if event.is_action_released(action) and release_handler:
+			release_handler.call(event)
+			return	
+
+func _handle_left_click(event: InputEventMouseButton):
+	var graph = controller.graph
+	var selection_buffer = controller.selection_buffer
+
+	var mouse_global_pos = event.global_position
+
+	# Get the vertex in the position of the mouse(or not found)
+	var id = graph.get_vertex_id_at(mouse_global_pos)
+	var is_ctrl = Input.is_key_pressed(KEY_CTRL)
+
+	# 1. CLICKED VERTEX  
+	if id != Globals.NOT_FOUND:
+		if is_ctrl and Globals.current_state == Globals.State.CREATE:
+			_handle_path_connection(mouse_global_pos)
+		else:
+			controller.start_dragging(id)
+		return
+		
+	# 2. CLICKED EMPTY SPACE INTERACTION WHILE VERTEX STATE
+	if Globals.current_state == Globals.State.CREATE:
+		if is_ctrl:
+			_handle_path_connection(mouse_global_pos) # Create & Connect
+
+		# We only place a vertex if there are no nodes selected
+		elif selection_buffer.is_empty():
+			controller.handle_vertex_placement(mouse_global_pos) # Just create
+	
+	# Clearing node selection on an empty click
+	controller.clear_selection_buffer()
+	
+func _handle_left_release(_event: InputEventMouseButton):
+	# Always stop dragging when the mouse is let go
+	controller.stop_dragging()
+
+## Handles connecting a few vertices in a row.
+## If user clicked on a vertex, it's ID is remembered.
+## When 2 different vertices have been clicked, add an edge between them.
+func _handle_path_connection(pos: Vector2) -> void:
+	var graph = controller.graph
+	var link_buffer = controller.link_buffer
+
+	var id = graph.get_vertex_id_at(pos)
+	var last_id = link_buffer.back() if not link_buffer.is_empty() else Globals.NOT_FOUND
+	
+	# 1. EMPTY SPACE: Create
+	if id == Globals.NOT_FOUND:
+		var step = PathStepCommand.new(graph, pos, last_id)
+		CommandManager.execute(step)
+		link_buffer.append(step.v_cmd.vertex.id)
+
+	# 2. LAST VERTEX: Undo
+	elif not link_buffer.is_empty() and link_buffer.back() == id:
+		var v_to_undo = graph.get_vertex(id)
+		if v_to_undo:
+			# Find the previous ID in the buffer for the connection
+			var prev_id = link_buffer[link_buffer.size() - 2] if link_buffer.size() >= 2 else Globals.NOT_FOUND
+			
+			# Execute the Macro
+			var macro = PathUndoCommand.new(graph, v_to_undo, prev_id)
+			CommandManager.execute(macro)
+			
+			link_buffer.pop_back() # Update buffer
+
+	# 3. EXISTING VERTEX: connect
+	else:
+		if last_id != Globals.NOT_FOUND and controller.should_add_connection(last_id, id):
+			CommandManager.execute(AddEdgeCommand.new(graph, last_id, id))
+		link_buffer.append(id)
+	
+	controller.refresh_link_buffer_colors()
+
+func _handle_right_click(event: InputEventMouseButton):
+	var graph = controller.graph
+	var popup = controller.popup
+	var mouse_global_pos = event.global_position
+
+	## 1. Check vertex at mouse
+	var v_id = graph.get_vertex_id_at(mouse_global_pos)
+	if v_id != Globals.NOT_FOUND:
+		var v: Vertex = graph.get_vertex(v_id)
+		if v and popup:
+			popup.open_for_vertex(v, mouse_global_pos)
+		return
+
+	## 2. Check edge at mouse
+	var edge = graph.get_edge_at(mouse_global_pos)
+	if edge != null:
+		if popup:
+			popup.open_for_edge(edge, mouse_global_pos)
+		return
+
+	## 3. Empty space
+	if popup:
+		popup.open_for_canvas(mouse_global_pos)
+	pass
+	
+func _handle_right_release(_event: InputEventMouseButton):
+	pass
+
+## Handle mouse movement
+func _handle_mouse_movement(event: InputEventMouseMotion):
+	# LANE 1: PASSIVE (Hovering)
+	# This runs every time the mouse moves, regardless of dragging.
+	_handle_hover(event.global_position)
+
+	# LANE 2: ACTIVE (Dragging)
+	# We only proceed here if a drag is actually in progress.
+	if controller.is_dragging:
+		_handle_dragging(event)
+
+func _handle_dragging(event: InputEventMouseMotion):
+	# We move everything in the snapshot by the mouse delta (relative)
+	for v in controller.drag_snapshot.keys():
+		v.pos += event.relative
+		v.z_idx = controller.VERTEX_ON_TOP
+
+func _handle_hover(_mouse_global_pos: Vector2):
+	var graph = controller.graph
+	var id = graph.get_vertex_id_at(_mouse_global_pos)
+	if id != Globals.NOT_FOUND:
+		# Change cursor to a 'Pointing Hand' when over a node
+		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
+	else:
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)

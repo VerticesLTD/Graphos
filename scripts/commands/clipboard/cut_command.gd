@@ -40,7 +40,7 @@ func execute() -> void:
 
 	# Cleanup UI
 	if graph_controller:
-		graph_controller._clear_selection_buffer()
+		graph_controller.clear_selection_buffer()
 
 func undo() -> void:
 	# Undo deletion in reverse order
