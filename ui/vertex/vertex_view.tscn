@@ -1,13 +1,13 @@
-[gd_scene load_steps=3 format=3 uid="uid://cxt6f2vgtos0c"]
+[gd_scene format=3 uid="uid://cxt6f2vgtos0c"]
 
 [ext_resource type="Script" uid="uid://clxumiinhlrwt" path="res://ui/vertex/vertex_view.gd" id="1_qqj3q"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_uqwdd"]
 
-[node name="VertexView" type="Node2D"]
+[node name="VertexView" type="Node2D" unique_id=926614656]
 script = ExtResource("1_qqj3q")
 
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="." unique_id=1701305434]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -24,9 +24,9 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
-[node name="MouseDetectionArea" type="Area2D" parent="."]
+[node name="MouseDetectionArea" type="Area2D" parent="." unique_id=364111936]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="MouseDetectionArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MouseDetectionArea" unique_id=552407604]
 shape = SubResource("CircleShape2D_uqwdd")
 debug_color = Color(0.642425, 0.38703382, 0.89807576, 0.41960785)
 
