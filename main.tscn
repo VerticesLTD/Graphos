@@ -36,13 +36,13 @@ popup = NodePath("../CanvasLayer/PopupMenuLayer")
 [node name="AnimationManager" type="Node" parent="GraphController" unique_id=716208118]
 script = ExtResource("3_lquwl")
 
-[node name="ClipboardActions" type="Node" parent="GraphController"]
+[node name="ClipboardActions" type="Node" parent="GraphController" unique_id=863112276]
 script = ExtResource("4_272bh")
 
-[node name="MouseActions" type="Node" parent="GraphController"]
+[node name="MouseActions" type="Node" parent="GraphController" unique_id=2142128433]
 script = ExtResource("5_5vw27")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=598344233]
 script = ExtResource("3_1bvp3")
 
 [node name="ToolBar" parent="CanvasLayer" unique_id=165261049 instance=ExtResource("4_1bvp3")]
