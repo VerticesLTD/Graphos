@@ -31,41 +31,42 @@ var _next_vertex_id: int = 0
 	
 ## This runs whenever a vertex emits 'edge_added'
 func _on_edge_added(new_edge: Edge) -> void:
+	# IMPORTANT: This runs TWICE. One for the edge data from the src to dst, and once
+	# for the opposite direction. Since only one view should be instantiated for every edge,
+	# we need to find out which one of the two edges should create the view.
+
+	# Check if destination already has an edge/view to source
 	var edge_view: UIEdgeView = null
-
-	# Only one view needs to be created. If one was already created,
-	# we make sure both edges reference the same view.
-	if new_edge.src.id > new_edge.dst.id:
-		var dst_edges = new_edge.dst.edges
-		while dst_edges:
-			if dst_edges.dst == new_edge.src:
+	var dst_edges = new_edge.dst.edges
+	var dst_have_opposite_edge = false
+	while dst_edges:
+		if dst_edges.dst == new_edge.src:
+			dst_have_opposite_edge = true # Dst has an edge pointing at us
+			if dst_edges.view != null:
 				edge_view = dst_edges.view
-				break
+			break
+		dst_edges = dst_edges.next
 
-			dst_edges = dst_edges.next
-		assert(edge_view != null, "Couldn't find the proper view for this edge!")
-
-	else:
-		# Create the visual Body
+	# Destination didn't have a view
+	if edge_view == null:
 		edge_view = EDGE_VIEW_SCENE.instantiate()
 		edge_view.edge_data = new_edge
 		add_child(edge_view)
 
-		# The ONLY place we increase the global count. When a view was created.
+		# Incrementation of edge count only happens when a view is instantiated to ensure accuracy.
 		num_edges += 1
 
-	# Dependency injection
-	new_edge.view = edge_view
+		if dst_have_opposite_edge:
+			# Injecting the created view as a reference to the other edge.
+			dst_edges.view = edge_view
 
+	# Setting the view (new or old) as the view for the new edge
+	new_edge.view = edge_view
 	move_child(edge_view, 0)	# Draw behind vertices
 	
 
 ## This runs whenever a vertex emits 'edge_removed'
-func _on_edge_removed(edge_to_remove: Edge) -> void:
-	# Ensures we only run when the id is lower.
-	if edge_to_remove.src.id > edge_to_remove.dst.id:
-		return
-		
+func _on_edge_removed() -> void:
 	# The ONLY place we decrement the global count. After we draw successfuly.
 	num_edges -= 1
 	
@@ -88,7 +89,6 @@ func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR
 	
 	# Initial connections happen only here, not in redo/undo
 	v.edge_added.connect(_on_edge_added)
-	v.edge_removed.connect(_on_edge_removed)
 	
 	_register_and_visualize(v)
 	return v
@@ -185,18 +185,14 @@ func delete_edge(src_id: int, dst_id: int) -> void:
 	if not src_node or not dst_node:
 		return
 
-	var edge_a = src_node.delete_edge(dst_node)
-	var edge_b = dst_node.delete_edge(src_node)
+	var edge_a: Edge = src_node.delete_edge(dst_node)
+	var edge_b: Edge = dst_node.delete_edge(src_node)
 
-	# Choose only the right edge to delete
-	var edge_to_signal = edge_a if src_id < dst_id else edge_b
-
-	if edge_to_signal:
-		# 1. Manually trigger the graph's counter logic
-		_on_edge_removed(edge_to_signal)
-
-		# 2. Tell the EdgeView (Puppet) to delete itself
-		edge_to_signal.vanished.emit()
+	# Trigerring graph edge removal logic for one edge (Preserves count)
+	_on_edge_removed()
+	# Both edges now vanish
+	edge_a.vanished.emit()
+	edge_b.vanished.emit()
 
 			
 ## Removes all vertices and edges from the graph.

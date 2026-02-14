@@ -213,4 +213,3 @@ func stop_flow_animation() -> void:
 	
 	_flow_tween.tween_property(self, "highlight_progress", 0.0, Globals.EDGE_FLOW_TWEEN_TIME)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-
