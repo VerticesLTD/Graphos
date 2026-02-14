@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bmti1ysdlhopk"]
 
-[ext_resource type="Script" uid="uid://dvopiunu0awh3" path="res://ui/edge/edge_view.gd" id="1_cct54"]
+[ext_resource type="Script" uid="uid://dvopiunu0awh3" path="res://scenes/edge_view/edge_view.gd" id="1_cct54"]
 [ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="2_ewg0c"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ufv8l"]

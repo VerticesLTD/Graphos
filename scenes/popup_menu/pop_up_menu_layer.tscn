@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c232xbf42jyrl"]
 
-[ext_resource type="Script" uid="uid://b8mqitvao656x" path="res://ui/popUpMenu/popup_menu_manager.gd" id="1_pao4u"]
+[ext_resource type="Script" uid="uid://b8mqitvao656x" path="res://scenes/popup_menu/popup_menu_manager.gd" id="1_pao4u"]
 
 [node name="PopupMenuLayer" type="Control" unique_id=486846192]
 layout_mode = 3

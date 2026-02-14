@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://b78ey3notmd7g"]
 
-[ext_resource type="Script" uid="uid://dcl6ckcas6der" path="res://ui/global/tool_bar.gd" id="1_gdu6t"]
-[ext_resource type="Script" uid="uid://css85v57pq6ys" path="res://ui/global/button_highlights.gd" id="1_uiivm"]
-[ext_resource type="StyleBox" uid="uid://bdiessvqitwl2" path="res://ui/styles/toolbar/tool_bar_background.tres" id="2_u1pd4"]
+[ext_resource type="Script" uid="uid://dcl6ckcas6der" path="res://scenes/tool_bar/tool_bar.gd" id="1_gdu6t"]
+[ext_resource type="Script" uid="uid://css85v57pq6ys" path="res://scenes/tool_bar/button_highlights.gd" id="1_uiivm"]
+[ext_resource type="StyleBox" uid="uid://bdiessvqitwl2" path="res://scenes/tool_bar/tool_bar_background.tres" id="2_u1pd4"]
 [ext_resource type="Texture2D" uid="uid://dnyrl4sa00ffg" path="res://assets/icons/lock-alt-svgrepo-com.svg" id="3_l8ge4"]
-[ext_resource type="StyleBox" uid="uid://npixnrumei6q" path="res://ui/styles/toolbar/button_normal.tres" id="3_lpcgc"]
-[ext_resource type="StyleBox" uid="uid://edc2pra87k3x" path="res://ui/styles/toolbar/button_hover.tres" id="4_u1pd4"]
+[ext_resource type="StyleBox" uid="uid://npixnrumei6q" path="res://scenes/tool_bar/button_normal.tres" id="3_lpcgc"]
+[ext_resource type="StyleBox" uid="uid://edc2pra87k3x" path="res://scenes/tool_bar/button_hover.tres" id="4_u1pd4"]
 [ext_resource type="Texture2D" uid="uid://v5eliv4lx04j" path="res://assets/icons/cursor-alt-svgrepo-com.svg" id="4_vgevf"]
 [ext_resource type="Texture2D" uid="uid://cmgktymkkl21e" path="res://assets/icons/create_tool_icon.svg" id="5_2j54p"]
 

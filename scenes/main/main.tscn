@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://yxcr5kwlindq"]
+
+[ext_resource type="Script" uid="uid://c2yhxp7188k8k" path="res://graphs/undirected_graph/undirected_graph.gd" id="1_yyfjg"]
+[ext_resource type="Script" uid="uid://bi4h7vrxw31jb" path="res://graph_controller/graph_controller.gd" id="2_b1x3f"]
+[ext_resource type="Script" uid="uid://vvy7lpcojsga" path="res://graph_controller/animation_manager.gd" id="3_a8run"]
+[ext_resource type="Script" uid="uid://hi52ujx73vn8" path="res://graph_controller/clipboard_actions.gd" id="4_ouso4"]
+[ext_resource type="Script" uid="uid://dfylps8f3q6h3" path="res://graph_controller/mouse_actions.gd" id="5_blune"]
+[ext_resource type="Script" uid="uid://4boow4h1ajkt" path="res://scripts/globals/global_UI.gd" id="6_th5th"]
+[ext_resource type="PackedScene" uid="uid://b78ey3notmd7g" path="res://scenes/tool_bar/tool_bar.tscn" id="7_7smn1"]
+[ext_resource type="PackedScene" uid="uid://c232xbf42jyrl" path="res://scenes/popup_menu/pop_up_menu_layer.tscn" id="8_raeie"]
+
+[node name="Main" type="Node2D" unique_id=446252932]
+script = ExtResource("1_yyfjg")
+
+[node name="Background" type="CanvasLayer" parent="." unique_id=515120576]
+layer = -1
+
+[node name="ColorRect" type="ColorRect" parent="Background" unique_id=305865859]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0.02745098, 0.050980393, 0.12941177, 0.90588236)
+
+[node name="UndirectedGraph" type="Node2D" parent="." unique_id=1415093803]
+script = ExtResource("1_yyfjg")
+metadata/_custom_type_script = "uid://c2yhxp7188k8k"
+
+[node name="GraphController" type="Node" parent="." unique_id=1509094021 node_paths=PackedStringArray("graph", "popup")]
+script = ExtResource("2_b1x3f")
+graph = NodePath("../UndirectedGraph")
+popup = NodePath("../CanvasLayer/PopupMenuLayer")
+
+[node name="AnimationManager" type="Node" parent="GraphController" unique_id=716208118]
+script = ExtResource("3_a8run")
+
+[node name="ClipboardActions" type="Node" parent="GraphController" unique_id=863112276]
+script = ExtResource("4_ouso4")
+
+[node name="MouseActions" type="Node" parent="GraphController" unique_id=2142128433]
+script = ExtResource("5_blune")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=598344233]
+script = ExtResource("6_th5th")
+
+[node name="ToolBar" parent="CanvasLayer" unique_id=165261049 instance=ExtResource("7_7smn1")]
+
+[node name="PopupMenuLayer" parent="CanvasLayer" unique_id=665487505 instance=ExtResource("8_raeie")]

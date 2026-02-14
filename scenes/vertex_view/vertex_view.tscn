@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cxt6f2vgtos0c"]
 
-[ext_resource type="Script" uid="uid://clxumiinhlrwt" path="res://ui/vertex/vertex_view.gd" id="1_qqj3q"]
+[ext_resource type="Script" uid="uid://clxumiinhlrwt" path="res://scenes/vertex_view/vertex_view.gd" id="1_qqj3q"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_uqwdd"]
 

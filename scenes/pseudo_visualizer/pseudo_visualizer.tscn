@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bncd71mkqi3wv"]
 
-[ext_resource type="Script" uid="uid://djj2slw3o7awh" path="res://ui/pseudo_visualizer/pseudo_visualizer.gd" id="1_fc4ul"]
+[ext_resource type="Script" uid="uid://djj2slw3o7awh" path="res://scenes/pseudo_visualizer/pseudo_visualizer.gd" id="1_fc4ul"]
 [ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="2_43rel"]
 
 [node name="PseudoVisualizer" type="MarginContainer" unique_id=1374754234]

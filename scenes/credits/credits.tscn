@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c1t7e0pf81xoe"]
 
-[ext_resource type="Script" uid="uid://dt68dhim4j5yy" path="res://ui/credit_scene/credits.gd" id="1_aw5ok"]
+[ext_resource type="Script" uid="uid://dt68dhim4j5yy" path="res://scenes/credits/credits.gd" id="1_aw5ok"]
 [ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="2_3uubd"]
 [ext_resource type="Texture2D" uid="uid://dluhmqg4b5ts5" path="res://assets/credit_animation/Ellipse 1.svg" id="3_uilw7"]
 [ext_resource type="Texture2D" uid="uid://dcyh1dbmw6xfc" path="res://assets/credit_animation/Vector 1.svg" id="4_gvy1s"]
