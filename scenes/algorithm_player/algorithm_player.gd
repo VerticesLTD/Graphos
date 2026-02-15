@@ -7,7 +7,7 @@ extends Node2D ## Acts similar to java's garbage collector
 
 const LOG_TAG = "ALG_PLAYER"
 
-@onready var pseudo_visualizer: MarginContainer = $PseudoVisualizer
+@onready var pseudo_visualizer: PanelContainer = $PseudoVisualizer
 var pseudo_steps: Array
 
 enum ALGORITHMS {

@@ -42,9 +42,9 @@ script = ExtResource("4_ouso4")
 [node name="MouseActions" type="Node" parent="GraphController" unique_id=2142128433]
 script = ExtResource("5_blune")
 
-[node name="AlgorithmPlayer" parent="GraphController" unique_id=539023221 instance=ExtResource("6_b1x3f")]
-
 [node name="PopupMenu" parent="GraphController" unique_id=486846192 instance=ExtResource("8_raeie")]
+
+[node name="AlgorithmPlayer" parent="GraphController" unique_id=539023221 instance=ExtResource("6_b1x3f")]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=598344233]
 script = ExtResource("6_th5th")

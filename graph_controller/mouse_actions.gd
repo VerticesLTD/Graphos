@@ -125,27 +125,27 @@ func _handle_path_connection(pos: Vector2) -> void:
 
 func _handle_right_click(event: InputEventMouseButton):
 	var graph = controller.graph
-	var popup = controller.popup_menu
+	var popup_menu = controller.popup_menu
 	var mouse_global_pos = event.global_position
 
 	## 1. Check vertex at mouse
 	var v_id = graph.get_vertex_id_at(mouse_global_pos)
 	if v_id != Globals.NOT_FOUND:
 		var v: Vertex = graph.get_vertex(v_id)
-		if v and popup:
-			popup.open_for_vertex(v, mouse_global_pos)
+		if v and popup_menu:
+			popup_menu.open_for_vertex(v, mouse_global_pos)
 		return
 
 	## 2. Check edge at mouse
 	var edge = graph.get_edge_at(mouse_global_pos)
 	if edge != null:
-		if popup:
-			popup.open_for_edge(edge, mouse_global_pos)
+		if popup_menu:
+			popup_menu.open_for_edge(edge, mouse_global_pos)
 		return
 
 	## 3. Empty space
-	if popup:
-		popup.open_for_canvas(mouse_global_pos)
+	if popup_menu:
+		popup_menu.open_for_canvas(mouse_global_pos)
 	pass
 	
 func _handle_right_release(_event: InputEventMouseButton):
