@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://c2dvxkd1y2wbs"]
-
-[ext_resource type="Script" uid="uid://crmqoaf7l145k" path="res://ui/selection/selection_rectangle_view.gd" id="1_laf3u"]
-
-[node name="SelectionRectView" type="Node2D" unique_id=692820173]
-script = ExtResource("1_laf3u")
