@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://pbo41h7evpb"]
+
+[ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="1_0jq10"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tu6xv"]
+
+[node name="AlgorithmDataPreset" type="HBoxContainer" unique_id=204438486]
+custom_minimum_size = Vector2(0, 90)
+
+[node name="Spacer" type="HSeparator" parent="." unique_id=1100430128]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_tu6xv")
+
+[node name="Control" type="Control" parent="." unique_id=84884557]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.24
+
+[node name="GraphDetails" type="RichTextLabel" parent="Control" unique_id=1351857594]
+custom_minimum_size = Vector2(49.345, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/normal_font = ExtResource("1_0jq10")
+bbcode_enabled = true
+text = "[table=2]
+[cell][b]|V|[/b] = [/cell][cell]n[/cell]
+[cell][b]|E|[/b] = [/cell][cell]m[/cell]
+[/table]"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VSeparator" type="VSeparator" parent="." unique_id=258024053]
+layout_mode = 2
+
+[node name="AlgorithmStatusArea" type="VBoxContainer" parent="." unique_id=248012976]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusMsg1" type="Label" parent="AlgorithmStatusArea" unique_id=50404993]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("1_0jq10")
+theme_override_font_sizes/font_size = 19
+text = "Some title:"
+horizontal_alignment = 1
+
+[node name="StatusMsg2" type="Label" parent="AlgorithmStatusArea" unique_id=1836861693]
+layout_mode = 2
+size_flags_vertical = 6
+theme_override_fonts/font = ExtResource("1_0jq10")
+theme_override_font_sizes/font_size = 30
+text = "n/m"
+horizontal_alignment = 1
+vertical_alignment = 1

@@ -1,0 +1,37 @@
+[gd_resource type="Theme" format=3 uid="uid://djbla3siny57m"]
+
+[ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="1_mlaoh"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_svmqo"]
+bg_color = Color(0.13319641, 0.13319641, 0.13319635, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 16
+anti_aliasing_size = 2.448
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nyaqk"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2665752, 0.26657522, 0.26657504, 1)
+border_blend = true
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1vv6w"]
+bg_color = Color(0.6, 0.6, 0.6, 0.7411765)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[resource]
+default_font = ExtResource("1_mlaoh")
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_svmqo")
+ProgressBar/styles/background = SubResource("StyleBoxFlat_nyaqk")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_1vv6w")

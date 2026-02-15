@@ -1,0 +1,171 @@
+[gd_scene format=3 uid="uid://dnnuv5puoc3js"]
+
+[ext_resource type="Theme" uid="uid://djbla3siny57m" path="res://scenes/algorithm_controls/controls_theme.tres" id="1_jtqyn"]
+[ext_resource type="Script" uid="uid://dqg2l6iolcwj7" path="res://scenes/algorithm_controls/algorithm_controls.gd" id="1_o0rq8"]
+[ext_resource type="Texture2D" uid="uid://cfipu831he4cy" path="res://assets/algorithm_player/DragIndicator.svg" id="2_euqy7"]
+[ext_resource type="Texture2D" uid="uid://cusfhri7r3hts" path="res://assets/algorithm_player/Arrow_svg.svg" id="2_nxvvl"]
+[ext_resource type="StyleBox" uid="uid://5fptmgnku5my" path="res://scenes/algorithm_controls/separator_style.tres" id="2_q7e6r"]
+[ext_resource type="Texture2D" uid="uid://brvyfi2q7upcx" path="res://assets/algorithm_player/Arrow_Hover.svg" id="3_8jppi"]
+[ext_resource type="Texture2D" uid="uid://cv1iojvfxtsfc" path="res://assets/algorithm_player/Stop.svg" id="3_nxvvl"]
+[ext_resource type="Texture2D" uid="uid://u6kuw4wtnmau" path="res://assets/algorithm_player/Stop_Hover.svg" id="5_7uv6k"]
+[ext_resource type="Texture2D" uid="uid://lwx8d4ofx6y4" path="res://assets/algorithm_player/Arrow_Pressed.svg" id="5_ty3q8"]
+[ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="7_7uv6k"]
+[ext_resource type="Texture2D" uid="uid://caqenwnug16s8" path="res://assets/algorithm_player/Stop_Hover_Pressed.svg" id="7_tu6xv"]
+[ext_resource type="PackedScene" uid="uid://pbo41h7evpb" path="res://scenes/algorithm_controls/algorithm_data_layouts/base_layout.tscn" id="8_m1gxq"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ty3q8"]
+
+[node name="AlgorithmControls" type="MarginContainer" unique_id=1698095556]
+custom_minimum_size = Vector2(345, 0)
+offset_right = 345.0
+offset_bottom = 269.0
+script = ExtResource("1_o0rq8")
+
+[node name="MainPanel" type="PanelContainer" parent="." unique_id=1906732688]
+layout_mode = 2
+mouse_filter = 2
+theme = ExtResource("1_jtqyn")
+
+[node name="MainVBox" type="VBoxContainer" parent="MainPanel" unique_id=980346517]
+layout_mode = 2
+
+[node name="Spacer" type="VSeparator" parent="MainPanel/MainVBox" unique_id=1967577063]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxEmpty_ty3q8")
+
+[node name="TitleSpace" type="Control" parent="MainPanel/MainVBox" unique_id=1129166355]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+size_flags_stretch_ratio = 0.39
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="MainPanel/MainVBox/TitleSpace" unique_id=1928942679]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 2
+theme_override_fonts/font = ExtResource("7_7uv6k")
+theme_override_font_sizes/font_size = 24
+text = "Algorithm Name"
+horizontal_alignment = 1
+
+[node name="TopButtons" type="HBoxContainer" parent="MainPanel/MainVBox" unique_id=765940620]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.73
+theme_override_constants/separation = 35
+alignment = 1
+
+[node name="Back" type="TextureButton" parent="MainPanel/MainVBox/TopButtons" unique_id=920975986]
+texture_filter = 6
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Step backward"
+texture_normal = ExtResource("2_nxvvl")
+texture_pressed = ExtResource("5_ty3q8")
+texture_hover = ExtResource("3_8jppi")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Stop" type="TextureButton" parent="MainPanel/MainVBox/TopButtons" unique_id=2067944935]
+texture_filter = 6
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Stop execution"
+texture_normal = ExtResource("3_nxvvl")
+texture_pressed = ExtResource("7_tu6xv")
+texture_hover = ExtResource("5_7uv6k")
+ignore_texture_size = true
+stretch_mode = 5
+flip_h = true
+
+[node name="Forward" type="TextureButton" parent="MainPanel/MainVBox/TopButtons" unique_id=49606324]
+texture_filter = 6
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Step forward"
+texture_normal = ExtResource("2_nxvvl")
+texture_pressed = ExtResource("5_ty3q8")
+texture_hover = ExtResource("3_8jppi")
+ignore_texture_size = true
+stretch_mode = 5
+flip_h = true
+
+[node name="DataSeparator" type="HSeparator" parent="MainPanel/MainVBox" unique_id=551651140]
+layout_mode = 2
+theme_override_styles/separator = ExtResource("2_q7e6r")
+
+[node name="AlgorithmDataPreset" parent="MainPanel/MainVBox" unique_id=204438486 instance=ExtResource("8_m1gxq")]
+layout_mode = 2
+
+[node name="ProgressSeparator" type="HSeparator" parent="MainPanel/MainVBox" unique_id=1194602682]
+layout_mode = 2
+theme_override_styles/separator = ExtResource("2_q7e6r")
+
+[node name="ProgressBar" type="ProgressBar" parent="MainPanel/MainVBox" unique_id=811329801]
+clip_contents = true
+custom_minimum_size = Vector2(0, 27.67)
+layout_mode = 2
+value = 8.0
+show_percentage = false
+
+[node name="Label" type="Label" parent="MainPanel/MainVBox/ProgressBar" unique_id=1780651247]
+modulate = Color(1, 1, 1, 0.27058825)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -68.5
+offset_top = -11.5
+offset_right = 68.5
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_jtqyn")
+theme_override_font_sizes/font_size = 16
+text = "Algorithm Progress"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Padding" type="Control" parent="MainPanel/MainVBox" unique_id=1457330588]
+custom_minimum_size = Vector2(0, 20.36)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="DragIndicator" type="Control" parent="MainPanel" unique_id=727121513]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+mouse_filter = 2
+
+[node name="DragLines" type="TextureButton" parent="MainPanel/DragIndicator" unique_id=206925501]
+modulate = Color(0.3403393, 0.34033933, 0.3403393, 1)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 1
+mouse_default_cursor_shape = 10
+keep_pressed_outside = true
+texture_normal = ExtResource("2_euqy7")
+ignore_texture_size = true
+stretch_mode = 0
+
+[connection signal="pressed" from="MainPanel/MainVBox/TopButtons/Back" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="MainPanel/MainVBox/TopButtons/Stop" to="." method="_on_stop_pressed"]
+[connection signal="pressed" from="MainPanel/MainVBox/TopButtons/Forward" to="." method="_on_forward_pressed"]
