@@ -245,4 +245,4 @@ func should_add_connection(from_id: int, to_id: int) -> bool:
 ## ------------------------------------------------------------------------------
 
 func execute_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, start_node: Vertex) -> void:
-	player.set_algorithm(algorithm,start_node,selection_buffer,graph)
+	player.start_algorithm(algorithm,start_node,selection_buffer,graph)

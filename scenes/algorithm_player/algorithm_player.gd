@@ -1,9 +1,5 @@
-## Manages the recording and playback of algorithms.
-## Maintains a linear timeline of Actions, allowing for step-by-step navigation.
-## Allows jumping a spesific state (e.g "move to state 50) - allows jumping to "critical states" of the algorithm.
-
 class_name AlgorithmPlayer
-extends Node2D ## Acts similar to java's garbage collector
+extends Node2D 
 
 const LOG_TAG = "ALG_PLAYER"
 
@@ -13,6 +9,9 @@ var pseudo_steps: Array
 enum ALGORITHMS {
 	BFS
 }
+
+# Animations
+var tween: Tween
 
 ## <ALG> : [<ALG_SCRIPT>, <PSEUDO_RES>]
 var _algorithm_map: Dictionary = {
@@ -25,15 +24,23 @@ var timeline: Array[Command] = []
 # This is the pointer tracking our current point in the execution
 var current_step_index: int = 0
 
+var _is_algorithm_running := false
+
 func _ready() -> void:
 	pseudo_visualizer.visible = false
 
-func set_algorithm(
+func start_algorithm(
 	algorithm_type: ALGORITHMS,
 	starting_node: Vertex,
 	selection_buffer: Array[Vertex],
 	graph: UndirectedGraph
 	) -> void:
+	
+	if _is_algorithm_running:
+		clear_all()
+		if tween:
+			await tween.finished
+		_is_algorithm_running = false
 
 	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
 
@@ -56,23 +63,29 @@ func set_algorithm(
 	pseudo_visualizer.data = pseudo_resource
 	_expose_visualizer()
 
-	# TODO this position should be calculated somehow. This is just a temp pos
 	global_position = starting_node.pos
+
+	_is_algorithm_running = true
 
 # Animation to show visualizer
 func _expose_visualizer() -> void:
 	pseudo_visualizer.visible = true
 	pseudo_visualizer.scale = Vector2.ZERO
-	var tween = create_tween()
+
+	if tween: tween.kill()
+
+	tween = create_tween()
 	tween.set_ease(tween.EASE_OUT)
 	tween.set_trans(tween.TRANS_BOUNCE)
 	tween.tween_property(pseudo_visualizer,"scale",Vector2.ONE,0.5)
 
 # Animation to collapse visualizer. Will be used when controls are implemented
 func _collapse_visualizer() -> void:
-	var tween = create_tween()
-	tween.set_ease(tween.EASE_OUT)
-	tween.tween_property(pseudo_visualizer,"scale",Vector2.ZERO,0.5)
+	if tween: tween.kill()
+
+	tween = create_tween()
+	tween.set_ease(tween.EASE_IN)
+	tween.tween_property(pseudo_visualizer,"scale",Vector2.ZERO,0.3)
 	tween.chain().tween_callback(func(): pseudo_visualizer.visible = false)
 
 
@@ -143,6 +156,6 @@ func clear_all() -> void:
 	# Then clear the data
 	timeline.clear()
 	pseudo_steps.clear()
-	pseudo_visualizer.visible = false
+	_collapse_visualizer()
 	pseudo_visualizer.data = null
 	current_step_index = 0
