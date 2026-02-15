@@ -3,7 +3,7 @@ extends Node2D
 
 const LOG_TAG = "ALG_PLAYER"
 
-@onready var algorithm_controls: MarginContainer = $AlgorithmControls
+@onready var algorithm_controls: AlgorithmControls = $AlgorithmControls
 @onready var pseudo_visualizer: PanelContainer = $PseudoVisualizer
 var pseudo_steps: Array
 
@@ -25,11 +25,14 @@ var timeline: Array[Command] = []
 
 # This is the pointer tracking our current point in the execution
 var current_step_index: int = 0
+# Used to calculate progress of algorithm
+var max_step: int
 
 var _is_algorithm_running := false
 
 func _ready() -> void:
 	pseudo_visualizer.visible = false
+	algorithm_controls.visible = false
 
 func start_algorithm(
 	algorithm_type: ALGORITHMS,
@@ -39,10 +42,9 @@ func start_algorithm(
 	) -> void:
 	
 	if _is_algorithm_running:
-		clear_all()
+		cancel_algorithm_execution()
 		if visualizer_tween:
 			await visualizer_tween.finished
-		_is_algorithm_running = false
 
 	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
 
@@ -59,11 +61,20 @@ func start_algorithm(
 	# Extracting timeline and Pseudo steps from alg run 
 	var algorithm_result = algorithm_instance.run(imposter_start_node)
 	timeline = algorithm_result.get(0)
+
+	# Number of steps is the size of the timeline
+	max_step = timeline.size()
+
 	pseudo_steps = algorithm_result.get(1)
 	assert(timeline != null and pseudo_steps != null)
 
+	# Setting visualizer
 	pseudo_visualizer.data = pseudo_resource
 	_expose_visualizer()
+
+	algorithm_controls.set_data_layout(algorithm_type)
+	@warning_ignore("INTEGER_DIVISION")
+	algorithm_controls.set_algorithm_progress(current_step_index/max_step)
 	_expose_controls()
 
 	global_position = starting_node.pos
@@ -72,6 +83,8 @@ func start_algorithm(
 
 # Animation to show visualizer
 func _expose_visualizer() -> void:
+	pseudo_visualizer.position = Vector2.ZERO
+
 	pseudo_visualizer.visible = true
 	pseudo_visualizer.scale = Vector2.ZERO
 
@@ -84,6 +97,8 @@ func _expose_visualizer() -> void:
 
 # Animation to show player controls.
 func _expose_controls() -> void:
+	algorithm_controls.position = Vector2.ZERO
+	
 	algorithm_controls.visible = true
 	algorithm_controls.scale = Vector2.ZERO
 
@@ -136,6 +151,8 @@ func step_forward() -> void:
 	# Move pointer forward
 	current_step_index += 1
 
+	_update_progress_bar()
+
 ## Move to previous timeline and/or pseudo step
 func step_backward() -> void:
 	# Check if we are already at the start (Initial State)
@@ -156,6 +173,8 @@ func step_backward() -> void:
 	if current_pseudo_step != null:
 		GLogger.debug("Pseudo step rendered",LOG_TAG)
 		pseudo_visualizer.render_step(current_pseudo_step)
+	
+	_update_progress_bar()
 
 ## Go to a specific step
 func go_to_step(target_index: int) -> void:
@@ -169,11 +188,18 @@ func go_to_step(target_index: int) -> void:
 	while current_step_index > target_index:
 		step_backward()
 
+func _update_progress_bar() -> void:
+	var current = float(current_step_index)
+	var maximum = float(max_step)
+	var progress = int(current/maximum * 100)
+
+	algorithm_controls.set_algorithm_progress(progress)
+
 func reset_to_start() -> void:
 	go_to_step(0)
 
 ## Clear all data and collapse pseudo visualizer/controls
-func clear_all() -> void:
+func cancel_algorithm_execution() -> void:
 	# First, reset visuals to go back to the original graph
 	reset_to_start()
 	
@@ -184,3 +210,7 @@ func clear_all() -> void:
 	_collapse_controls()
 	pseudo_visualizer.data = null
 	current_step_index = 0
+	algorithm_controls.set_no_algorithm_data()
+	algorithm_controls.set_no_algorithm_progress()
+	
+	_is_algorithm_running = false

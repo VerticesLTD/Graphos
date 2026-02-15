@@ -108,7 +108,6 @@ theme_override_styles/separator = ExtResource("2_q7e6r")
 
 [node name="AlgorithmDataPreset" parent="MainPanel/MainVBox" unique_id=204438486 instance=ExtResource("8_m1gxq")]
 layout_mode = 2
-mouse_filter = 2
 
 [node name="ProgressSeparator" type="HSeparator" parent="MainPanel/MainVBox" unique_id=1194602682]
 layout_mode = 2

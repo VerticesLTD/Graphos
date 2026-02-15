@@ -8,6 +8,7 @@
 # 4. Make components grow when menu is resized - DONE
 
 extends MarginContainer
+class_name AlgorithmControls
 
 ## User clicked step back
 signal step_back
@@ -63,38 +64,33 @@ func _gui_input(event: InputEvent) -> void:
 		size = _drag_start_size + diff
 		size = size.clamp(custom_minimum_size, custom_minimum_size + Vector2(300,400))
 
-# DEBUG remove this stuff
-var current_prog = 8
 func _on_back_pressed() -> void:
 	step_back.emit()
-	if current_prog>8:
-		current_prog -=8
-		set_algorithm_progress(current_prog)
 
 func _on_stop_pressed() -> void:
 	stop.emit()
 
 func _on_forward_pressed() -> void:
 	step_forward.emit()
-	if current_prog<100:
-		current_prog +=8
-		set_algorithm_progress(current_prog)
 
 ## The controls will only display the title and buttons
 func set_no_algorithm_data() -> void:
 	algorithm_data.visible = false
 	data_separator.visible = false
 
+## The controls will not show a progress bar
 func set_no_algorithm_progress() -> void:
 	progress_bar.visible = false
 	progress_padding.visible = false
 	progress_separator.visible = false
 
+## Show progress bar in controls.
 func set_algorithm_progress_visible() -> void:
 	progress_bar.visible = true
 	progress_padding.visible = true
 	progress_separator.visible = true
 	
+## Set the progress of the bar to a value between 1-100
 func set_algorithm_progress(progress: int) -> void:
 	set_algorithm_progress_visible()
 	
@@ -115,10 +111,10 @@ func set_data_layout(algorithm: AlgorithmPlayer.ALGORITHMS) -> void:
 
 	var layout = result[0].instantiate()
 	var alg_name = result[1]
-
+	
+	data_separator.visible = true
 	main_v_box.add_child(layout)
 	main_v_box.move_child(layout,data_separator.get_index()+1)
 	algorithm_data = layout 
 	
 	main_title.text = alg_name
-

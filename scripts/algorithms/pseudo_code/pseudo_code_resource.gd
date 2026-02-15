@@ -3,7 +3,8 @@ class_name PseudoCodeData
 extends Resource
 
 const LOG_TAG = "PSEUDO_TOOL"
-
+## This will be displayed in the visualizer
+@export var algorithm_name: String
 @export_group("Editor Tools")
 ## Enter code. Suffix lines with --1 or --1,2 to assign them to steps.
 @export_multiline var source_text: String = ""
