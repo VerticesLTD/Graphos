@@ -32,18 +32,15 @@ signal stop
 @onready var drag_button: TextureButton = $MainPanel/DragIndicator/DragLines
 
 # Available algorithm data layouts
-const BFS_DATA_LAYOUT = preload("uid://jgjoys0wtvpl")
+var alg_to_layout: Dictionary = {
+		AlgorithmPlayer.ALGORITHMS.BFS : [preload("uid://jgjoys0wtvpl"),"BFS Undirected"],
+	}
 
 # Dragging logic
 var _dragging: bool = false
 var _drag_offset: Vector2 = Vector2.ZERO
 var _drag_start_pos: Vector2 = Vector2.ZERO
 var _drag_start_size: Vector2 = Vector2.ZERO
-
-func _ready() -> void:
-	#set_no_algorithm_data()
-	#set_no_algorithm_progress()
-	set_BFS_data_layout()
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -108,14 +105,20 @@ func set_algorithm_progress(progress: int) -> void:
 	tween.set_trans(Tween.TRANS_CUBIC)
 	tween.tween_property(progress_bar,"value",progress,0.2)
 
-#TODO Needs to be generic based on enum
-func set_BFS_data_layout():
-	# The main area always has some layout as its last child, which we replace
+func set_data_layout(algorithm: AlgorithmPlayer.ALGORITHMS) -> void:
 	algorithm_data.queue_free()
+
+	var result = alg_to_layout.get(algorithm)
+	if result == null:
+		push_warning("Algorithm provided doesn't have a defined data layout. Consider creating one.")
+		return
+
+	var layout = result[0].instantiate()
+	var alg_name = result[1]
+
+	main_v_box.add_child(layout)
+	main_v_box.move_child(layout,data_separator.get_index()+1)
+	algorithm_data = layout 
 	
-	var bfs_layout = BFS_DATA_LAYOUT.instantiate()
-	main_v_box.add_child(bfs_layout)
-	main_v_box.move_child(bfs_layout,data_separator.get_index()+1)
-	algorithm_data = bfs_layout
-	
-	main_title.text = "BFS Undirected"
+	main_title.text = alg_name
+
