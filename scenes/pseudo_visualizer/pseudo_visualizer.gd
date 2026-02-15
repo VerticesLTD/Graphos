@@ -40,6 +40,13 @@ var drag_offset: Vector2 = Vector2.ZERO
 func _ready() -> void:
 	_refresh_view()
 
+func _has_point(point: Vector2) -> bool:
+	# This calculation is done to ensure clicks register in the corners as well (its an override)
+	var style = get_theme_stylebox("panel")
+	var extra_hitbox_margin = style.expand_margin_left
+	var expanded_rect: Rect2 = Rect2(Vector2.ZERO, size).grow(extra_hitbox_margin)
+	return expanded_rect.has_point(point)
+
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mouse_event = event as InputEventMouseButton
