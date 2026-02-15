@@ -1,5 +1,5 @@
 ## GraphAlgorithm class is used as a parent class for any graph algorithm.
-class_name GraphAlgorithm
+@abstract class_name GraphAlgorithm
 
 ## Define consts for the algorithms vertices's state.
 const COLOR_NOT_DISCOVERED = Color(0.9, 0.9, 0.9)  # Off-white / Pearl
@@ -13,27 +13,52 @@ var imposter_graph: UndirectedGraph
 ## The graph as an adjacency list.(if we add diff types of graphs, we can generelize this)
 var real_graph: UndirectedGraph
 
-## timeline to record the algorithm
+## timeline to record the algorithm.
+## A null value represents a step in the pseudo code with no Command equivilent.
 var timeline: Array[Command] = []
+
+## Array representing the related pseudo steps. Must be zero-indexed.
+## A null value represents a step in the timeline with no pseudo equivilent.
+var pseudo_steps: Array = []
 
 ## Initialize the algorithm
 ## @param undirected_graph   The graph the algorithm uses.
-func _init(_imposter_graph: UndirectedGraph, _real_graph: UndirectedGraph):
+func set_alg_variables(_imposter_graph: UndirectedGraph, _real_graph: UndirectedGraph):
 	imposter_graph = _imposter_graph
 	real_graph =_real_graph
 
+func verify_initialization() -> void:
+	assert(imposter_graph != null and real_graph != null,
+	"Algorithm doesn't have its variables set. Did you call set_alg_variables?")
+
+	assert(timeline.is_empty() and pseudo_steps.is_empty(),
+		"Algorithm timeline and steps aren't empty at start." +
+		" This could be because the implementatin doesn't reset data at the end of run")
+
+func _reset_alg_variables() -> void:
+	imposter_graph = null
+	real_graph = null
+	timeline.clear()
+	pseudo_steps.clear()
+
 ## Every graph algorithm must have a run function.
 ## Every graph algorithm has a start node, and needs to return an array.
-func run(_start_vertex: Vertex) -> Array[Command]:
-	push_error("run() not implemented in child class")
-	return []
+@abstract func run(_start_vertex: Vertex) -> Array
 	
 # ------------------------------------------------------------------------------
 # Logging Helper Functions
 # ------------------------------------------------------------------------------
 
+## Append a step to the pseudo step array.
+## int for step to be rendered, null for rendering to stay the same.
+func log_pseudo_step(step, add_null_to_timeline = false) -> void:
+	pseudo_steps.append(step)
+
+	if add_null_to_timeline:
+		timeline.append(null)
+
 ## Changes a vertex color and records the Command in the timeline.
-func change_and_log_vertex_color(target_vertex: Vertex, target_color: Color) -> void:
+func change_and_log_vertex_color(target_vertex: Vertex, target_color: Color, pseudo_step = null) -> void:
 	var real_v = real_graph.get_vertex(target_vertex.id)
 	
 	if real_v:
@@ -41,9 +66,10 @@ func change_and_log_vertex_color(target_vertex: Vertex, target_color: Color) -> 
 		
 	target_vertex.color = target_color
 
+	log_pseudo_step(pseudo_step)
+
 ## Changes an edge color and records the Command in the timeline.
-## Changes an edge color and records the Command in the timeline.
-func change_and_log_edge_color(target_edge: Edge, target_color: Color) -> void:
+func change_and_log_edge_color(target_edge: Edge, target_color: Color, pseudo_step = null) -> void:
 	# 1. Normalize the IDs to find the 'Real' (shouting) edge
 	var u_id = target_edge.src.id
 	var v_id = target_edge.dst.id
@@ -64,12 +90,16 @@ func change_and_log_edge_color(target_edge: Edge, target_color: Color) -> void:
 	
 	# Update the imposter edge so the algorithm's state stays consistent
 	target_edge.color = target_color
+
+	log_pseudo_step(pseudo_step)
 	
 ## Changes a vertex key and records the Command in the timeline.
-func change_and_log_vertex_key(target_vertex: Vertex, target_key: float) -> void:
+func change_and_log_vertex_key(target_vertex: Vertex, target_key: float, pseudo_step = null) -> void:
 	var real_vertex = real_graph.get_vertex(target_vertex.id)
 	
 	if real_vertex:
 		timeline.append(ChangeVertexKeyCommand.new(real_vertex, target_key))
 	
 	target_vertex.key = target_key
+
+	log_pseudo_step(pseudo_step)
