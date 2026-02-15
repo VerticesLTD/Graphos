@@ -1,5 +1,5 @@
 @tool
-extends MarginContainer
+extends PanelContainer
 
 @export var data: PseudoCodeData:
 	set(value):

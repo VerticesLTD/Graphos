@@ -1,30 +1,38 @@
 [gd_scene format=3 uid="uid://bncd71mkqi3wv"]
 
-[ext_resource type="Script" uid="uid://djj2slw3o7awh" path="res://scenes/pseudo_visualizer/pseudo_visualizer.gd" id="1_fc4ul"]
+[ext_resource type="StyleBox" uid="uid://cue12yqt46nqj" path="res://scenes/pseudo_visualizer/visualizer_panel_style.tres" id="1_k23mk"]
 [ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="2_43rel"]
+[ext_resource type="Script" uid="uid://djj2slw3o7awh" path="res://scenes/pseudo_visualizer/pseudo_visualizer.gd" id="2_a00k7"]
 
-[node name="PseudoVisualizer" type="MarginContainer" unique_id=1374754234]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("1_fc4ul")
-
-[node name="CodeBackground" type="PanelContainer" parent="." unique_id=870985294]
-layout_mode = 2
+[node name="CodeBackground" type="PanelContainer" unique_id=870985294]
+offset_right = 268.0
+offset_bottom = 299.0
 size_flags_horizontal = 4
 size_flags_vertical = 4
+theme_override_styles/panel = ExtResource("1_k23mk")
+script = ExtResource("2_a00k7")
 
-[node name="PseudoDisplay" type="RichTextLabel" parent="CodeBackground" unique_id=880065330]
+[node name="PseudoDisplay" type="RichTextLabel" parent="." unique_id=880065330]
 layout_mode = 2
 theme_override_fonts/normal_font = ExtResource("2_43rel")
 theme_override_fonts/bold_font = ExtResource("2_43rel")
 theme_override_font_sizes/normal_font_size = 22
 theme_override_font_sizes/bold_font_size = 22
 bbcode_enabled = true
+text = "[outline_size=2][outline_color=black][color=#0080ffff][b]1. Q ← new Queue()[/b][/color][/outline_color][/outline_size]
+[color=#707070ff][b]2. S ← {s}[/b][/color]
+[color=#707070ff][b]3. Q.enqueue(s)[/b][/color]
+[color=#707070ff][b]4. [/b][/color]
+[color=#707070ff][b]5. while Q ≠ ∅ do[/b][/color]
+[color=#707070ff][b]6.     u ← Q.dequeue()[/b][/color]
+[color=#707070ff][b]7.     for each v ∈ Adj[lb]u] do[/b][/color]
+[color=#707070ff][b]8.         if v ∉ S then[/b][/color]
+[color=#707070ff][b]9.             S ← S ∪ {v}[/b][/color]
+[color=#707070ff][b]10.             Q.enqueue(v)[/b][/color]
+[color=#707070ff][b]11.         end if[/b][/color]
+[color=#707070ff][b]12.     end for[/b][/color]
+[color=#707070ff][b]13. end while[/b][/color]
+"
 fit_content = true
 autowrap_mode = 0
 vertical_alignment = 3
