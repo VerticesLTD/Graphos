@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://vvy7lpcojsga" path="res://graph_controller/animation_manager.gd" id="3_a8run"]
 [ext_resource type="Script" uid="uid://hi52ujx73vn8" path="res://graph_controller/clipboard_actions.gd" id="4_ouso4"]
 [ext_resource type="Script" uid="uid://dfylps8f3q6h3" path="res://graph_controller/mouse_actions.gd" id="5_blune"]
+[ext_resource type="PackedScene" uid="uid://d3us80b4t04od" path="res://scenes/algorithm_player/algorithm_player.tscn" id="6_b1x3f"]
 [ext_resource type="Script" uid="uid://4boow4h1ajkt" path="res://scripts/globals/global_UI.gd" id="6_th5th"]
 [ext_resource type="PackedScene" uid="uid://b78ey3notmd7g" path="res://scenes/tool_bar/tool_bar.tscn" id="7_7smn1"]
 [ext_resource type="PackedScene" uid="uid://c232xbf42jyrl" path="res://scenes/popup_menu/pop_up_menu_layer.tscn" id="8_raeie"]
@@ -28,10 +29,9 @@ color = Color(0.02745098, 0.050980393, 0.12941177, 0.90588236)
 script = ExtResource("1_yyfjg")
 metadata/_custom_type_script = "uid://c2yhxp7188k8k"
 
-[node name="GraphController" type="Node" parent="." unique_id=1509094021 node_paths=PackedStringArray("graph", "popup")]
+[node name="GraphController" type="Node" parent="." unique_id=1509094021 node_paths=PackedStringArray("graph")]
 script = ExtResource("2_b1x3f")
 graph = NodePath("../UndirectedGraph")
-popup = NodePath("../CanvasLayer/PopupMenuLayer")
 
 [node name="AnimationManager" type="Node" parent="GraphController" unique_id=716208118]
 script = ExtResource("3_a8run")
@@ -41,6 +41,10 @@ script = ExtResource("4_ouso4")
 
 [node name="MouseActions" type="Node" parent="GraphController" unique_id=2142128433]
 script = ExtResource("5_blune")
+
+[node name="AlgorithmPlayer" parent="GraphController" unique_id=539023221 instance=ExtResource("6_b1x3f")]
+
+[node name="PopupMenu" parent="GraphController" unique_id=486846192 instance=ExtResource("8_raeie")]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=598344233]
 script = ExtResource("6_th5th")

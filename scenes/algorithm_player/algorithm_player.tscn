@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://d3us80b4t04od"]
+
+[ext_resource type="Script" uid="uid://di3nbirupqsap" path="res://scenes/algorithm_player/algorithm_player.gd" id="1_polfl"]
+[ext_resource type="PackedScene" uid="uid://bncd71mkqi3wv" path="res://scenes/pseudo_visualizer/pseudo_visualizer.tscn" id="2_6sljs"]
+
+[node name="AlgorithmPlayer" type="Node2D" unique_id=539023221]
+script = ExtResource("1_polfl")
+
+[node name="PseudoVisualizer" parent="." unique_id=1374754234 instance=ExtResource("2_6sljs")]

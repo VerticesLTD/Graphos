@@ -20,6 +20,9 @@
 class_name GraphContextMenuManager
 extends Control
 
+# SIGNALS
+signal run_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, start_node: Vertex)
+
 const LOG_TAG = "POPUP_MENU"
 
 @onready var MainMenu: PopupMenu = $MainMenu
@@ -34,7 +37,7 @@ var controller: GraphController
 
 # Format: { "Menu Label": ScriptResource }
 var ALGO_REGISTRY = {
-	"Breadth First Search": BFS,
+	"Breadth First Search": AlgorithmPlayer.ALGORITHMS.BFS,
 }
 
 # Helper to generate the color square icon
@@ -209,7 +212,7 @@ func _clear_context() -> void:
 
 
 func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
-	# Determine if we cal paste
+	# Determine if we call paste
 	var paste_cmd = null
 	if Globals.clipboard_graph != null:
 		paste_cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, controller)
@@ -222,14 +225,14 @@ func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
 	var algo_submenu = [] 
 	
 	for algo_name in ALGO_REGISTRY:
-		var algo_script = ALGO_REGISTRY[algo_name]
+		var algorithm = ALGO_REGISTRY[algo_name]
 		
 		# Create the command automatically using the shared params
 		var cmd = null
 		
 		# ONLY create the command if we actually have nodes selected.
 		if not buffer_snapshot.is_empty() and v in buffer_snapshot:
-			cmd = ExecuteAlgorithm.new(algo_script, v, buffer_snapshot, graph, controller)	
+			cmd = func(): run_algorithm.emit(algorithm, v)
 				
 		# Add to the list
 		algo_submenu.append([algo_name, cmd])

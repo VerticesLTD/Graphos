@@ -21,7 +21,7 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	# If the menu closed less than 200ms ago, ignore ALL clicks.
 	# This prevents "Accidental Vertices" (Left Click)
-	if controller.popup and controller.popup.MainMenu.visible:
+	if controller.popup_menu and controller.popup_menu.MainMenu.visible:
 			# If it's a mouse click, we consume it so it doesn't create vertices or re-open menus
 			if event is InputEventMouseButton and event.pressed:
 				get_viewport().set_input_as_handled()
@@ -125,7 +125,7 @@ func _handle_path_connection(pos: Vector2) -> void:
 
 func _handle_right_click(event: InputEventMouseButton):
 	var graph = controller.graph
-	var popup = controller.popup
+	var popup = controller.popup_menu
 	var mouse_global_pos = event.global_position
 
 	## 1. Check vertex at mouse

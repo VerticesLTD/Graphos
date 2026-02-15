@@ -4,9 +4,13 @@ extends GraphAlgorithm
 
 ## run function for the algorithm
 ## @param _start_vertex    The vertex the algorithm starts from
-func run(_start_vertex: Vertex) -> Array[Command]:
+func run(_start_vertex: Vertex) -> Array:
 	verify_initialization()
 	assert(_start_vertex.is_imposter, "Algorithm instructed to run on a REAL graph (not imposter)")
+
+	# First 3 steps of the pseudo code have no visible effect:
+	for i in range(3):
+		log_pseudo_step(i,true)
 
 	# Step 1: Initialize the veritces state
 	for v in imposter_graph.vertices.values():
