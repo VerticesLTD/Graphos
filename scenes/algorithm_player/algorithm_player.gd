@@ -54,14 +54,26 @@ func set_algorithm(
 	assert(timeline != null and pseudo_steps != null)
 
 	pseudo_visualizer.data = pseudo_resource
-	pseudo_visualizer.visible = true
+	_expose_visualizer()
 
 	# TODO this position should be calculated somehow. This is just a temp pos
 	global_position = starting_node.pos
 
-# TODO I think this is redundant
-# func add_event(event: Command) -> void:
-# 	timeline.append(event)
+# Animation to show visualizer
+func _expose_visualizer() -> void:
+	pseudo_visualizer.visible = true
+	pseudo_visualizer.scale = Vector2.ZERO
+	var tween = create_tween()
+	tween.set_ease(tween.EASE_OUT)
+	tween.set_trans(tween.TRANS_BOUNCE)
+	tween.tween_property(pseudo_visualizer,"scale",Vector2.ONE,0.5)
+
+# Animation to collapse visualizer. Will be used when controls are implemented
+func _collapse_visualizer() -> void:
+	var tween = create_tween()
+	tween.set_ease(tween.EASE_OUT)
+	tween.tween_property(pseudo_visualizer,"scale",Vector2.ZERO,0.5)
+	tween.chain().tween_callback(func(): pseudo_visualizer.visible = false)
 
 
 ## Move to next timeline and/or pseudo step
