@@ -3,6 +3,7 @@ extends Node2D
 
 const LOG_TAG = "ALG_PLAYER"
 
+@onready var algorithm_controls: MarginContainer = $AlgorithmControls
 @onready var pseudo_visualizer: PanelContainer = $PseudoVisualizer
 var pseudo_steps: Array
 
@@ -11,7 +12,8 @@ enum ALGORITHMS {
 }
 
 # Animations
-var tween: Tween
+var visualizer_tween: Tween
+var controls_tween: Tween
 
 ## <ALG> : [<ALG_SCRIPT>, <PSEUDO_RES>]
 var _algorithm_map: Dictionary = {
@@ -38,8 +40,8 @@ func start_algorithm(
 	
 	if _is_algorithm_running:
 		clear_all()
-		if tween:
-			await tween.finished
+		if visualizer_tween:
+			await visualizer_tween.finished
 		_is_algorithm_running = false
 
 	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
@@ -62,6 +64,7 @@ func start_algorithm(
 
 	pseudo_visualizer.data = pseudo_resource
 	_expose_visualizer()
+	_expose_controls()
 
 	global_position = starting_node.pos
 
@@ -72,22 +75,43 @@ func _expose_visualizer() -> void:
 	pseudo_visualizer.visible = true
 	pseudo_visualizer.scale = Vector2.ZERO
 
-	if tween: tween.kill()
+	if visualizer_tween: visualizer_tween.kill()
 
-	tween = create_tween()
-	tween.set_ease(tween.EASE_OUT)
-	tween.set_trans(tween.TRANS_BOUNCE)
-	tween.tween_property(pseudo_visualizer,"scale",Vector2.ONE,0.5)
+	visualizer_tween = create_tween()
+	visualizer_tween.set_ease(visualizer_tween.EASE_OUT)
+	visualizer_tween.set_trans(visualizer_tween.TRANS_BOUNCE)
+	visualizer_tween.tween_property(pseudo_visualizer,"scale",Vector2.ONE,0.5)
+
+# Animation to show player controls.
+func _expose_controls() -> void:
+	algorithm_controls.visible = true
+	algorithm_controls.scale = Vector2.ZERO
+
+	if controls_tween: controls_tween.kill()
+
+	controls_tween = create_tween()
+	controls_tween.set_ease(controls_tween.EASE_OUT)
+	controls_tween.set_trans(controls_tween.TRANS_BOUNCE)
+	controls_tween.tween_property(algorithm_controls,"scale",Vector2.ONE,0.5)
 
 # Animation to collapse visualizer. Will be used when controls are implemented
 func _collapse_visualizer() -> void:
-	if tween: tween.kill()
+	if visualizer_tween: visualizer_tween.kill()
 
-	tween = create_tween()
-	tween.set_ease(tween.EASE_IN)
-	tween.tween_property(pseudo_visualizer,"scale",Vector2.ZERO,0.3)
-	tween.chain().tween_callback(func(): pseudo_visualizer.visible = false)
+	visualizer_tween = create_tween()
+	visualizer_tween.set_ease(visualizer_tween.EASE_IN)
+	visualizer_tween.tween_property(pseudo_visualizer,"scale",Vector2.ZERO,0.3)
+	visualizer_tween.chain().tween_callback(func(): pseudo_visualizer.visible = false)
 
+
+# Animation to collapse player controls. Will be used when controls are implemented
+func _collapse_controls() -> void:
+	if controls_tween: controls_tween.kill()
+
+	controls_tween = create_tween()
+	controls_tween.set_ease(controls_tween.EASE_IN)
+	controls_tween.tween_property(algorithm_controls,"scale",Vector2.ZERO,0.3)
+	controls_tween.chain().tween_callback(func(): algorithm_controls.visible = false)
 
 ## Move to next timeline and/or pseudo step
 func step_forward() -> void:
@@ -157,5 +181,6 @@ func clear_all() -> void:
 	timeline.clear()
 	pseudo_steps.clear()
 	_collapse_visualizer()
+	_collapse_controls()
 	pseudo_visualizer.data = null
 	current_step_index = 0

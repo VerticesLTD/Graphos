@@ -16,9 +16,12 @@
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ty3q8"]
 
 [node name="AlgorithmControls" type="MarginContainer" unique_id=1698095556]
+modulate = Color(1, 1, 1, 0.72156864)
+z_index = 22
 custom_minimum_size = Vector2(345, 0)
 offset_right = 345.0
 offset_bottom = 269.0
+mouse_filter = 0
 script = ExtResource("1_o0rq8")
 
 [node name="MainPanel" type="PanelContainer" parent="." unique_id=1906732688]
@@ -100,19 +103,23 @@ flip_h = true
 
 [node name="DataSeparator" type="HSeparator" parent="MainPanel/MainVBox" unique_id=551651140]
 layout_mode = 2
+mouse_filter = 2
 theme_override_styles/separator = ExtResource("2_q7e6r")
 
 [node name="AlgorithmDataPreset" parent="MainPanel/MainVBox" unique_id=204438486 instance=ExtResource("8_m1gxq")]
 layout_mode = 2
+mouse_filter = 2
 
 [node name="ProgressSeparator" type="HSeparator" parent="MainPanel/MainVBox" unique_id=1194602682]
 layout_mode = 2
+mouse_filter = 2
 theme_override_styles/separator = ExtResource("2_q7e6r")
 
 [node name="ProgressBar" type="ProgressBar" parent="MainPanel/MainVBox" unique_id=811329801]
 clip_contents = true
 custom_minimum_size = Vector2(0, 27.67)
 layout_mode = 2
+mouse_filter = 2
 value = 8.0
 show_percentage = false
 

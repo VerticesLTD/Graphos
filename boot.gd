@@ -1,7 +1,7 @@
 extends Node
 
-const MAIN = preload("uid://yxcr5kwlindq")
 const CREDITS = preload("uid://c1t7e0pf81xoe")
+const MAIN = preload("uid://yxcr5kwlindq")
 
 func _ready() -> void:
 	if OS.has_feature("editor"):
