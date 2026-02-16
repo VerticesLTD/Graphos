@@ -23,6 +23,9 @@ var _algorithm_map: Dictionary = {
 ## Stores the events by order of the algorithm's execution.
 var timeline: Array[Command] = []
 
+## Array stored from algorithm execution. Contains updates for the controls panel data section.
+var data_updates: Array
+
 # This is the pointer tracking our current point in the execution
 var current_step_index: int = 0
 # Used to calculate progress of algorithm
@@ -66,15 +69,21 @@ func start_algorithm(
 	max_step = timeline.size()
 
 	pseudo_steps = algorithm_result.get(1)
-	assert(timeline != null and pseudo_steps != null)
+	
+	data_updates = algorithm_result.get(2)
+	assert(timeline != null and pseudo_steps != null and data_updates != null)
+
 
 	# Setting visualizer
 	pseudo_visualizer.data = pseudo_resource
 	_expose_visualizer()
 
 	algorithm_controls.set_data_layout(algorithm_type)
-	@warning_ignore("INTEGER_DIVISION")
-	algorithm_controls.set_algorithm_progress(current_step_index/max_step)
+
+	# Set initial data display
+	if data_updates.get(0) != null:
+		algorithm_controls.update_execution_data(data_updates[0])
+	_update_progress_bar()
 	_expose_controls()
 
 	global_position = starting_node.pos
@@ -147,6 +156,10 @@ func step_forward() -> void:
 	if current_pseudo_step != null:
 		GLogger.debug("Pseudo step rendered",LOG_TAG)
 		pseudo_visualizer.render_step(current_pseudo_step)
+	
+	var data_update = data_updates[current_step_index]
+	if data_update != null:
+		algorithm_controls.update_execution_data(data_update)
 
 	# Move pointer forward
 	current_step_index += 1

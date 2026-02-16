@@ -11,7 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://lwx8d4ofx6y4" path="res://assets/algorithm_player/Arrow_Pressed.svg" id="5_ty3q8"]
 [ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="7_7uv6k"]
 [ext_resource type="Texture2D" uid="uid://caqenwnug16s8" path="res://assets/algorithm_player/Stop_Hover_Pressed.svg" id="7_tu6xv"]
-[ext_resource type="PackedScene" uid="uid://pbo41h7evpb" path="res://scenes/algorithm_controls/algorithm_data_layouts/base_layout.tscn" id="8_m1gxq"]
+[ext_resource type="PackedScene" uid="uid://jgjoys0wtvpl" path="res://scenes/algorithm_controls/algorithm_data_layouts/BFS_layout/BFS_layout.tscn" id="11_ty3q8"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ty3q8"]
 
@@ -19,8 +19,9 @@
 modulate = Color(1, 1, 1, 0.72156864)
 z_index = 22
 custom_minimum_size = Vector2(345, 0)
-offset_right = 345.0
-offset_bottom = 269.0
+offset_left = 249.0
+offset_right = 594.0
+offset_bottom = 188.0
 mouse_filter = 0
 script = ExtResource("1_o0rq8")
 
@@ -106,7 +107,7 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_styles/separator = ExtResource("2_q7e6r")
 
-[node name="AlgorithmDataPreset" parent="MainPanel/MainVBox" unique_id=204438486 instance=ExtResource("8_m1gxq")]
+[node name="AlgorithmDataPreset" parent="MainPanel/MainVBox" unique_id=1486674643 instance=ExtResource("11_ty3q8")]
 layout_mode = 2
 
 [node name="ProgressSeparator" type="HSeparator" parent="MainPanel/MainVBox" unique_id=1194602682]

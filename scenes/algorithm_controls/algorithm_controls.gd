@@ -21,7 +21,7 @@ signal stop
 @onready var main_v_box: VBoxContainer = $MainPanel/MainVBox
 # The algorithm data scene - This is replace when we set new data
 @onready var data_separator: HSeparator = $MainPanel/MainVBox/DataSeparator
-@onready var algorithm_data: HBoxContainer = $MainPanel/MainVBox/AlgorithmDataPreset
+@onready var algorithm_data: AlgorithmBaseDataLayout = $MainPanel/MainVBox/AlgorithmDataPreset
 @onready var progress_separator: HSeparator = $MainPanel/MainVBox/ProgressSeparator
 @onready var progress_bar: ProgressBar = $MainPanel/MainVBox/ProgressBar
 @onready var progress_padding: Control = $MainPanel/MainVBox/Padding
@@ -118,3 +118,9 @@ func set_data_layout(algorithm: AlgorithmPlayer.ALGORITHMS) -> void:
 	algorithm_data = layout 
 	
 	main_title.text = alg_name
+
+## API to update the data section in the controls.
+## Passes the given data to the data section which handles the update.
+## Data should come from the algorithm execution result for this to work.
+func update_execution_data(data) -> void:
+	algorithm_data.update_data(data)

@@ -43,7 +43,15 @@ func _reset_alg_variables() -> void:
 
 ## Every graph algorithm must have a run function.
 ## Every graph algorithm has a start node, and needs to return an array.
+## The array MUST be strctures as so:
+## [<TIMELINE_ARRAY>,<PSEUDO_STEPS_ARRAY>,<VISUAL_DATA_ARRAY>]
+## <TIMELINE_ARRAY> - This is the array containing the steps affecting the graph itself.
+## <PSEUDO_STEPS_ARRAY> - This is the array containing numbers representing pseudo steps to render.
+## <VISUAL_DATA_ARRAY> - This array contains updates to the graph controls, for example the current amount of processed vertices.
+## Each of these arrays can contain nulls, representing a step with no logical action for the category.
+## It obviously doesn't make sense for all 3 to have null at the same index.
 @abstract func run(_start_vertex: Vertex) -> Array
+
 	
 # ------------------------------------------------------------------------------
 # Logging Helper Functions

@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://jgjoys0wtvpl"]
 
-[ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="1_8i47o"]
+[ext_resource type="Script" uid="uid://cri4b5a5v3m6i" path="res://scenes/algorithm_controls/algorithm_data_layouts/BFS_layout/bfs_layout.gd" id="1_iofmx"]
+[ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="2_q0quv"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8i47o"]
 
@@ -13,62 +14,60 @@ color = Color(0.5, 0.5, 0.5, 1)
 thickness = 2
 vertical = true
 
-[node name="Bottomdata" type="HBoxContainer" unique_id=1486674643]
+[node name="BFSDataLayout" type="HBoxContainer" unique_id=958994698]
 size_flags_vertical = 3
 size_flags_stretch_ratio = 1.78
 mouse_filter = 2
+script = ExtResource("1_iofmx")
 
-[node name="Spacer" type="HSeparator" parent="." unique_id=1771346537]
+[node name="Spacer" type="HSeparator" parent="." unique_id=1316771674]
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/separator = SubResource("StyleBoxEmpty_8i47o")
 
-[node name="Control" type="Control" parent="." unique_id=2140776376]
+[node name="Control" type="MarginContainer" parent="." unique_id=662178190]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.24
 mouse_filter = 2
 
-[node name="GraphDetails" type="RichTextLabel" parent="Control" unique_id=554011090]
+[node name="GraphDetails" type="RichTextLabel" parent="Control" unique_id=570754159]
 custom_minimum_size = Vector2(49.345, 0)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 mouse_filter = 2
-theme_override_fonts/normal_font = ExtResource("1_8i47o")
+theme_override_fonts/normal_font = ExtResource("2_q0quv")
 bbcode_enabled = true
 text = "[table=2]
 [cell][b]|V|[/b] = [/cell][cell]2[/cell]
 [cell][b]|E|[/b] = [/cell][cell]1[/cell]
 [/table]"
+fit_content = true
+autowrap_mode = 0
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="." unique_id=1340086948]
+[node name="VSeparator" type="VSeparator" parent="." unique_id=2063262581]
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/separator = SubResource("StyleBoxLine_8i47o")
 
-[node name="AlgorithmStatusArea" type="VBoxContainer" parent="." unique_id=1305071765]
+[node name="AlgorithmStatusArea" type="VBoxContainer" parent="." unique_id=453223999]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 
-[node name="StatusMsg1" type="Label" parent="AlgorithmStatusArea" unique_id=1682992991]
+[node name="StatusMsg1" type="Label" parent="AlgorithmStatusArea" unique_id=403907452]
 layout_mode = 2
 size_flags_vertical = 0
-theme_override_fonts/font = ExtResource("1_8i47o")
+theme_override_fonts/font = ExtResource("2_q0quv")
 theme_override_font_sizes/font_size = 19
 text = "Processed Vertices:"
 horizontal_alignment = 1
 
-[node name="StatusMsg2" type="Label" parent="AlgorithmStatusArea" unique_id=1209710652]
+[node name="ProcessedVertices" type="Label" parent="AlgorithmStatusArea" unique_id=385815392]
 layout_mode = 2
 size_flags_vertical = 6
-theme_override_fonts/font = ExtResource("1_8i47o")
+theme_override_fonts/font = ExtResource("2_q0quv")
 theme_override_font_sizes/font_size = 30
 text = "1/2"
 horizontal_alignment = 1
