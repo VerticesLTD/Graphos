@@ -16,6 +16,10 @@ signal step_back
 signal step_forward
 ## User clicked stop
 signal stop
+## User dragged progress bar
+signal user_changed_execution_progress(progress: float)
+
+var _is_user_dragging_progress := false
 
 # The main area
 @onready var main_v_box: VBoxContainer = $MainPanel/MainVBox
@@ -23,7 +27,7 @@ signal stop
 @onready var data_separator: HSeparator = $MainPanel/MainVBox/DataSeparator
 @onready var algorithm_data: AlgorithmBaseDataLayout = $MainPanel/MainVBox/AlgorithmDataPreset
 @onready var progress_separator: HSeparator = $MainPanel/MainVBox/ProgressSeparator
-@onready var progress_bar: ProgressBar = $MainPanel/MainVBox/ProgressBar
+@onready var progress_bar: HSlider = $MainPanel/MainVBox/ProgressBar
 @onready var progress_padding: Control = $MainPanel/MainVBox/Padding
 
 # Text components
@@ -42,6 +46,7 @@ var _dragging: bool = false
 var _drag_offset: Vector2 = Vector2.ZERO
 var _drag_start_pos: Vector2 = Vector2.ZERO
 var _drag_start_size: Vector2 = Vector2.ZERO
+
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -124,3 +129,20 @@ func set_data_layout(algorithm: AlgorithmPlayer.ALGORITHMS) -> void:
 ## Data should come from the algorithm execution result for this to work.
 func update_execution_data(data) -> void:
 	algorithm_data.update_data(data)
+
+
+func _on_progress_bar_drag_started() -> void:
+	_is_user_dragging_progress = true
+
+
+func _on_progress_bar_drag_ended(_value_changed: bool) -> void:
+	_is_user_dragging_progress = false
+
+
+func _on_progress_bar_value_changed(value: float) -> void:
+	# Only signal change to algorithm player if its made by the user, and not if its made by 
+	# the algorithm player itself.
+	if not _is_user_dragging_progress:
+		return
+	
+	user_changed_execution_progress.emit(value)

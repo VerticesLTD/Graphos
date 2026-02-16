@@ -115,13 +115,11 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_styles/separator = ExtResource("2_q7e6r")
 
-[node name="ProgressBar" type="ProgressBar" parent="MainPanel/MainVBox" unique_id=811329801]
+[node name="ProgressBar" type="HSlider" parent="MainPanel/MainVBox" unique_id=451392875]
 clip_contents = true
 custom_minimum_size = Vector2(0, 27.67)
 layout_mode = 2
-mouse_filter = 2
 value = 8.0
-show_percentage = false
 
 [node name="Label" type="Label" parent="MainPanel/MainVBox/ProgressBar" unique_id=1780651247]
 modulate = Color(1, 1, 1, 0.27058825)
@@ -176,3 +174,6 @@ stretch_mode = 0
 [connection signal="pressed" from="MainPanel/MainVBox/TopButtons/Back" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="MainPanel/MainVBox/TopButtons/Stop" to="." method="_on_stop_pressed"]
 [connection signal="pressed" from="MainPanel/MainVBox/TopButtons/Forward" to="." method="_on_forward_pressed"]
+[connection signal="drag_ended" from="MainPanel/MainVBox/ProgressBar" to="." method="_on_progress_bar_drag_ended"]
+[connection signal="drag_started" from="MainPanel/MainVBox/ProgressBar" to="." method="_on_progress_bar_drag_started"]
+[connection signal="value_changed" from="MainPanel/MainVBox/ProgressBar" to="." method="_on_progress_bar_value_changed"]

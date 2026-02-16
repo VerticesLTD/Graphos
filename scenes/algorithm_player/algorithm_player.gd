@@ -138,7 +138,7 @@ func _collapse_controls() -> void:
 	controls_tween.chain().tween_callback(func(): algorithm_controls.visible = false)
 
 ## Move to next timeline and/or pseudo step
-func step_forward() -> void:
+func step_forward(update_progress_bar = true) -> void:
 	# Check if we are already at the end
 	if current_step_index >= timeline.size():
 		return 
@@ -164,10 +164,10 @@ func step_forward() -> void:
 	# Move pointer forward
 	current_step_index += 1
 
-	_update_progress_bar()
+	if update_progress_bar: _update_progress_bar()
 
 ## Move to previous timeline and/or pseudo step
-func step_backward() -> void:
+func step_backward(update_progress_bar = true) -> void:
 	# Check if we are already at the start (Initial State)
 	if current_step_index <= 0:
 		return
@@ -187,19 +187,19 @@ func step_backward() -> void:
 		GLogger.debug("Pseudo step rendered",LOG_TAG)
 		pseudo_visualizer.render_step(current_pseudo_step)
 	
-	_update_progress_bar()
+	if update_progress_bar: _update_progress_bar()
 
 ## Go to a specific step
-func go_to_step(target_index: int) -> void:
+func go_to_step(target_index: int, update_progress_bar = true) -> void:
 	target_index = clampi(target_index, 0, timeline.size() - 1)
 	
 	# If we need to go forward
 	while current_step_index < target_index:
-		step_forward()
+		step_forward(update_progress_bar)
 		
 	# If we need to go backward
 	while current_step_index > target_index:
-		step_backward()
+		step_backward(update_progress_bar)
 
 func _update_progress_bar() -> void:
 	var current = float(current_step_index)
@@ -207,6 +207,15 @@ func _update_progress_bar() -> void:
 	var progress = int(current/maximum * 100)
 
 	algorithm_controls.set_algorithm_progress(progress)
+
+func _on_user_changed_progress(new_value: float) -> void:
+	# Transforming a float in [1,100] into a valid step number
+	var step_from_val = int((max_step * new_value)/100)
+	step_from_val = clampi(step_from_val,0,max_step)
+
+	# We give 'false' to stop the progress bar from being updated.
+	# Otherwise we'd have a circular update - User drags -> Player changes step -> Player updates (bad)
+	go_to_step(step_from_val,false)
 
 func reset_to_start() -> void:
 	go_to_step(0)

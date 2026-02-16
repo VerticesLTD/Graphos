@@ -16,3 +16,4 @@ visible = false
 [connection signal="step_back" from="AlgorithmControls" to="." method="step_backward"]
 [connection signal="step_forward" from="AlgorithmControls" to="." method="step_forward"]
 [connection signal="stop" from="AlgorithmControls" to="." method="cancel_algorithm_execution"]
+[connection signal="user_changed_execution_progress" from="AlgorithmControls" to="." method="_on_user_changed_progress"]
