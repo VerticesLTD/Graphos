@@ -18,6 +18,7 @@
 [node name="AlgorithmControls" type="MarginContainer" unique_id=1698095556]
 modulate = Color(1, 1, 1, 0.72156864)
 z_index = 22
+texture_filter = 4
 custom_minimum_size = Vector2(345, 0)
 offset_left = 249.0
 offset_right = 594.0
