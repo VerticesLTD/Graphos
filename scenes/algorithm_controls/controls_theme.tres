@@ -2,11 +2,6 @@
 
 [ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="1_mlaoh"]
 
-[sub_resource type="DPITexture" id="DPITexture_mlaoh"]
-_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#fefefe\" fill-opacity=\".75\"/></svg>
-"
-base_scale = 1.07
-
 [sub_resource type="DPITexture" id="DPITexture_nyaqk"]
 _source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#fefefe\" fill-opacity=\".37\"/></svg>
 "
@@ -103,7 +98,6 @@ default_font = ExtResource("1_mlaoh")
 HSlider/constants/center_grabber = 0
 HSlider/constants/grabber_offset = 0
 HSlider/constants/tick_offset = 0
-HSlider/icons/grabber = SubResource("DPITexture_mlaoh")
 HSlider/icons/grabber_disabled = SubResource("DPITexture_nyaqk")
 HSlider/icons/grabber_highlight = SubResource("DPITexture_1vv6w")
 HSlider/icons/tick = SubResource("DPITexture_4ljsr")

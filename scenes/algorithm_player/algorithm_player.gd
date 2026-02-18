@@ -187,6 +187,10 @@ func step_backward(update_progress_bar = true) -> void:
 		GLogger.debug("Pseudo step rendered",LOG_TAG)
 		pseudo_visualizer.render_step(current_pseudo_step)
 	
+	var data_update = data_updates[current_step_index]
+	if data_update != null:
+		algorithm_controls.update_execution_data(data_update)
+	
 	if update_progress_bar: _update_progress_bar()
 
 ## Go to a specific step
