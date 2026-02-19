@@ -1,7 +1,9 @@
-# This script is meant for future use.
-# When the buttons textures will have a filled inside, we can use this script
-# to make sure clicks are only registered when done directly on the image,
-# rather then inside the button rectangle but not on the image.
+"""
+This script calculates a bit mask for the buttons based on the alpha values of the shape.
+This basically makes sure that clicks only register if they happen on the image, rather than
+on the rectangular 'hitbox' of the button.
+"""
+
 extends TextureButton
 
 const ALPHA_THRESHOLD: float = 0.1

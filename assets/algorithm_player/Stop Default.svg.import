@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cv1iojvfxtsfc"
-path="res://.godot/imported/Stop.svg-48f7266df9731ca6011f6353c7fa45ec.ctex"
+uid="uid://baqm2liugn1ds"
+path="res://.godot/imported/Stop Default.svg-5a62400486f9059c1bb3bf9daa5cf1dd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/algorithm_player/Stop.svg"
-dest_files=["res://.godot/imported/Stop.svg-48f7266df9731ca6011f6353c7fa45ec.ctex"]
+source_file="res://assets/algorithm_player/Stop Default.svg"
+dest_files=["res://.godot/imported/Stop Default.svg-5a62400486f9059c1bb3bf9daa5cf1dd.ctex"]
 
 [params]
 
@@ -23,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
@@ -38,6 +38,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=8.0
+svg/scale=4.0
 editor/scale_with_editor_scale=false
 editor/convert_colors_with_editor_theme=false

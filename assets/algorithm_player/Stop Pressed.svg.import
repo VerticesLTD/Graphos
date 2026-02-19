@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://u6kuw4wtnmau"
-path="res://.godot/imported/Stop_Hover.svg-7bfd705470a92e5568277d1d9b739c73.ctex"
+uid="uid://co75yfyqlh1e7"
+path="res://.godot/imported/Stop Pressed.svg-2d9b0d181ddd7bacca8ac5409777808a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/algorithm_player/Stop_Hover.svg"
-dest_files=["res://.godot/imported/Stop_Hover.svg-7bfd705470a92e5568277d1d9b739c73.ctex"]
+source_file="res://assets/algorithm_player/Stop Pressed.svg"
+dest_files=["res://.godot/imported/Stop Pressed.svg-2d9b0d181ddd7bacca8ac5409777808a.ctex"]
 
 [params]
 
@@ -23,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
@@ -38,6 +38,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=8.0
+svg/scale=4.0
 editor/scale_with_editor_scale=false
 editor/convert_colors_with_editor_theme=false

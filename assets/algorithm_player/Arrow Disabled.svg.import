@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://lwx8d4ofx6y4"
-path="res://.godot/imported/Arrow_Pressed.svg-92707a28d4798dc4f09d7d44bd297d3c.ctex"
+uid="uid://db7l8qoopkapv"
+path="res://.godot/imported/Arrow Disabled.svg-8b134a46cd5afb356cca2de65ac6bee6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/algorithm_player/Arrow_Pressed.svg"
-dest_files=["res://.godot/imported/Arrow_Pressed.svg-92707a28d4798dc4f09d7d44bd297d3c.ctex"]
+source_file="res://assets/algorithm_player/Arrow Disabled.svg"
+dest_files=["res://.godot/imported/Arrow Disabled.svg-8b134a46cd5afb356cca2de65ac6bee6.ctex"]
 
 [params]
 
@@ -23,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
@@ -38,6 +38,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=8.0
+svg/scale=4.0
 editor/scale_with_editor_scale=false
 editor/convert_colors_with_editor_theme=false
