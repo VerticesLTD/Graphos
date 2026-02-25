@@ -12,9 +12,9 @@ config_version=5
 
 config/name="Graphos"
 run/main_scene="uid://bq1um7bo8tkkx"
-config/features=PackedStringArray("4.6", "GL Compatibility")
-boot_splash/stretch_mode=0
+config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/image="uid://c4kcswmb35gkq"
+boot_splash/stretch_mode=0
 
 [autoload]
 

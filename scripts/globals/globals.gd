@@ -88,3 +88,8 @@ var clipboard_graph: UndirectedGraph
 # IDENTIFIRES
 # ------------
 const NOT_FOUND = -1
+
+# ------------
+# Capacity and Limits
+# ------------
+const MAX_VERTICES: int = 500
