@@ -1,24 +1,7 @@
 [gd_scene format=3 uid="uid://b4wiid2yw0mhb"]
 
 [ext_resource type="Script" uid="uid://ceageucvcyqaa" path="res://scenes/notifier/notify.gd" id="1_kfvck"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kfvck"]
-content_margin_left = 12.0
-content_margin_top = 12.0
-content_margin_right = 12.0
-content_margin_bottom = 12.0
-bg_color = Color(0.1254902, 0.1254902, 0.1254902, 0.78431374)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.14901961, 0.6509804, 0.6039216, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-shadow_color = Color(0.14901961, 0.6509804, 0.6039216, 0.19607843)
-shadow_size = 4
+[ext_resource type="StyleBox" uid="uid://byfaj8bd2kga0" path="res://scenes/notifier/panel_style_error_message.tres" id="2_7r6yp"]
 
 [node name="Notify" type="CanvasLayer" unique_id=378775857]
 layer = 100
@@ -31,7 +14,7 @@ offset_top = 60.0
 offset_right = 300.0
 offset_bottom = 112.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_kfvck")
+theme_override_styles/panel = ExtResource("2_7r6yp")
 
 [node name="Label" type="Label" parent="PanelContainer" unique_id=853132152]
 layout_mode = 2

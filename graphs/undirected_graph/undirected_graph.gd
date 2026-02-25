@@ -97,7 +97,7 @@ func _on_edge_removed() -> void:
 
 func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR) -> Vertex:
 	if vertices.size() >= Globals.MAX_VERTICES:
-		Notify.show_error("Vertex limit reached (Max: %d)" % Globals.MAX_VERTICES)
+		Notify.show_error("Vertex limit reached (Max: %d). Try deleting some?" % Globals.MAX_VERTICES)
 		return null
 		
 	var id = get_next_available_id()

@@ -73,7 +73,7 @@ func _handle_left_click(event: InputEventMouseButton):
 	# 2. CLICKED EMPTY SPACE INTERACTION WHILE VERTEX STATE
 	if Globals.current_state == Globals.State.CREATE:
 		if graph.vertices.size() >= Globals.MAX_VERTICES:
-			Notify.show_error("Vertex limit reached (Max: %d)" % Globals.MAX_VERTICES)
+			Notify.show_error("Vertex limit reached (Max: %d). Try deleting some?" % Globals.MAX_VERTICES)
 			return
 			
 		if is_ctrl:
