@@ -240,4 +240,3 @@ func _stop_hover_animation() -> void:
 	_tween.chain().tween_callback(func(): is_hovered = false)
 	# Prevents some bug with chaining color
 	_tween.chain().tween_callback(func(): draw_color_hovered = Globals.VERTEX_COLOR)
-
