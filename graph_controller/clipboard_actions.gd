@@ -55,8 +55,19 @@ func _handle_copy_pressed(_event: InputEvent) -> void:
 
 func _handle_paste_pressed(_event: InputEvent) -> void:
 	var graph = controller.graph
-
+	var clipboard = Globals.clipboard_graph
+	
 	if Globals.clipboard_graph:
+		var current_count = graph.num_vertices
+		var incoming_count = clipboard.vertices.size()
+		
+		# Check if the TOTAL after pasting would exceed the limit
+		if current_count + incoming_count > Globals.MAX_VERTICES:
+			var room_left = Globals.MAX_VERTICES - current_count
+			Notify.show_error("Paste failed: Only %d slots left, but clipboard has %d." % [room_left, incoming_count])
+			return 
+			
+			
 		var mouse_pos = graph.get_global_mouse_position()
 		
 		var paste_cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, controller)
