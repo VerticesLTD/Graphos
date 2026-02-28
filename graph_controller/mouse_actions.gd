@@ -178,10 +178,11 @@ func _handle_dragging(event: InputEventMouseMotion):
 	controller.update_selection_bounds()
 
 func _handle_hover(_mouse_global_pos: Vector2):
-	var graph = controller.graph
-	var id = graph.get_vertex_id_at(_mouse_global_pos)
-	if id != Globals.NOT_FOUND:
-		# Change cursor to a 'Pointing Hand' when over a node
-		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
+	var is_over_vertex = controller.graph.get_vertex_id_at(_mouse_global_pos) != Globals.NOT_FOUND
+	var is_over_selection = not controller.selection_buffer.is_empty() and \
+							controller.selection_bounds.has_point(_mouse_global_pos)
+	
+	if is_over_vertex or is_over_selection:
+		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_MOVE)
 	else:
-		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
