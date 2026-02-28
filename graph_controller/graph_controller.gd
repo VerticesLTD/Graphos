@@ -22,13 +22,11 @@ var selection_bounds: Rect2 = Rect2()
 var selection_buffer: Array[Vertex] = []:
 	set(value):
 		selection_buffer = value
-		# Keeps animation manager updated with selected vertices
-		animation_manager.update_current_selection(selection_buffer)
-		
-		var visualizer = get_node_or_null("UISelectionBounds")
-		if visualizer:
-			visualizer.visible = selection_buffer.size() > 1
-
+		if animation_manager:
+			animation_manager.update_current_selection(selection_buffer)
+			
+		update_selection_bounds()
+			
 ## Animation manager responsible for animations at the controller level
 @onready var animation_manager: AnimationManager = $AnimationManager
 
@@ -135,7 +133,7 @@ func stop_dragging() -> void:
 	
 	if has_moved:
 		# One command to rule them all!
-		var cmd = MoveSelectionCommand.new(drag_snapshot)
+		var cmd = MoveSelectionCommand.new(drag_snapshot, self)
 		CommandManager.push_to_stack(cmd)
 
 	# Visual cleanup
@@ -281,21 +279,17 @@ func execute_algorithm(algo_class: GDScript, start_node: Vertex) -> void:
 	print("Algorithm logic finished. Timeline recorded with %d steps." % timeline.size())
 
 func update_selection_bounds() -> void:
-	if selection_buffer.size() < 2:
+	if selection_buffer.is_empty():
 		selection_bounds = Rect2()
 		return
-	
-	# Start the rect at the first vertex's position
-	var first_v = selection_buffer[0]
-	var new_bounds = Rect2(first_v.pos, Vector2.ZERO)
-	
-	# Expand to include all other vertices
-	for v in selection_buffer:
-		new_bounds = new_bounds.expand(v.pos)
-	
-	# Apply the "thickness" of the vertices plus some breathing room
-	selection_bounds = new_bounds.grow(Globals.VERTEX_RADIUS)	
-	
+	else:
+		# Create and expand rectangle
+		var new_bounds = Rect2(selection_buffer[0].pos, Vector2.ZERO)
+		for v in selection_buffer:
+			new_bounds = new_bounds.expand(v.pos)
+		selection_bounds = new_bounds.grow(Globals.VERTEX_RADIUS + 5.0)
+		
+			
 ## Recieves the player from the Command
 func set_algorithm_player(new_player: AlgorithmPlayer) -> void:
 	self.player = new_player
