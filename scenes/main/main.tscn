@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://vvy7lpcojsga" path="res://graph_controller/animation_manager.gd" id="3_a8run"]
 [ext_resource type="Script" uid="uid://hi52ujx73vn8" path="res://graph_controller/clipboard_actions.gd" id="4_ouso4"]
 [ext_resource type="Script" uid="uid://dfylps8f3q6h3" path="res://graph_controller/mouse_actions.gd" id="5_blune"]
+[ext_resource type="Script" uid="uid://xj2wpodslblo" path="res://scenes/selection_bounds/selection_bounds_view.gd" id="6_b1x3f"]
 [ext_resource type="Script" uid="uid://4boow4h1ajkt" path="res://scripts/globals/global_UI.gd" id="6_th5th"]
 [ext_resource type="PackedScene" uid="uid://b78ey3notmd7g" path="res://scenes/tool_bar/tool_bar.tscn" id="7_7smn1"]
 [ext_resource type="PackedScene" uid="uid://c232xbf42jyrl" path="res://scenes/popup_menu/pop_up_menu_layer.tscn" id="8_raeie"]
@@ -41,6 +42,10 @@ script = ExtResource("4_ouso4")
 
 [node name="MouseActions" type="Node" parent="GraphController" unique_id=2142128433]
 script = ExtResource("5_blune")
+
+[node name="UISelectionBounds" type="Node2D" parent="GraphController" unique_id=1438681308]
+script = ExtResource("6_b1x3f")
+metadata/_custom_type_script = "uid://xj2wpodslblo"
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=598344233]
 script = ExtResource("6_th5th")

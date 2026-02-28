@@ -14,12 +14,20 @@ const VERTEX_BELOW = 1
 ## The selection buffer to link multiple nodes with an edge
 var link_buffer: Array[int] = []
 
+## The rectangle which bounds the selection
+var selection_bounds: Rect2 = Rect2()
+
+
 ## Holds nodes selected by user mass select
 var selection_buffer: Array[Vertex] = []:
 	set(value):
 		selection_buffer = value
 		# Keeps animation manager updated with selected vertices
 		animation_manager.update_current_selection(selection_buffer)
+		
+		var visualizer = get_node_or_null("UISelectionBounds")
+		if visualizer:
+			visualizer.visible = selection_buffer.size() > 1
 
 ## Animation manager responsible for animations at the controller level
 @onready var animation_manager: AnimationManager = $AnimationManager
@@ -97,21 +105,24 @@ func _unhandled_input(event: InputEvent) -> void:
 				return	
 
 ## Starts dragging a node
-func start_dragging(id: int) -> void:
+func start_dragging(id: int = Globals.NOT_FOUND) -> void:
 	is_dragging = true
 	drag_snapshot.clear()
 	
+	# Clicked inside the bounding box (id is NOT_FOUND)
+	# or clicked a vertex that is already part of the selection.
 	var clicked_v = graph.get_vertex(id)
-	if not clicked_v: return
-
-	# If clicking something already in selection, drag the whole group
-	if selection_buffer.has(clicked_v):
+	if id == Globals.NOT_FOUND or selection_buffer.has(clicked_v):
 		for v in selection_buffer:
 			drag_snapshot[v] = v.pos
-	# Otherwise, just drag the single clicked vertex
-	else:
+		update_selection_bounds()
+		return # Group drag initialized
+
+	# Clicked a single vertex that ISN'T selected
+	if clicked_v:
 		drag_snapshot[clicked_v] = clicked_v.pos
-		
+
+				
 func stop_dragging() -> void:
 	if not is_dragging: return
 	
@@ -182,6 +193,7 @@ func _populate_selection_buffer() -> void:
 			selection_buffer.append(v)
 
 	animation_manager.update_current_selection(selection_buffer)
+	update_selection_bounds()
 
 ## Manually sets the selection buffer to a specific set of vertices.
 ## Useful for PasteCommand.
@@ -205,6 +217,7 @@ func clear_selection_buffer() -> void:
 
 	selection_buffer.clear()
 	animation_manager.update_current_selection(selection_buffer)
+	update_selection_bounds()
 
 ## ONLY refreshes the link buffer colors. It doesn't touch the Array logic.
 func refresh_link_buffer_colors() -> void:
@@ -267,6 +280,22 @@ func execute_algorithm(algo_class: GDScript, start_node: Vertex) -> void:
 	
 	print("Algorithm logic finished. Timeline recorded with %d steps." % timeline.size())
 
+func update_selection_bounds() -> void:
+	if selection_buffer.size() < 2:
+		selection_bounds = Rect2()
+		return
+	
+	# Start the rect at the first vertex's position
+	var first_v = selection_buffer[0]
+	var new_bounds = Rect2(first_v.pos, Vector2.ZERO)
+	
+	# Expand to include all other vertices
+	for v in selection_buffer:
+		new_bounds = new_bounds.expand(v.pos)
+	
+	# Apply the "thickness" of the vertices plus some breathing room
+	selection_bounds = new_bounds.grow(Globals.VERTEX_RADIUS)	
+	
 ## Recieves the player from the Command
 func set_algorithm_player(new_player: AlgorithmPlayer) -> void:
 	self.player = new_player

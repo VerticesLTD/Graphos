@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bhbtu8karh32q"]
+
+[ext_resource type="Script" uid="uid://xj2wpodslblo" path="res://scenes/selection_bounds/selection_bounds_view.gd" id="1_sg21h"]
+
+[node name="SelectionBoundsView" type="Node2D" unique_id=318232074]
+script = ExtResource("1_sg21h")
