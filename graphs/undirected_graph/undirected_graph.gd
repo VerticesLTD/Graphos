@@ -12,6 +12,9 @@ const VERTEX_VIEW_SCENE = preload("uid://cxt6f2vgtos0c")
 ## Dictionary[int -> Vertex]
 var vertices: Dictionary = {}
 
+var free_ids: Array[int] = []
+
+
 ## Metadata counters, num_vertices shouldn't be taken 
 ## care of manually because we can get it by using size
 var num_vertices: int:
@@ -24,6 +27,17 @@ var num_edges: int = 0
 var _next_vertex_id: int = 0
 
 	
+func _ready() -> void:
+	for i in range(Globals.MAX_VERTICES):
+		free_ids.append(i)
+
+## Returns the next available id
+func get_next_available_id() -> int:
+	if free_ids.is_empty():
+		return Globals.NOT_FOUND
+	
+	return free_ids.pop_front()
+		
 ## ------------------------------------------------------------------------------
 ## SIGNAL REACTION, edge/vertex add/remove
 ## ------------------------------------------------------------------------------
@@ -82,8 +96,11 @@ func _on_edge_removed() -> void:
 ## Public: Create brand new vertex
 
 func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR) -> Vertex:
-	var id = _next_vertex_id
-	_next_vertex_id += 1
+	if vertices.size() >= Globals.MAX_VERTICES:
+		Notify.show_error("Vertex limit reached (Max: %d). Try deleting some?" % Globals.MAX_VERTICES)
+		return null
+		
+	var id = get_next_available_id()
 
 	var v = Vertex.new(id, color, Vertex.INF, Vertex.INF, pos)
 	
@@ -96,6 +113,9 @@ func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR
 ## Public: Restore from Undo/Redo
 func restore_vertex(v: Vertex) -> void:
 	if not v or vertices.has(v.id): return
+	
+	free_ids.erase(v.id) # Id is no longer free
+	
 	_register_and_visualize(v)
 
 ## Private Helper: handles VertexView and vertices dictionary
@@ -128,6 +148,10 @@ func delete_vertex(vertex: Vertex) -> void:
 	for neighbor_v in neighbors:
 		delete_edge(vertex.id, neighbor_v.id)
 
+	# Add the id to free ids
+	free_ids.append(vertex.id)
+	free_ids.sort()
+	
 	# Signal deletion (Metadata + UI)
 	vertex.vanished.emit(vertex)
 
