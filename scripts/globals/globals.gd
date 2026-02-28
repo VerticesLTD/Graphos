@@ -88,3 +88,8 @@ var clipboard_graph: UndirectedGraph
 # IDENTIFIRES
 # ------------
 const NOT_FOUND = -1
+
+# ------------
+# EDGE LINE EDIT
+# ------------
+var active_weight_editor: LineEdit = null

@@ -35,11 +35,14 @@ func _ready() -> void:
 
 		_setup_detection_area()
 
-		# 1. Listen for edge updates (like color changes)
+		# Listen for edge updates (like color changes)
 		edge_data.state_changed.connect(refresh)
 		
-		# 2. Listen for "die" commands and clear
-		edge_data.vanished.connect(queue_free)		
+		# Listen for "die" commands and clear
+		edge_data.vanished.connect(queue_free)
+		
+		# Detect edge refractoring
+		mouse_detection_area.input_event.connect(_on_mouse_detection_area_input_event)		
 		
 		# Initial draw
 		refresh()		
@@ -241,3 +244,42 @@ func _stop_hover_animation() -> void:
 	# Prevents some bug with chaining color
 	_tween.chain().tween_callback(func(): draw_color_hovered = Globals.VERTEX_COLOR)
 
+
+## Detect double click
+func _on_mouse_detection_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.double_click:
+			_spawn_weight_editor()
+
+## Edit the edge's weight
+func _spawn_weight_editor() -> void:
+	# Clear old edit line
+	if Globals.active_weight_editor:
+		Globals.active_weight_editor.queue_free()
+	
+	# Create the new edit line
+	var edit = LineEdit.new()
+	edit.text = str(edge_data.weight)
+	edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	edit.custom_minimum_size = Vector2(50, 30)
+	
+	var mid_point = (edge_data.src.pos + edge_data.dst.pos) / 2.0
+	edit.global_position = mid_point - (Vector2(50, 30) / 2.0)
+
+	get_tree().root.add_child(edit)
+	Globals.active_weight_editor = edit
+	
+	edit.grab_focus()
+	edit.select_all()
+
+	edit.text_submitted.connect(_on_weight_submitted.bind(edit))
+
+func _on_weight_submitted(new_text: String, _edit_node: LineEdit) -> void:
+	if new_text.is_valid_int() or new_text.is_valid_float():
+		var cmd = ChangeEdgeWeightCommand.new(edge_data, new_text.to_int())
+		CommandManager.execute(cmd)
+	
+	# 3. Clean up globally
+	if Globals.active_weight_editor:
+		Globals.active_weight_editor.queue_free()
+		Globals.active_weight_editor = null

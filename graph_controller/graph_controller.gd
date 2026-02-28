@@ -28,6 +28,7 @@ var selection_buffer: Array[Vertex] = []:
 ## A class which holds a player with all the algorithm commands.
 var player: AlgorithmPlayer
 
+
 ## A map linking actions to the functions handling them
 ## <ACTION> : [<PRESS FUNCTION>, <RELEASE FUNCTION>]
 var action_map: Dictionary = {
@@ -69,6 +70,8 @@ func _process(_delta: float) -> void:
 ## ------------------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		close_active_editor()
 	for action: StringName in action_map.keys():
 		# Callables from action map
 		var pressed_handler = action_map[action].get(0)
@@ -140,6 +143,8 @@ func stop_dragging() -> void:
 
 ## Creates and performs an add vertex command.
 func handle_vertex_placement(pos: Vector2) -> void:
+	if graph.get_edge_at(pos) != null:
+		return
 	# Create and execute the command
 	CommandManager.execute(AddVertexCommand.new(graph, pos))
 
@@ -236,6 +241,12 @@ func should_add_connection(from_id: int, to_id: int) -> bool:
 		   from_id != to_id and \
 		   not graph.has_edge(from_id, to_id)
 
+## Close the weight editor
+func close_active_editor() -> void:
+	if active_weight_editor:
+		active_weight_editor.queue_free()
+		active_weight_editor = null
+		
 ## ------------------------------------------------------------------------------
 ## ALGORITHM PLAYER
 ## ------------------------------------------------------------------------------
