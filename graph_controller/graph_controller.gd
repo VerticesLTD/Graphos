@@ -70,6 +70,7 @@ func _process(_delta: float) -> void:
 ## ------------------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Close text editor if needed
 	if event is InputEventMouseButton and event.pressed:
 		close_active_editor()
 	for action: StringName in action_map.keys():
@@ -243,9 +244,9 @@ func should_add_connection(from_id: int, to_id: int) -> bool:
 
 ## Close the weight editor
 func close_active_editor() -> void:
-	if active_weight_editor:
-		active_weight_editor.queue_free()
-		active_weight_editor = null
+	if Globals.active_weight_editor:
+		Globals.active_weight_editor.queue_free()
+		Globals.active_weight_editor = null
 		
 ## ------------------------------------------------------------------------------
 ## ALGORITHM PLAYER

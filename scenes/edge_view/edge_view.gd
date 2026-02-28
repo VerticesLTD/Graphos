@@ -266,9 +266,11 @@ func _spawn_weight_editor() -> void:
 	var mid_point = (edge_data.src.pos + edge_data.dst.pos) / 2.0
 	edit.global_position = mid_point - (Vector2(50, 30) / 2.0)
 
+	# Attaches the box to the top of the game
 	get_tree().root.add_child(edit)
 	Globals.active_weight_editor = edit
 	
+	# Instantiate the cursor and text selection
 	edit.grab_focus()
 	edit.select_all()
 
