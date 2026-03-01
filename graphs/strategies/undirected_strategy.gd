@@ -1,15 +1,13 @@
 class_name UndirectedStrategy extends ConnectionStrategy
 
 func add_edge(graph: Graph, src: Vertex, dst: Vertex, weight: int, shout: bool) -> void:
-	# 1. Quietly update the data structures
+	# Quietly update the data structures
 	var edge_a = src.connect_to(dst, weight) 
 	var edge_b = dst.connect_to(src, weight) 
 	
-	# 2. If UI updates are allowed, draw the line and share it
+	# If UI updates are allowed, draw the line and share it
 	if shout and edge_a and edge_b:
 		var view = graph.spawn_edge_view(edge_a)
-		edge_a.view = view
-		edge_b.view = view
 		graph.num_edges += 1
 
 func delete_edge(graph: Graph, src_node: Vertex, dst_node: Vertex) -> void:

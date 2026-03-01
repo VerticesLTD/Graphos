@@ -216,7 +216,6 @@ func select_vertices(vertices_to_select: Array[Vertex]) -> void:
 func clear_selection_buffer() -> void:
 	# Resetting color
 	for v in selection_buffer:
-		v.color = Globals.VERTEX_COLOR
 		v.z_idx = VERTEX_BELOW
 
 	selection_buffer.clear()
