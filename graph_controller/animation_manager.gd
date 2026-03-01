@@ -18,27 +18,31 @@ func update_selected_elements_hover_animations() -> void:
 	# and all edges whose dst and src are in selection.
 	# Also takes care of stopping highlights.
 
+	# Start animations for the CURRENT selection
 	for v in current_selection:
-		v.view.manual_hover_start()
-		var edges = v.edges
-
-		while edges:
-			if edges.src in current_selection and edges.dst in current_selection:
-				edges.view.manual_hover_start()
-
-			edges = edges.next
-	
-	# Finding elements that no longer need highlighting
+		# Tell the Brain to request an animation from its View
+		v.animation_requested.emit("hover_start")
+		
+		var e = v.edges
+		while e:
+			# If the destination is ALSO selected, light up the edge between them
+			if e.dst in current_selection:
+				e.animation_requested.emit("hover_start")
+			e = e.next
+			
+	# Stop animations for elements that are NO LONGER selected
 	for v in old_selection:
-		# This check is important, as things might have been removed by the user!
-		if not v or not v.view:
+		# Safety Check: Did the user delete this vertex while it was selected?
+		if not is_instance_valid(v):
 			continue
 
+		# If it survived, but is no longer in the active selection, turn it off
 		if v not in current_selection:
-			v.view.manual_hover_stop()
-			var edges = v.edges
-
-			# This does go over each view twice - Could be optimized
-			while edges:
-				edges.view.manual_hover_stop()
-				edges = edges.next
+			v.animation_requested.emit("hover_stop")
+			
+			var e = v.edges
+			while e:
+				# Turn off the connected edges as well
+				if is_instance_valid(e):
+					e.animation_requested.emit("hover_stop")
+				e = e.next

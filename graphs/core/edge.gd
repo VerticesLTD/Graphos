@@ -13,6 +13,9 @@ signal state_changed
 @warning_ignore("unused_signal")
 signal vanished(v: Vertex)
 
+## Signal to trigger UI animations (like hovers) from data/algorithms.
+signal animation_requested(anim_name: String)
+
 ## Source vertex of the edge.
 var src: Vertex
 
@@ -44,7 +47,7 @@ func _init(
 	_next: Edge = null,
 	_color: Color = Globals.EDGE_COLOR 
 ) -> void:
-	self.weight = _weight
+	self.weight = clampi(_weight, -999, 999)
 	self.src = _src
 	self.dst = _dst
 	self.next = _next
@@ -54,50 +57,39 @@ func _init(
 	if src:
 		self.is_imposter = src.is_imposter
 
-	# Only connect signals if we are REAL. 
-	# This prevents dozens of useless connections in the imposter graph.
-	if not is_imposter:
-		if src: src.state_changed.connect(_on_vertex_changed)
-		if dst: dst.state_changed.connect(_on_vertex_changed)
+	# Only connect movement signals if we are a REAL edge	
+		if src: src.state_changed.connect(_notify_change)
+		if dst: dst.state_changed.connect(_notify_change)
+		
+# --- Reaction Logic ---
 
-####################### SETTER FUNCTIONS & REACTION LOGIC #######################
+func _notify_change() -> void:
+	if not is_imposter:
+		state_changed.emit()
 
 var weight: int = 1:
 	set(value):
-		weight = clampi(value, -999, 999)
-		state_changed.emit()
+		var clamped = clampi(value, -999, 999)
+		if weight == clamped: return # Early exit
+		weight = clamped
+		_notify_change()
 		
-
 var color: Color = Globals.EDGE_COLOR: 
 	set(value):
+		if color == value: return # Early exit
 		color = value
-		state_changed.emit()
+		_notify_change()
 
-
-func _on_vertex_changed() -> void:
-	# If a vertex "shouts" that it moved, the Edge 
-	# shouts too so the Line Sprite knows to stretch.
-	state_changed.emit()
-
-## Helper function to fetch the other vertex, 
-## used when we have an edge and want to get its dst
-## @param v		Returns the vertex at the opposite end of this edge relative to v.
+	
+## Helper function to fetch the other vertex
 func get_other_vertex(v: Vertex) -> Vertex:
-	if v == src:
-		return dst
-	else:
-		return src
+	return dst if v == src else src
+	
 
-## This is called right before the object is removed from memory.
+## Disconnects signals to prevent memory leaks when deleted
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
-		# Callable returns a unique pointer to the function _on_vertex_changed
-		# This is used to check if were deleting the right signals.
-		var cb = Callable(self, "_on_vertex_changed")
-
-		# Only dissconnect if:
-		# The instance hasnt been deleted AND
-		# The edge is REALLY connected with state_changed to src and dest.
+		var cb = Callable(self, "_notify_change")
 		if is_instance_valid(src) and src.state_changed.is_connected(cb):
 			src.state_changed.disconnect(cb)
 		if is_instance_valid(dst) and dst.state_changed.is_connected(cb):

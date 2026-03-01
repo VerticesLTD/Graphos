@@ -26,7 +26,7 @@ func debug(msg, tag=""):
 	if enabled:
 		print_rich("[color=orange][DEBUG][/color]","[color=cyan][",tag,"][/color] - ",msg)
 
-func Globals.INFo(msg, tag=""):
+func info(msg: String, tag: String = "") -> void:
 	if filters.size() > 0 and  tag not in filters:
 		return
 		

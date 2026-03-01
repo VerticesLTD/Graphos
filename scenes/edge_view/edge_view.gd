@@ -32,22 +32,18 @@ var _tween: Tween
 func _ready() -> void:
 	if edge_data:
 		weight_label.text = str(edge_data.weight)
-
 		_setup_detection_area()
 
-		# Listen for edge updates (like color changes)
+		# Data connections
 		edge_data.state_changed.connect(refresh)
+		edge_data.vanished.connect(queue_free)		
 		
-		# Listen for "die" commands and clear
-		edge_data.vanished.connect(queue_free)
+		# Animation connection
+		edge_data.animation_requested.connect(_on_animation_requested)
 		
-		# Detect edge refractoring
 		mouse_detection_area.input_event.connect(_on_mouse_detection_area_input_event)		
-		
-		# Initial draw
-		refresh()		
+		refresh()
 	else:
-		# If there's no edge, delete.
 		queue_free()
 
 func _process(_delta: float) -> void:
@@ -124,6 +120,16 @@ func _update_weight_label_transform() -> void:
 func _should_display_weight() -> bool:
 	return true	
 
+## Routes animation commands received from the Edge data.
+func _on_animation_requested(anim_name: String) -> void:
+	match anim_name:
+		"hover_start":
+			is_hovered = true
+			is_manual_hover = true
+			_start_hover_animation()
+		"hover_stop":
+			_stop_hover_animation()
+			
 ## Draws the edge's mouse detection area accurately to how it is drawn.
 func _setup_detection_area() -> void:
 	# Assumes edge_data exists
