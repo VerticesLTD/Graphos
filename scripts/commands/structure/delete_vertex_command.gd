@@ -6,7 +6,7 @@ var vertex: Vertex
 var pos: Vector2
 var edge_commands: Array[AddEdgeCommand] = []
 
-func _init(g: UndirectedGraph, v: Vertex):
+func _init(g: Graph, v: Vertex):
 	super(g)
 	vertex = v
 	pos = v.pos

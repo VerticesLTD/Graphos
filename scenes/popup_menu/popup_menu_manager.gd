@@ -25,7 +25,7 @@ extends Control
 
 ## The graph the commands operate on.
 ## We inject it from GraphController in _ready().
-var graph: UndirectedGraph
+var graph: Graph
 
 ## Save the controller in order to access its properties
 var controller: GraphController 

@@ -5,7 +5,7 @@ extends Command
 var v_cmd: AddVertexCommand
 var e_cmd: AddEdgeCommand
 
-func _init(g: UndirectedGraph, pos: Vector2, prev_id: int):
+func _init(g: Graph, pos: Vector2, prev_id: int):
 	super(g)
 	v_cmd = AddVertexCommand.new(g, pos)
 	if prev_id != Globals.NOT_FOUND:

@@ -10,7 +10,7 @@ var controller: Node # Reference to GraphController
 
 func _init(_algo_class: GDScript, _start_node: Vertex, 
 		_selection_buffer: Array[Vertex], 
-		_graph: UndirectedGraph, _controller: Node):
+		_graph: Graph, _controller: Node):
 	super(_graph)
 	algo_class = _algo_class
 	start_v = _start_node

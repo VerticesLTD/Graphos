@@ -2,11 +2,11 @@
 class_name DeleteSelectionCommand
 extends Command
 
-var induced_graph: UndirectedGraph
+var induced_graph: Graph
 var commands: Array[Command] = []
 
 
-func _init(g: UndirectedGraph, selected_vertices: Array[Vertex]):
+func _init(g: Graph, selected_vertices: Array[Vertex]):
 	super(g)
 
 	# Prepare delete vertex command

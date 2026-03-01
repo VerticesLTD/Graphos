@@ -7,7 +7,7 @@ var graph_controller: GraphController
 # Store sub-commands to handle the actual deletion logic
 var delete_cmds: Array[DeleteVertexCommand] = []
 
-func _init(g: UndirectedGraph, _selection: Array[Vertex], _ctrl: GraphController):
+func _init(g: Graph, _selection: Array[Vertex], _ctrl: GraphController):
 	super(g)
 	# Deep copy the array so we remember exactly what was selected at this moment
 	selection_to_cut = _selection.duplicate()

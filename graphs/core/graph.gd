@@ -1,8 +1,8 @@
-## Represents an undirected graph using adjacency lists.
-## The Graph acts as the "Stage Manager": it creates Brains (Data) 
-## and Puppets (Scenes) and connects them.
+## Represents a graph using adjacency lists.
+## Uses strategy pattern in order to have different
+## connection types between vertices.
 extends Node2D
-class_name UndirectedGraph
+class_name Graph
 
 # We load our "Blueprints" (Scenes) here
 const EDGE_VIEW_SCENE = preload("uid://bmti1ysdlhopk")
@@ -14,7 +14,13 @@ var vertices: Dictionary = {}
 
 var free_ids: Array[int] = []
 
+## The Context maintains a reference to one of the concrete strategies
+var strategy: ConnectionStrategy = UndirectedStrategy.new()
 
+## Setter for the strategy in order to change it
+func set_strategy(new_strategy: ConnectionStrategy) -> void:
+	self.strategy = new_strategy
+	
 ## Metadata counters, num_vertices shouldn't be taken 
 ## care of manually because we can get it by using size
 var num_vertices: int:
@@ -336,8 +342,8 @@ func reset_for_algorithm() -> void:
 
 ## Returns a new sub-graph from given vertices
 ## This graph is 'Data-Only' and will not appear on screen.
-func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> UndirectedGraph:
-	var imposter_graph = UndirectedGraph.new()
+func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> Graph:
+	var imposter_graph = Graph.new()
 	
 	# 1. Create the Nodes (The Ghosts)
 	for v in source_vertices:

@@ -1,11 +1,7 @@
-extends Node
+class_name ConnectionStrategy extends RefCounted
 
+func add_edge(graph: Graph, src: Vertex, dst: Vertex, weight: int, shout: bool) -> void:
+	pass
 
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
+func delete_edge(graph: Graph, src: Vertex, dst: Vertex) -> void:
 	pass

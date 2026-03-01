@@ -8,7 +8,7 @@ var to_id: int
 
 ## Initializes the add vertex command.
 ## @param vertex     The vertex being created.
-func _init(g: UndirectedGraph, src_id: int, dst_id: int):
+func _init(g: Graph, src_id: int, dst_id: int):
 	super(g)
 	from_id = src_id
 	to_id = dst_id

@@ -5,7 +5,7 @@ extends Command
 var pos: Vector2
 var vertex: Vertex
 
-func _init(g: UndirectedGraph, mouse_pos: Vector2):
+func _init(g: Graph, mouse_pos: Vector2):
 	super(g)
 	pos = mouse_pos
 

@@ -1,5 +1,4 @@
-extends Node
-
+class_name UndirectedStrategy extends ConnectionStrategy
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:

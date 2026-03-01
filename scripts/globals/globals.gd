@@ -82,7 +82,7 @@ var selection_rectangle: Rect2
 # Clipboard
 # ------------
 ## Stores induced graph for copy paste
-var clipboard_graph: UndirectedGraph
+var clipboard_graph: Graph
 
 # ------------
 # IDENTIFIRES

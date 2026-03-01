@@ -5,13 +5,13 @@ extends RefCounted
 class_name Command
 
 ## Pass the = null graph because the command needs it for the change
-var graph: UndirectedGraph
+var graph: Graph
 
 ## Determines if this command should be added to the Undo Stack
 var add_to_history: bool = true
 
-## Initialize the command, make UndirectedGraph null in def so its optional.
-func _init(_graph: UndirectedGraph = null):
+## Initialize the command, make Graph null in def so its optional.
+func _init(_graph: Graph = null):
 	self.graph = _graph
 	
 ## Performs the action (Forward).

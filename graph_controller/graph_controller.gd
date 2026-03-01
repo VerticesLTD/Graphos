@@ -6,7 +6,7 @@ const VERTEX_ON_TOP = 2
 const VERTEX_BELOW = 1
 
 ## Allows the controller to control the graph
-@export var graph: UndirectedGraph
+@export var graph: Graph
 
 ## UI overlay that draws/opens context menus
 @export var popup: GraphContextMenuManager

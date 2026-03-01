@@ -5,7 +5,7 @@ extends Command
 var _selection: Array[Vertex]
 
 # We pass the graph and the specific selection we want to copy
-func _init(_graph: UndirectedGraph, selection: Array[Vertex]):
+func _init(_graph: Graph, selection: Array[Vertex]):
 	super(_graph)
 	_selection = selection
 	add_to_history = false

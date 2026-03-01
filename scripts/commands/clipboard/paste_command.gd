@@ -2,14 +2,14 @@
 class_name PasteCommand
 extends Command
 
-var clipboard_ref: UndirectedGraph
+var clipboard_ref: Graph
 var mouse_global_pos: Vector2
 var graph_controller: GraphController
 
 var created_vertex_cmds: Array[AddVertexCommand] = []
 var created_edge_cmds: Array[AddEdgeCommand] = []
 
-func _init(g: UndirectedGraph, _clipboard: UndirectedGraph, _mouse_global_pos: Vector2, _ctrl: GraphController):
+func _init(g: Graph, _clipboard: Graph, _mouse_global_pos: Vector2, _ctrl: GraphController):
 	super(g)
 	clipboard_ref = _clipboard
 	mouse_global_pos = _mouse_global_pos

@@ -1,4 +1,4 @@
-extends Node
+class_name DirectedStrategy extends ConnectionStrategy
 
 
 # Called when the node enters the scene tree for the first time.

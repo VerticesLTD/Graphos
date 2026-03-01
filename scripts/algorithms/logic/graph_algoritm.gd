@@ -8,17 +8,17 @@ const COLOR_FINISHED       = Color(0.2, 0.2, 0.2)  # Charcoal (Softer Black)
 const COLOR_EDGE_PATH      = Color(0.40, 0.75, 1.00) # Bright Blue for the "Tree"
 
 ## The graph as an adjacency list.(if we add diff types of graphs, we can generelize this)
-var imposter_graph: UndirectedGraph
+var imposter_graph: Graph
 
 ## The graph as an adjacency list.(if we add diff types of graphs, we can generelize this)
-var real_graph: UndirectedGraph
+var real_graph: Graph
 
 ## timeline to record the algorithm
 var timeline: Array[Command] = []
 
 ## Initialize the algorithm
 ## @param undirected_graph   The graph the algorithm uses.
-func _init(_imposter_graph: UndirectedGraph, _real_graph: UndirectedGraph):
+func _init(_imposter_graph: Graph, _real_graph: Graph):
 	imposter_graph = _imposter_graph
 	real_graph =_real_graph
 

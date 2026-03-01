@@ -4,7 +4,7 @@ extends GraphAlgorithm
 
 ## Initialize the graph.
 ## @param gtaph    The graph to run the algorithm on.
-func _init(_imposter_graph: UndirectedGraph, _real_graph: UndirectedGraph):
+func _init(_imposter_graph: Graph, _real_graph: Graph):
 	super(_imposter_graph, _real_graph)
 	
 	

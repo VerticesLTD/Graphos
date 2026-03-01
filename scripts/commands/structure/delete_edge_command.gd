@@ -5,7 +5,7 @@ extends Command
 var from_id: int
 var to_id: int
 
-func _init(g: UndirectedGraph, src_id: int, dst_id: int):
+func _init(g: Graph, src_id: int, dst_id: int):
 	super(g)
 	from_id = src_id
 	to_id = dst_id
