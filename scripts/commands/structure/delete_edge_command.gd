@@ -12,6 +12,9 @@ var previous_weight: int
 var strategy: ConnectionStrategy
 var is_weighted: bool
 
+# Safety flag to prevent execution if the edge doesn't exist
+var is_valid: bool = false
+
 ## Initializes the delete edge command.
 func _init(g: Graph, src_id: int, dst_id: int):
 	super(g)
@@ -25,17 +28,19 @@ func _init(g: Graph, src_id: int, dst_id: int):
 	
 	if edge:
 		previous_weight = edge.weight
-		# Store the edge's internal sandbox data
 		strategy = edge.strategy
 		is_weighted = edge.is_weighted
+		is_valid = true
 	else:
-		# TBD: Throw error?
-		previous_weight = 1
-		strategy = Globals.active_strategy
-		is_weighted = Globals.is_weighted_mode
+		# Log the issue for debugging but keep the app running
+		Notify.show_error("Edge Error: Attempted to delete non-existent edge.")
+		is_valid = false
 
 func execute() -> void:
+	if not is_valid: return
 	graph.delete_edge(from_id, to_id)
 
 func undo() -> void:
+	if not is_valid: return
+	# Restoration preserves the exact original Strategy and Weighted state
 	graph.add_edge(from_id, to_id, previous_weight, strategy, is_weighted, true)

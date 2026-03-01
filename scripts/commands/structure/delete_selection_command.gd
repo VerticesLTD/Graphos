@@ -13,10 +13,7 @@ func _init(g: Graph, selected_vertices: Array[Vertex]):
 	for v in selected_vertices:
 		var v_cmd = DeleteVertexCommand.new(graph, v)
 		commands.append(v_cmd)
-		
-	# Note: We don't need separate Edge commands because 
-	# DeleteVertexCommand already captures the edges for us!
-	
+			
 func execute() -> void:
 	# Execute them in order
 	for cmd in commands:

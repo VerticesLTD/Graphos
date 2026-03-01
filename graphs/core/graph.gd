@@ -62,10 +62,19 @@ func restore_vertex(v: Vertex) -> void:
 func delete_vertex(v: Vertex) -> void:
 	if not v or not vertices.has(v.id): return
 
-	# Strategy handles the actual edge logic (source vs destination)
-	for neighbor in v.get_neighbor_vertices():
+	# Clean up OUTGOING edges first
+	# We copy neighbors to an array to safely iterate while the linked list is being modified.
+	var neighbors = v.get_neighbor_vertices()
+	for neighbor in neighbors:
 		delete_edge(v.id, neighbor.id)
 
+	# Clean up remaining INCOMING edges
+	# Because we did Step 1 first, UndirectedStrategy already deleted its incoming twins!
+	# This loop safely sweeps up ONLY the one-way Directed arrows that are left pointing at us.
+	for e in get_incoming_edges(v):
+		delete_edge(e.src.id, v.id)
+
+	# 3. Recycle ID and remove from graph
 	free_ids.append(v.id)
 	free_ids.sort() # Ensure the next ID taken is the lowest
 	
@@ -162,7 +171,18 @@ func get_edge_at(mouse_pos: Vector2, threshold: float = 12.0) -> Edge:
 
 	return best
 	
-	
+## Returns all edges in the graph that point TO the given vertex.
+## Useful for directed graph operations without complex data structures.
+func get_incoming_edges(target: Vertex) -> Array[Edge]:
+	var incoming: Array[Edge] = []
+	for v in vertices.values():
+		var e = v.edges
+		while e:
+			if e.dst == target:
+				incoming.append(e)
+			e = e.next
+	return incoming
+		
 ## Validates that all edges in the selection share the same strategy.
 ## Returns the shared ConnectionStrategy, or null if the selection is mixed.
 func get_selection_strategy(source_vertices: Array[Vertex]) -> ConnectionStrategy:

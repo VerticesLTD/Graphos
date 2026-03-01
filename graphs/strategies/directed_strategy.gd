@@ -4,9 +4,9 @@ class_name DirectedStrategy extends ConnectionStrategy
 
 ## Adds a directed edge and encodes it with its specific sandbox properties.
 func add_edge(graph: Graph, src: Vertex, dst: Vertex, weight: int, is_weighted: bool, shout: bool) -> void:
-	# Create the logical link (Pass 'true' for is_directed, and 'self' for the strategy)
-	var edge = src.connect_to(dst, weight, true, is_weighted, self) 
-	
+	# Create the logical link (pass 'self' for the strategy)
+	var edge = src.connect_to(dst, is_weighted, weight, self) 
+
 	# If UI updates are allowed, draw the line on the screen
 	if shout and edge:
 		graph.spawn_edge_view(edge) 
@@ -30,3 +30,10 @@ func clone_edges(source_graph: Graph, target_graph: Graph, vertices: Array[Verte
 			if target_graph.vertices.has(e.dst.id):
 				target_graph.add_edge(e.src.id, e.dst.id, e.weight, self, e.is_weighted, false)
 			e = e.next
+
+## Directed edges pointing at us are entirely unique and must be saved.
+func requires_incoming_capture() -> bool:
+	return true
+	
+func should_paste_edge(src_id: int, dst_id: int) -> bool:
+	return true # Directed edges are unique, always paste.

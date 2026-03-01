@@ -80,21 +80,14 @@ var z_idx: int = 0:
 # --- Graph Operations ---
 
 ## Creates and prepends a new Edge to the destination, returning it.
-func connect_to(dest: Vertex, weight: int, is_directed: bool, is_weighted: bool, strategy: ConnectionStrategy) -> Edge:
+func connect_to(dest: Vertex, is_weighted: bool, weight: int, strategy: ConnectionStrategy) -> Edge:
 	var curr: Edge = edges
 	while curr:
 		if curr.dst == dest:
 			return null # Prevent duplicate edges
 		curr = curr.next
 
-	# Prepend the new edge to the head of the linked list
-	# We pass the metadata down to the Edge's constructor (or set them after creation)
-	var new_edge: Edge = Edge.new(self, dest, strategy, weight, edges)
-	
-	# Encode the specific sandbox data into the edge instance
-	new_edge.is_directed = is_directed
-	new_edge.is_weighted = is_weighted
-	new_edge.strategy = strategy # Allows the edge to know which tool built it
+	var new_edge: Edge = Edge.new(self, dest, strategy, is_weighted, weight, edges)
 	
 	edges = new_edge
 	degree += 1
@@ -103,7 +96,7 @@ func connect_to(dest: Vertex, weight: int, is_directed: bool, is_weighted: bool,
 	state_changed.emit()
 	
 	return new_edge
-	
+		
 ## Removes the bridge to the destination and returns the deleted Edge.
 func disconnect_from(dest: Vertex) -> Edge:
 	var prev: Edge = null

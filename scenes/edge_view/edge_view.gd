@@ -27,7 +27,7 @@ func _ready() -> void:
 		_setup_detection_area()
 
 		edge_data.state_changed.connect(refresh)
-		edge_data.vanished.connect(queue_free)		
+		edge_data.vanished.connect(_on_edge_vanished)
 		edge_data.animation_requested.connect(_on_animation_requested)
 		
 		mouse_detection_area.input_event.connect(_on_mouse_detection_area_input_event)		
@@ -238,3 +238,8 @@ func _on_weight_submitted(new_text: String, _edit_node: LineEdit) -> void:
 	if Globals.active_weight_editor:
 		Globals.active_weight_editor.queue_free()
 		Globals.active_weight_editor = null
+
+## Handles the vanished signal from the data layer.
+func _on_edge_vanished(_killer: Vertex) -> void:
+	# TBD: Optional: play a fade-out animation before queue_free!
+	queue_free()

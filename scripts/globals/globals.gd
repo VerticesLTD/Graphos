@@ -29,7 +29,7 @@ var current_state: State:
 # Tool Modifiers (For CREATE state)
 # ------------
 ## Independent modifiers that determine the type of edge being drawn.
-var active_strategy: ConnectionStrategy = UndirectedStrategy.new()
+var active_strategy: ConnectionStrategy = DirectedStrategy.new()
 var is_weighted_mode: bool = false
 
 # ------------

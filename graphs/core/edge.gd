@@ -32,9 +32,8 @@ var is_imposter: bool = false
 ## The edge type
 var strategy: ConnectionStrategy
 
-## Viewer refernce. Useful for animations.
-## This is injected at the graph level
-var view: UIEdgeView
+## Flag to determine if the UI should show the weight label.
+var is_weighted: bool = false
 
 
 ## Constructs a new Edge.
@@ -47,14 +46,16 @@ func _init(
 	_src: Vertex,
 	_dst: Vertex,
 	_strategy: ConnectionStrategy,
+	_is_weighted: bool = false,
 	_weight: int = 1,
 	_next: Edge = null,
 	_color: Color = Globals.EDGE_COLOR
 	) -> void:
-	self.strategy = _strategy
-	self.weight = clampi(_weight, -999, 999)
 	self.src = _src
 	self.dst = _dst
+	self.strategy = _strategy
+	self.is_weighted = _is_weighted
+	self.weight = clampi(_weight, -999, 999)
 	self.next = _next
 	self.color = _color
 
