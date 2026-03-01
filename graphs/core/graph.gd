@@ -4,132 +4,86 @@
 extends Node2D
 class_name Graph
 
-# We load our "Blueprints" (Scenes) here
 const EDGE_VIEW_SCENE = preload("uid://bmti1ysdlhopk")
 const VERTEX_VIEW_SCENE = preload("uid://cxt6f2vgtos0c")
 
-
-## Dictionary[int -> Vertex]
-var vertices: Dictionary = {}
-
+var vertices: Dictionary = {} # int -> Vertex
 var free_ids: Array[int] = []
 
-## The Context maintains a reference to one of the concrete strategies
+## The Graph maintains a reference to one of the connection strategies
 var strategy: ConnectionStrategy = UndirectedStrategy.new()
 
-## Setter for the strategy in order to change it
-func set_strategy(new_strategy: ConnectionStrategy) -> void:
-	self.strategy = new_strategy
-	
-## Metadata counters, num_vertices shouldn't be taken 
-## care of manually because we can get it by using size
-var num_vertices: int:
-	get:
-		return vertices.size()
-		
 var num_edges: int = 0
+var num_vertices: int:
+	get: return vertices.size()
+		
 
-## Internal counter to ensure every vertex gets a unique, incremental ID
-var _next_vertex_id: int = 0
-
-	
 func _ready() -> void:
+	## Initialize the ID pool.
 	for i in range(Globals.MAX_VERTICES):
 		free_ids.append(i)
 
-## Returns the next available id
+# Pops the lowest available ID from the pool
 func get_next_available_id() -> int:
 	if free_ids.is_empty():
 		return Globals.NOT_FOUND
+	# Since we populate 0 to MAX, the front is always the minimum.
+	return free_ids.pop_front()		
 	
-	return free_ids.pop_front()
-		
-## ------------------------------------------------------------------------------
-## SIGNAL REACTION, edge/vertex add/remove
-## ------------------------------------------------------------------------------	
+## Setter for the strategy in order to change it
+func set_strategy(new_strategy: ConnectionStrategy) -> void:
+	self.strategy = new_strategy
 
 	
-## ------------------------------------------------------------------------------
-## GRAPH OPERATIONS 
-## ------------------------------------------------------------------------------
-	
-	
-## ------------------------------------------------------------------------------
-## ADD VERTEX
-## ------------------------------------------------------------------------------
-
-## Public: Create brand new vertex
-
+# Creates a data vertex and initiates visualization
 func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR) -> Vertex:
 	if vertices.size() >= Globals.MAX_VERTICES:
 		Notify.show_error("Vertex limit reached (Max: %d). Try deleting some?" % Globals.MAX_VERTICES)
 		return null
 		
-	var id = get_next_available_id()
-
-	var v = Vertex.new(id, color, Vertex.INF, Vertex.INF, pos)
-		
+	var v = Vertex.new(get_next_available_id(), color, Globals.INF, Globals.INF, pos)		
 	_register_and_visualize(v)
+	
 	return v
 
-## Public: Restore from Undo/Redo
-func restore_vertex(v: Vertex) -> void:
-	if not v or vertices.has(v.id): return
-	
-	free_ids.erase(v.id) # Id is no longer free
-	
-	_register_and_visualize(v)
-
-## Private Helper: handles VertexView and vertices dictionary
+## Helper to handle dictionary storage and UI spawning
 func _register_and_visualize(v: Vertex) -> void:
 	vertices[v.id] = v
 	
+	if v.is_imposter: return # Imposters don't need a UI representation
+	
 	var view: UIVertexView = VERTEX_VIEW_SCENE.instantiate()
-
-	# Dependency injection
-	view.vertex_data = v 
-	v.view = view
+	view.vertex_data = v
 
 	add_child(view)
+
+
+# Restores a vertex (useful for Undo/Redo)
+func restore_vertex(v: Vertex) -> void:
+	if not v or vertices.has(v.id): return
+	free_ids.erase(v.id) 
+	_register_and_visualize(v)
 	
+
+# Cleans up a vertex and recycles its ID
+func delete_vertex(v: Vertex) -> void:
+	if not v or not vertices.has(v.id): return
+
+	# Strategy handles the actual edge logic (source vs destination)
+	for neighbor in v.get_neighbor_vertices():
+		delete_edge(v.id, neighbor.id)
+
+	free_ids.append(v.id)
+	free_ids.sort() # Ensure the next ID taken is the lowest
 	
-## ------------------------------------------------------------------------------
-## DELETE VERTEX
-## ------------------------------------------------------------------------------
+	v.vanished.emit(v) # View hears this and deletes itself
+	vertices.erase(v.id)
 
 
-## Removes a vertex and all incident edges.
-## The signals triggered here handle the cleanup of both visuals and metadata.
-func delete_vertex(vertex: Vertex) -> void:
-	# 1. Safety check
-	if not vertex or not vertices.has(vertex.id):
-		return
-
-	# 2. Clean up connections
-	var neighbors = vertex.get_neighbor_vertices()
-	for neighbor_v in neighbors:
-		delete_edge(vertex.id, neighbor_v.id)
-
-	# Add the id to free ids
-	free_ids.append(vertex.id)
-	free_ids.sort()
-	
-	# Signal deletion (Metadata + UI)
-	vertex.vanished.emit(vertex)
-
-	# Internal cleanup
-	vertices.erase(vertex.id)
-
-
-## ------------------------------------------------------------------------------
-## ADD EDGE
-## ------------------------------------------------------------------------------
-
-## Adds an edge between two existing vertices. 
+## Adds an edge between two existing vertices via the currect strategy.
 ## @param shout: If false, creates data-only edges for imposters.
 func add_edge(src_id: int, dst_id: int, weight: int = 1, shout: bool = true) -> void:
-	if src_id == dst_id or has_edge(src_id, dst_id):
-		return
+	if src_id == dst_id or has_edge(src_id, dst_id): return
 
 	var v_src = vertices.get(src_id)
 	var v_dst = vertices.get(dst_id)
@@ -139,63 +93,53 @@ func add_edge(src_id: int, dst_id: int, weight: int = 1, shout: bool = true) -> 
 	# Delegate the logic and the shouting behavior to the strategy
 	strategy.add_edge(self, v_src, v_dst, weight, shout)		
 
-## Called by the Strategy to physically draw the line on the screen
+# Adds an Edge View to the scene
 func spawn_edge_view(edge_data: Edge) -> UIEdgeView:
 	var edge_view = EDGE_VIEW_SCENE.instantiate()
 	edge_view.edge_data = edge_data
 	add_child(edge_view)
-	
-	# Draw behind vertices
-	move_child(edge_view, 0) 
+	move_child(edge_view, 0) # Keep lines behind the vertex circles
 	return edge_view
-			
-## ------------------------------------------------------------------------------
-## DELETE EDGE
-## ------------------------------------------------------------------------------
+				
 
 ## Removes an edge between two vertices.
 func delete_edge(src_id: int, dst_id: int) -> void:
 	var src_node = vertices.get(src_id)
 	var dst_node = vertices.get(dst_id)
-
-	if not src_node or not dst_node:
-		return
-
-	# DELEGATION: The strategy decides if it deletes one way or both ways!
-	strategy.delete_edge(self, src_node, dst_node)
+	if src_node and dst_node:
+		# DELEGATION: The strategy decides if it deletes one way or both ways!
+		strategy.delete_edge(self, src_node, dst_node)
 	
-			
-## Removes all vertices and edges from the graph.
-func clear() -> void:
-	vertices.clear()
-	num_edges = 0
 
-
-## ------------------------------------------------------------------------------
-## GETTERS
-## ------------------------------------------------------------------------------
-
-## Returns the Vertex object associated with the given ID.
-## Returns null if the ID is not found in the graph.
-## Callers must check if v: , to ensure its not null(it is if it wasnt found).
+## Returns the Vertex object associated with the given ID(or null if none exist).
 func get_vertex(id: int) -> Vertex:
 	return vertices.get(id) as Vertex
-
+	
 ## Returns the edge connecting u and v, or null if none exists.
 func get_edge(u: Vertex, v: Vertex) -> Edge:
 	var e = u.edges
 	while e:
-		if e.dst == v:
-			return e
+		if e.dst == v: return e
 		e = e.next
 	return null
-
-## Iterates over vertices to check if position is colliding with one of them.
+	
+## Returns a vertex "touching" the given position, or null if none exist
 func get_vertex_id_at(pos: Vector2) -> int:
+	# Optional, add a parameter for the vertex radius
 	for v: Vertex in vertices.values():
 		if v.pos.distance_to(pos) <= Globals.VERTEX_RADIUS:
 			return v.id
 	return Globals.NOT_FOUND
+
+## Returns true if an edge exists between two vertices.
+func has_edge(src_id: int, dst_id: int) -> bool:
+	var v: Vertex = vertices.get(src_id)
+	if not v: return false
+	var e = v.edges
+	while e:
+		if e.dst.id == dst_id: return true
+		e = e.next
+	return false
 
 ## Returns the closest Edge under the mouse, or null if none is close enough.
 ## threshold is in world units (same coordinate space as Vertex.pos).
@@ -239,23 +183,40 @@ func get_edge_at(mouse_pos: Vector2, threshold: float = 12.0) -> Edge:
 
 	return best
 
+## Returns a new sub-graph from given vertices
+## This graph is 'Data-Only' and will not appear on screen.
+func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> Graph:
+	var imposter_graph = Graph.new()
+	
+	# Create the Nodes (The Ghosts)
+	for v in source_vertices:
+		var imposter_v = Vertex.new(
+			v.id, v.color, v.distance, v.key, v.pos, true,
+		)
+		# Manually add it to the graph to not trigger emitions.
+		imposter_graph.vertices[v.id] = imposter_v
 
-## Returns true if an edge exists between two vertices.
-func has_edge(src_id: int, dst_id: int) -> bool:
-	if not vertices.has(src_id) or not vertices.has(dst_id):
-		return false
-
-	var v: Vertex = vertices[src_id]
-	var e: Edge = v.edges
-	while e:
-		if e.dst.id == dst_id:
-			return true
-		e = e.next
-
-	return false
+	
+	# TBD: Adapt this for undirected and directed graphs
+	# Connect the Edges 
+	for v in source_vertices:
+		for neighbor in v.get_neighbor_vertices():
+			# We only connect if the neighbor is ALSO in our selection
+			# and we use ID comparison to avoid connecting the same edge twice
+			if imposter_graph.vertices.has(neighbor.id) and v.id < neighbor.id:
+				imposter_graph.add_edge(v.id, neighbor.id, 1, false) # Pass 'false' for shout
+	return imposter_graph
+	
+## Resets the graph to its base state for algorithm visualizers
+func reset_for_algorithm() -> void:
+	for v: Vertex in vertices.values():
+		v.distance = Globals.INF
+		v.key = Globals.INF
+		v.parent = null
+		v.color = Globals.VERTEX_COLOR # Maybe we shouldn't reset the colors
 
 ## Resets all distance values.
-func reset_distances(value: float = Vertex.INF) -> void:
+func reset_distances(value: float = Globals.INF) -> void:
 	for v: Vertex in vertices.values():
 		v.distance = value
 
@@ -265,58 +226,24 @@ func reset_parents() -> void:
 		v.parent = null
 
 ## Resets all key values.
-func reset_keys(value: float = Vertex.INF) -> void:
+func reset_keys(value: float = Globals.INF) -> void:
 	for v: Vertex in vertices.values():
 		v.key = value
 
-## Reset the WHOLE graph for a clean algorithm start
-func reset_for_algorithm() -> void:
-	reset_distances()
-	reset_parents()
-	reset_keys()
+## Removes all vertices and edges from the graph.
+func clear() -> void:
+	vertices.clear()
+	num_edges = 0
 
-	# Additionally, reset all the colors
-	for v in vertices.values():
-		v.color = Globals.VERTEX_COLOR
-
-
-## Returns a new sub-graph from given vertices
-## This graph is 'Data-Only' and will not appear on screen.
-func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> Graph:
-	var imposter_graph = Graph.new()
-	
-	# 1. Create the Nodes (The Ghosts)
-	for v in source_vertices:
-		var imposter_v = Vertex.new(
-			v.id, v.color, v.distance, v.key, v.pos, true,
-		)
-		# Manually add it to the graph to not trigger emitions.
-		imposter_graph.vertices[v.id] = imposter_v
-
-	
-	# 2. Connect the Edges (Walking the neighbors), 
-	# better for efficiency than going over all vertices in imposters
-	for v in source_vertices:
-		for neighbor in v.get_neighbor_vertices():
-			# We only connect if the neighbor is ALSO in our selection
-			# and we use ID comparison to avoid connecting the same edge twice
-			if imposter_graph.vertices.has(neighbor.id) and v.id < neighbor.id:
-				imposter_graph.add_edge(v.id, neighbor.id, 1, false) # Pass 'false' for shout
-	return imposter_graph
-
-
-## Notification thats recieved right before the graph is deleted.
+## Final cleanup before the Graph node is deleted from memory
+# Final cleanup before the Graph node is deleted from memory
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
-		# Tell all vertices to shout one last time so vertex views 
-		# can clean themselves up before the graph disappears.
 		for v in vertices.values():
-			# Check if valid instance(not been deleted yet)
 			if is_instance_valid(v):
-				v.vanished.emit(v)
-					
+				v.vanished.emit(v) # Ensure UI views die first
 		vertices.clear()
-		
+				
 		# We don't need to manually queue_free children.
 		# When this Graph (Node2D) is removed from memory, Godot automatically
 		# removes all children (vertex_views and edge_views) from the Scene Tree.

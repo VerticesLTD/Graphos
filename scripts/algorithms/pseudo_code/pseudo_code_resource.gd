@@ -78,4 +78,4 @@ func _generate_data() -> void:
 	
 	notify_property_list_changed()
 	if OS.has_feature("editor"):
-		GLogger.info("[%s] Generated: %d lines, %d steps." % [LOG_TAG, clean_lines.size(), steps.size()],LOG_TAG)
+		GLogger.Globals.INFo("[%s] Generated: %d lines, %d steps." % [LOG_TAG, clean_lines.size(), steps.size()],LOG_TAG)

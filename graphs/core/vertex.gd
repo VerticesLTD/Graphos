@@ -7,7 +7,8 @@ signal state_changed
 @warning_ignore("UNUSED_SIGNAL")
 signal vanished(v: Vertex)
 
-const INF: float = 1e18
+## This lets algorithms say vertex.animation_requested.emit("hover_start")
+signal animation_requested(anim_name: String)
 
 var id: int 
 var degree: int = 0 
@@ -21,8 +22,8 @@ var is_imposter: bool = false
 func _init(
 	_id: int,
 	_color: Color = Globals.VERTEX_COLOR,
-	_distance: float = INF,
-	_key: float = INF,
+	_distance: float = Globals.INF,
+	_key: float = Globals.INF,
 	_pos: Vector2 = Vector2.ZERO,
 	_is_imposter: bool = false,
 ) -> void:
@@ -46,13 +47,13 @@ var color: Color = Globals.VERTEX_COLOR:
 		color = value
 		_notify_change()
 
-var distance: float = INF:
+var distance: float = Globals.INF:
 	set(value):
 		if distance == value: return
 		distance = value
 		_notify_change()
 
-var key: float = INF:
+var key: float = Globals.INF:
 	set(value):
 		if key == value: return
 		key = value

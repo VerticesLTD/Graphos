@@ -93,6 +93,7 @@ const NOT_FOUND = -1
 # Capacity and Limits
 # ------------
 const MAX_VERTICES: int = 500
+const INF: float = 1e18
 
 # ------------
 # EDGE LINE EDIT

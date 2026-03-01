@@ -3,7 +3,7 @@ class_name ChangeVertexKeyCommand
 extends Command
 
 var target_vertex: Vertex
-var new_key: float # Changed to float as Keys in algorithms are often INF
+var new_key: float # Changed to float as Keys in algorithms are often Globals.INF
 var old_key: float
 
 func _init(vertex: Vertex, target_key: float):

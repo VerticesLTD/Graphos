@@ -1,7 +1,7 @@
 @tool
 extends Node
 
-## Enable when debugging for info output
+## Enable when debugging for Globals.INFo output
 var enabled := true
 
 var log_level = "DEBUG"
@@ -26,9 +26,9 @@ func debug(msg, tag=""):
 	if enabled:
 		print_rich("[color=orange][DEBUG][/color]","[color=cyan][",tag,"][/color] - ",msg)
 
-func info(msg, tag=""):
+func Globals.INFo(msg, tag=""):
 	if filters.size() > 0 and  tag not in filters:
 		return
 		
 	if enabled:
-		print_rich("[color=yellow][INFO][/color]","[color=cyan][",tag,"][/color] - ",msg)
+		print_rich("[color=yellow][Globals.INFO][/color]","[color=cyan][",tag,"][/color] - ",msg)
