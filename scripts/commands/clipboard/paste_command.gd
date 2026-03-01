@@ -80,6 +80,8 @@ func _update_selection_ui() -> void:
 			new_vertices.append(v_cmd.vertex)
 		graph_controller.select_vertices(new_vertices)
 	
+	graph_controller.update_selection_bounds()	
+	
 func undo() -> void:
 	# Delete in reverse order: Edges first, then Vertices
 	for i in range(created_edge_cmds.size() - 1, -1, -1):

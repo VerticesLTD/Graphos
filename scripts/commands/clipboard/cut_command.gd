@@ -41,6 +41,10 @@ func execute() -> void:
 	# Cleanup UI
 	if graph_controller:
 		graph_controller.clear_selection_buffer()
+		# TBD: Make the next line work
+		graph_controller.update_selection_bounds()
+		
+		
 
 func undo() -> void:
 	# Undo deletion in reverse order

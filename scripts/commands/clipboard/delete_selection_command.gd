@@ -18,6 +18,8 @@ func execute() -> void:
 	# Execute them in order
 	for cmd in commands:
 		cmd.execute()
+	
+	# TBD: Update bounds box
 		
 func undo() -> void:
 	# Execute in reverse order
