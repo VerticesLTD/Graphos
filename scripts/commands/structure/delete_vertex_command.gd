@@ -10,26 +10,25 @@ func _init(g: Graph, v: Vertex):
 	super(g)
 	vertex = v
 	pos = v.pos
-	
-	# Capture all connections before they are deleted
 	_capture_incident_edges()
 
 func _capture_incident_edges() -> void:
-	# We look at the vertex's neighbors to see what edges exist
-	var neighbors = vertex.get_neighbor_vertices()
-	for n in neighbors:
-		# We store an AddEdgeCommand for every connection
-		var e_cmd = AddEdgeCommand.new(graph, vertex.id, n.id)
-		edge_commands.append(e_cmd)
+	# We must find every edge pointing TO or FROM this vertex.
+	# In a directed sandbox, vertex.get_neighbors() only finds outgoing edges!
+	for v_other in graph.vertices.values():
+		var edge = graph.get_edge(v_other, vertex)
+		if edge:
+			# We pass the edge's OWN strategy and weighted flag into the command.
+			var e_cmd = AddEdgeCommand.new(
+				graph, v_other.id, vertex.id, edge.weight, 
+				edge.strategy, edge.is_weighted
+			)
+			edge_commands.append(e_cmd)
 
 func execute() -> void:
-	# Note: graph.delete_vertex already cleans up edges internally
 	graph.delete_vertex(vertex)
 
 func undo() -> void:
-	# 1. Restore the vertex itself
 	graph.restore_vertex(vertex)
-	
-	# 2. Restore all edges that were captured during _init
 	for e_cmd in edge_commands:
 		e_cmd.execute()

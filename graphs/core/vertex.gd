@@ -80,7 +80,7 @@ var z_idx: int = 0:
 # --- Graph Operations ---
 
 ## Creates and prepends a new Edge to the destination, returning it.
-func connect_to(dest: Vertex, weight: int = 1) -> Edge:
+func connect_to(dest: Vertex, weight: int, is_directed: bool, is_weighted: bool, strategy: ConnectionStrategy) -> Edge:
 	var curr: Edge = edges
 	while curr:
 		if curr.dst == dest:
@@ -88,9 +88,19 @@ func connect_to(dest: Vertex, weight: int = 1) -> Edge:
 		curr = curr.next
 
 	# Prepend the new edge to the head of the linked list
-	var new_edge: Edge = Edge.new(weight, self, dest, edges)
+	# We pass the metadata down to the Edge's constructor (or set them after creation)
+	var new_edge: Edge = Edge.new(self, dest, strategy, weight, edges)
+	
+	# Encode the specific sandbox data into the edge instance
+	new_edge.is_directed = is_directed
+	new_edge.is_weighted = is_weighted
+	new_edge.strategy = strategy # Allows the edge to know which tool built it
+	
 	edges = new_edge
 	degree += 1
+	
+	# Notify any listeners (like UIVertexView) that the adjacency list changed
+	state_changed.emit()
 	
 	return new_edge
 	

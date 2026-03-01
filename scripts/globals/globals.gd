@@ -26,6 +26,13 @@ var current_state: State:
 		app_state_changed.emit()
 
 # ------------
+# Tool Modifiers (For CREATE state)
+# ------------
+## Independent modifiers that determine the type of edge being drawn.
+var active_strategy: ConnectionStrategy = UndirectedStrategy.new()
+var is_weighted_mode: bool = false
+
+# ------------
 # Appearance
 # ------------
 const BUTTON_REGULAR_MODULATE = Color(1, 1, 1)

@@ -23,7 +23,7 @@ func execute() -> void:
 	# We delegate the deep copying logic to the graph class
 	Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(_selection)
 	
-	print("Selection copied to clipboard.")
+	Notify.show_notification("Copied to clip-board.")
 
 # Copying doesn't affect command history so no need for undo.
 func undo() -> void:

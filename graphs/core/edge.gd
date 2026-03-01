@@ -29,6 +29,9 @@ var next: Edge = null
 ## Lets the edge know if its an imposter to not emit drawing signals.
 var is_imposter: bool = false
 
+## The edge type
+var strategy: ConnectionStrategy
+
 ## Viewer refernce. Useful for animations.
 ## This is injected at the graph level
 var view: UIEdgeView
@@ -41,18 +44,20 @@ var view: UIEdgeView
 ## @param _next   Next edge in the adjacency list (nullable).
 ## @param _color  Optional color metadata.
 func _init(
+	_src: Vertex,
+	_dst: Vertex,
+	_strategy: ConnectionStrategy,
 	_weight: int = 1,
-	_src: Vertex = null,
-	_dst: Vertex = null,
 	_next: Edge = null,
-	_color: Color = Globals.EDGE_COLOR 
-) -> void:
+	_color: Color = Globals.EDGE_COLOR
+	) -> void:
+	self.strategy = _strategy
 	self.weight = clampi(_weight, -999, 999)
 	self.src = _src
 	self.dst = _dst
 	self.next = _next
 	self.color = _color
-	
+
 	# If the vertex is an imposter, this edge is an imposter too.
 	if src:
 		self.is_imposter = src.is_imposter

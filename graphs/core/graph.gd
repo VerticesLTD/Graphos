@@ -10,8 +10,6 @@ const VERTEX_VIEW_SCENE = preload("uid://cxt6f2vgtos0c")
 var vertices: Dictionary = {} # int -> Vertex
 var free_ids: Array[int] = []
 
-## The Graph maintains a reference to one of the connection strategies
-var strategy: ConnectionStrategy = UndirectedStrategy.new()
 
 var num_edges: int = 0
 var num_vertices: int:
@@ -29,11 +27,6 @@ func get_next_available_id() -> int:
 		return Globals.NOT_FOUND
 	# Since we populate 0 to MAX, the front is always the minimum.
 	return free_ids.pop_front()		
-	
-## Setter for the strategy in order to change it
-func set_strategy(new_strategy: ConnectionStrategy) -> void:
-	self.strategy = new_strategy
-
 	
 # Creates a data vertex and initiates visualization
 func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR) -> Vertex:
@@ -82,7 +75,7 @@ func delete_vertex(v: Vertex) -> void:
 
 ## Adds an edge between two existing vertices via the currect strategy.
 ## @param shout: If false, creates data-only edges for imposters.
-func add_edge(src_id: int, dst_id: int, weight: int = 1, shout: bool = true) -> void:
+func add_edge(src_id: int, dst_id: int, weight: int, strategy: ConnectionStrategy, is_weighted: bool, shout: bool = true) -> void:
 	if src_id == dst_id or has_edge(src_id, dst_id): return
 
 	var v_src = vertices.get(src_id)
@@ -91,8 +84,8 @@ func add_edge(src_id: int, dst_id: int, weight: int = 1, shout: bool = true) -> 
 	if not v_src or not v_dst: return
 
 	# Delegate the logic and the shouting behavior to the strategy
-	strategy.add_edge(self, v_src, v_dst, weight, shout)		
-
+	strategy.add_edge(self, v_src, v_dst, weight, is_weighted, shout)
+	
 # Adds an Edge View to the scene
 func spawn_edge_view(edge_data: Edge) -> UIEdgeView:
 	var edge_view = EDGE_VIEW_SCENE.instantiate()
@@ -106,10 +99,13 @@ func spawn_edge_view(edge_data: Edge) -> UIEdgeView:
 func delete_edge(src_id: int, dst_id: int) -> void:
 	var src_node = vertices.get(src_id)
 	var dst_node = vertices.get(dst_id)
-	if src_node and dst_node:
-		# DELEGATION: The strategy decides if it deletes one way or both ways!
-		strategy.delete_edge(self, src_node, dst_node)
+	if not src_node or not dst_node: return
 	
+	var edge = get_edge(src_node, dst_node)
+	if not edge or not edge.strategy: return
+	
+	# Delete the edge with the correct strategy
+	edge.strategy.delete_edge(self, src_node, dst_node)	
 
 ## Returns the Vertex object associated with the given ID(or null if none exist).
 func get_vertex(id: int) -> Vertex:
@@ -147,66 +143,78 @@ func get_edge_at(mouse_pos: Vector2, threshold: float = 12.0) -> Edge:
 	var best: Edge = null
 	var best_d2: float = threshold * threshold
 
-	## Deduplicate undirected edges using a typed key (lo_id, hi_id)
-	var seen: Dictionary = {}
-
 	for v: Vertex in vertices.values():
 		var e: Edge = v.edges
 		while e:
-			var a_id: int = e.src.id
-			var b_id: int = e.dst.id
+			var a: Vector2 = e.src.pos
+			var b: Vector2 = e.dst.pos
+			
+			var closest: Vector2 = Geometry2D.get_closest_point_to_segment(mouse_pos, a, b)
+			var d2: float = (mouse_pos - closest).length_squared()
 
-			var lo: int
-			var hi: int
-			if a_id < b_id:
-				lo = a_id
-				hi = b_id
-			else:
-				lo = b_id
-				hi = a_id
-
-			var key: Vector2i = Vector2i(lo, hi)
-
-			if not seen.has(key):
-				seen[key] = true
-
-				var a: Vector2 = e.src.pos
-				var b: Vector2 = e.dst.pos
-				var closest: Vector2 = Geometry2D.get_closest_point_to_segment(mouse_pos, a, b)
-				var d2: float = (mouse_pos - closest).length_squared()
-
-				if d2 <= best_d2:
-					best_d2 = d2
-					best = e
+			# Strictly less than (<). If we check the reverse edge later and it's 
+			# the exact same distance, it just ignores it.
+			if d2 < best_d2: 
+				best_d2 = d2
+				best = e
 
 			e = e.next
 
 	return best
+	
+	
+## Validates that all edges in the selection share the same strategy.
+## Returns the shared ConnectionStrategy, or null if the selection is mixed.
+func get_selection_strategy(source_vertices: Array[Vertex]) -> ConnectionStrategy:
+	var shared_strategy: ConnectionStrategy = null
+	
+	# Mapping for fast lookup
+	var subset_ids: Dictionary = {}
+	for v in source_vertices:
+		subset_ids[v.id] = true
 
+	for v in source_vertices:
+		var e = v.edges
+		while e:
+			# Only evaluate edges where both endpoints are in the selection
+			if subset_ids.has(e.dst.id):
+				if shared_strategy == null:
+					shared_strategy = e.strategy
+				elif e.strategy != shared_strategy:
+					return null # Mixed types found
+			e = e.next
+
+	return shared_strategy
+
+
+## Validates the selection and returns the shared strategy, or shows an error.
+func get_valid_selection_strategy(source_vertices: Array[Vertex]) -> ConnectionStrategy:
+	var strategy = get_selection_strategy(source_vertices)
+	
+	if strategy == null:
+		Notify.show_error("Mixed Graph Error: Please select edges of only one type (Directed OR Undirected).")
+		return null
+		
+	return strategy
+	
 ## Returns a new sub-graph from given vertices
 ## This graph is 'Data-Only' and will not appear on screen.
 func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> Graph:
+	var strategy = get_selection_strategy(source_vertices)
+	if not strategy: return null # Safety check
+
 	var imposter_graph = Graph.new()
 	
-	# Create the Nodes (The Ghosts)
+	# Clone the Nodes
 	for v in source_vertices:
-		var imposter_v = Vertex.new(
-			v.id, v.color, v.distance, v.key, v.pos, true,
-		)
-		# Manually add it to the graph to not trigger emitions.
+		var imposter_v = Vertex.new(v.id, v.color, v.distance, v.key, v.pos, true)
 		imposter_graph.vertices[v.id] = imposter_v
 
+	# DELEGATION: Let the strategy build the edges its own way
+	strategy.clone_edges(self, imposter_graph, source_vertices)
 	
-	# TBD: Adapt this for undirected and directed graphs
-	# Connect the Edges 
-	for v in source_vertices:
-		for neighbor in v.get_neighbor_vertices():
-			# We only connect if the neighbor is ALSO in our selection
-			# and we use ID comparison to avoid connecting the same edge twice
-			if imposter_graph.vertices.has(neighbor.id) and v.id < neighbor.id:
-				imposter_graph.add_edge(v.id, neighbor.id, 1, false) # Pass 'false' for shout
 	return imposter_graph
-	
+		
 ## Resets the graph to its base state for algorithm visualizers
 func reset_for_algorithm() -> void:
 	for v: Vertex in vertices.values():

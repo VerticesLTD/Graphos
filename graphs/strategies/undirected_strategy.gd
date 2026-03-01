@@ -1,22 +1,37 @@
 class_name UndirectedStrategy extends ConnectionStrategy
+## Strategy for creating two-way (undirected) edges.
+## Logically creates two identical edges pointing at each other.
 
-func add_edge(graph: Graph, src: Vertex, dst: Vertex, weight: int, shout: bool) -> void:
-	# Quietly update the data structures
-	var edge_a = src.connect_to(dst, weight) 
-	var edge_b = dst.connect_to(src, weight) 
+## Adds two edges (A->B and B->A) but only spawns one visual representation.
+func add_edge(graph: Graph, src: Vertex, dst: Vertex, weight: int, is_weighted: bool, shout: bool) -> void:
+	# Create the links (Pass 'false' for is_directed and 'self' for the strategy)
+	var edge_a = src.connect_to(dst, weight, false, is_weighted, self) 
+	var edge_b = dst.connect_to(src, weight, false, is_weighted, self) 
 	
-	# If UI updates are allowed, draw the line and share it
+	# If UI updates are allowed, draw the line for ONLY one of them
 	if shout and edge_a and edge_b:
-		var view = graph.spawn_edge_view(edge_a)
+		graph.spawn_edge_view(edge_a)
 		graph.num_edges += 1
 
+## Deletes both the forward and backward edge links.
 func delete_edge(graph: Graph, src_node: Vertex, dst_node: Vertex) -> void:
-	# Delete both ways
+	# Disconnect both ways
 	var edge_a: Edge = src_node.disconnect_from(dst_node)
 	var edge_b: Edge = dst_node.disconnect_from(src_node)
 
-	# The UI components listen for the vanished signal to queue_free themselves
-	if edge_a: edge_a.vanished.emit()
-	if edge_b: edge_b.vanished.emit()
+	# Tell the UI to self-destruct
+	if edge_a: edge_a.vanished.emit(src_node)
+	if edge_b: edge_b.vanished.emit(dst_node)
 	
-	graph.num_edges -= 1
+	if edge_a or edge_b:
+		graph.num_edges -= 1
+
+
+## Undirected edges are mirrored, so we only clone when src.id < dst.id to avoid duplicates.
+func clone_edges(source_graph: Graph, target_graph: Graph, vertices: Array[Vertex]) -> void:
+	for v in vertices:
+		var e = v.edges
+		while e:
+			if target_graph.vertices.has(e.dst.id) and v.id < e.dst.id:
+				target_graph.add_edge(e.src.id, e.dst.id, e.weight, self, e.is_weighted, false)
+			e = e.next

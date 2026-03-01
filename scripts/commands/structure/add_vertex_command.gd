@@ -19,4 +19,5 @@ func execute() -> void:
 		
 func undo() -> void:
 	if vertex:
+		# Removes the vertex and its connected edges from the graph data
 		graph.delete_vertex(vertex)

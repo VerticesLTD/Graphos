@@ -23,7 +23,7 @@ func execute() -> void:
 	
 	# Create snapshot of the vertices we are about to delete
 	Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_to_cut)
-	print("Cut: Selection copied to clipboard.")
+	Notify.show_notification("Copied to clip-board.")
 
 	# Delete logic
 	if delete_cmds.is_empty():
