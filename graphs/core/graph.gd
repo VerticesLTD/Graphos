@@ -46,49 +46,8 @@ func get_next_available_id() -> int:
 		
 ## ------------------------------------------------------------------------------
 ## SIGNAL REACTION, edge/vertex add/remove
-## ------------------------------------------------------------------------------
-	
-	
-## This runs whenever a vertex emits 'edge_added'
-func _on_edge_added(new_edge: Edge) -> void:
-	# IMPORTANT: This runs TWICE. One for the edge data from the src to dst, and once
-	# for the opposite direction. Since only one view should be instantiated for every edge,
-	# we need to find out which one of the two edges should create the view.
+## ------------------------------------------------------------------------------	
 
-	# Check if destination already has an edge/view to source
-	var edge_view: UIEdgeView = null
-	var dst_edges = new_edge.dst.edges
-	var dst_have_opposite_edge = false
-	while dst_edges:
-		if dst_edges.dst == new_edge.src:
-			dst_have_opposite_edge = true # Dst has an edge pointing at us
-			if dst_edges.view != null:
-				edge_view = dst_edges.view
-			break
-		dst_edges = dst_edges.next
-
-	# Destination didn't have a view
-	if edge_view == null:
-		edge_view = EDGE_VIEW_SCENE.instantiate()
-		edge_view.edge_data = new_edge
-		add_child(edge_view)
-
-		# Incrementation of edge count only happens when a view is instantiated to ensure accuracy.
-		num_edges += 1
-
-		if dst_have_opposite_edge:
-			# Injecting the created view as a reference to the other edge.
-			dst_edges.view = edge_view
-
-	# Setting the view (new or old) as the view for the new edge
-	new_edge.view = edge_view
-	move_child(edge_view, 0)	# Draw behind vertices
-	
-
-## This runs whenever a vertex emits 'edge_removed'
-func _on_edge_removed() -> void:
-	# The ONLY place we decrement the global count. After we draw successfuly.
-	num_edges -= 1
 	
 ## ------------------------------------------------------------------------------
 ## GRAPH OPERATIONS 
@@ -109,10 +68,7 @@ func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR
 	var id = get_next_available_id()
 
 	var v = Vertex.new(id, color, Vertex.INF, Vertex.INF, pos)
-	
-	# Initial connections happen only here, not in redo/undo
-	v.edge_added.connect(_on_edge_added)
-	
+		
 	_register_and_visualize(v)
 	return v
 
@@ -169,12 +125,9 @@ func delete_vertex(vertex: Vertex) -> void:
 ## ADD EDGE
 ## ------------------------------------------------------------------------------
 
-## Adds an undirected edge between two existing vertices. 
-## Connects the vertices
-## @param src_id Source vertex ID.
-## @param dst_id Destination vertex ID.
-## @param weight Edge weight.
-func add_edge(src_id: int, dst_id: int, weight: int = 1) -> void:
+## Adds an edge between two existing vertices. 
+## @param shout: If false, creates data-only edges for imposters.
+func add_edge(src_id: int, dst_id: int, weight: int = 1, shout: bool = true) -> void:
 	if src_id == dst_id or has_edge(src_id, dst_id):
 		return
 
@@ -183,31 +136,24 @@ func add_edge(src_id: int, dst_id: int, weight: int = 1) -> void:
 	
 	if not v_src or not v_dst: return
 
-	# Both vertices "Shout" since `on_edge_added` knows to create only one view
-	v_src.connect_vertices(v_dst, weight, true) 
-	v_dst.connect_vertices(v_src, weight, true)	
+	# Delegate the logic and the shouting behavior to the strategy
+	strategy.add_edge(self, v_src, v_dst, weight, shout)		
 
-## Adds an edge without triggering any UI signals or spawning EdgeViews.
-## Used for imposter graphs and internal calculations.
-func add_edge_silently(src_id: int, dst_id: int, weight: int = 1) -> void:
-	if src_id == dst_id or has_edge(src_id, dst_id):
-		return
-
-	var src: Vertex = vertices.get(src_id)
-	var dst: Vertex = vertices.get(dst_id)
-
-	if src and dst:
-		# We call the vertex data connection directly
-		src.connect_vertices(dst, weight, false)
-		dst.connect_vertices(src, weight, false)
-		num_edges += 1
+## Called by the Strategy to physically draw the line on the screen
+func spawn_edge_view(edge_data: Edge) -> UIEdgeView:
+	var edge_view = EDGE_VIEW_SCENE.instantiate()
+	edge_view.edge_data = edge_data
+	add_child(edge_view)
+	
+	# Draw behind vertices
+	move_child(edge_view, 0) 
+	return edge_view
 			
 ## ------------------------------------------------------------------------------
 ## DELETE EDGE
 ## ------------------------------------------------------------------------------
 
-## Removes an undirected edge between two vertices.
-## Ensures that even though data is stored twice, the UI only reacts once.
+## Removes an edge between two vertices.
 func delete_edge(src_id: int, dst_id: int) -> void:
 	var src_node = vertices.get(src_id)
 	var dst_node = vertices.get(dst_id)
@@ -215,15 +161,9 @@ func delete_edge(src_id: int, dst_id: int) -> void:
 	if not src_node or not dst_node:
 		return
 
-	var edge_a: Edge = src_node.delete_edge(dst_node)
-	var edge_b: Edge = dst_node.delete_edge(src_node)
-
-	# Trigerring graph edge removal logic for one edge (Preserves count)
-	_on_edge_removed()
-	# Both edges now vanish
-	edge_a.vanished.emit()
-	edge_b.vanished.emit()
-
+	# DELEGATION: The strategy decides if it deletes one way or both ways!
+	strategy.delete_edge(self, src_node, dst_node)
+	
 			
 ## Removes all vertices and edges from the graph.
 func clear() -> void:
@@ -361,7 +301,7 @@ func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> Gr
 			# We only connect if the neighbor is ALSO in our selection
 			# and we use ID comparison to avoid connecting the same edge twice
 			if imposter_graph.vertices.has(neighbor.id) and v.id < neighbor.id:
-				imposter_graph.add_edge_silently(v.id, neighbor.id)
+				imposter_graph.add_edge(v.id, neighbor.id, 1, false) # Pass 'false' for shout
 	return imposter_graph
 
 

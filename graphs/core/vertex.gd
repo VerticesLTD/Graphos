@@ -1,51 +1,23 @@
-## Represents a vertex (node) in a graph.
-## Stores adjacency information and algorithm metadata.
-## This class is data-oriented and intentionally not a Node.
 class_name Vertex
 
-
-## Emitted when values like color or position change. 
-## The Sprite hears this and repaints itself.
+## Emitted when values like color or position change (UI repaints).
 signal state_changed
 
-## Emitted when this vertex is removed from the graph.
-## The VertexView hears this and calls queue_free().
-@warning_ignore("UNUSED_SIGNAL") # Remove when signal is used
+## Emitted when removed from the graph (UI calls queue_free).
+@warning_ignore("UNUSED_SIGNAL")
 signal vanished(v: Vertex)
 
-
-## Emitted when a new connection is made. 
-## The Graph hears this and spawns a new Line (EdgeView).
-signal edge_added(new_edge: Edge)
-
-## Constant used to represent infinity in graph algorithms.
 const INF: float = 1e18
 
-## Unique identifier of the vertex.
-var id: int
+var id: int 
+var degree: int = 0 
+var edges: Edge = null 
 
-## Number of incident edges.
-var degree: int = 0
-
-## Head of the adjacency list (linked list of Edge).
-var edges: Edge = null
-
-## If true, this vertex acts as a "Data Proxy" for algorithms.
-## Imposters perform logic (BFS/Dijkstra) without emitting signals, 
-## preventing unintended visual updates or UI side effects.
+## If true, acts as a "Data Proxy" for algorithms (no UI signals emitted).
 var is_imposter: bool = false
 
-## Stores a reference to viewer. Useful for animations.
-var view: UIVertexView
 
-## Constructs a new Vertex.
-## @param _id        Unique vertex identifier.
-## @param _color     Optional color.
-## @param _distance  Initial distance value.
-## @param _key       Initial key value.
-## @param _x         Optional x-coordinate.
-## @param _y         Optional y-coordinate.
-## @param _is_imposter		Is the vertex real or only data.
+## Initializes a new Vertex, bypassing setters to prevent initialization signal spam.
 func _init(
 	_id: int,
 	_color: Color = Globals.VERTEX_COLOR,
@@ -54,108 +26,104 @@ func _init(
 	_pos: Vector2 = Vector2.ZERO,
 	_is_imposter: bool = false,
 ) -> void:
-	self.id = _id
-	self.color = _color
-	self.distance = _distance
-	self.key = _key
-	self.pos = _pos
-	self.is_imposter = _is_imposter
+	id = _id
+	color = _color
+	distance = _distance
+	key = _key
+	pos = _pos
+	is_imposter = _is_imposter
+	
+# --- Reaction Logic ---
 
-####################### SETTER FUNCTIONS & REACTION LOGIC #######################
-
+## Emits state_changed only if this is a real vertex (not an imposter).
+func _notify_change() -> void:
+	if not is_imposter:
+		state_changed.emit()
 
 var color: Color = Globals.VERTEX_COLOR:
 	set(value):
+		if color == value: return # Early exit: no change, no repaint
 		color = value
-		if not is_imposter:
-			state_changed.emit()
+		_notify_change()
 
 var distance: float = INF:
 	set(value):
+		if distance == value: return
 		distance = value
-		if not is_imposter:
-			state_changed.emit()
+		_notify_change()
 
 var key: float = INF:
 	set(value):
+		if key == value: return
 		key = value
-		if not is_imposter:
-			state_changed.emit()
+		_notify_change()
 
 var pos: Vector2 = Vector2.ZERO:
 	set(value):
+		if pos == value: return
 		pos = value
-		if not is_imposter:
-			state_changed.emit()
+		_notify_change()
 		
 var parent: Vertex = null:
 	set(value):
+		if parent == value: return
 		parent = value
-		if not is_imposter:
-			state_changed.emit() # UI draws "Parent Arrow"
+		_notify_change()
 
-# For draw order
 var z_idx: int = 0:
 	set(value):
+		if z_idx == value: return
 		z_idx = value
-		if not is_imposter:
-			state_changed.emit()
-		
-## Adds an outgoing edge from this vertex to the destination vertex.
-## If an edge already exists, no modification is performed.
-## @param dest   Destination vertex.
-## @param weight Weight assigned to the edge-;/ .
-func connect_vertices(dest: Vertex, weight: int = 1, shout: bool = true) -> void:
-	## Check if the edge is already in the graph
+		_notify_change()
+						
+# --- Graph Operations ---
+
+## Creates and prepends a new Edge to the destination, returning it.
+func connect_to(dest: Vertex, weight: int = 1) -> Edge:
 	var curr: Edge = edges
 	while curr:
 		if curr.dst == dest:
-			return
+			return null # Prevent duplicate edges
 		curr = curr.next
 
-	## Add the new  edge to the linked list
+	# Prepend the new edge to the head of the linked list
 	var new_edge: Edge = Edge.new(weight, self, dest, edges)
 	edges = new_edge
 	degree += 1
 	
-	## Tell the Graph to create a visual line for this data
-	if not self.is_imposter and shout:
-		edge_added.emit(new_edge)
-
-## Removes a specific edge from this vertex's adjacency list.
-## Returns the Edge object that was removed (so the Graph can signal it),
-## or null if the connection didn't exist.
-func delete_edge(dest: Vertex) -> Edge:
+	return new_edge
+	
+## Removes the bridge to the destination and returns the deleted Edge.
+func disconnect_from(dest: Vertex) -> Edge:
 	var prev: Edge = null
 	var curr: Edge = edges
 
 	while curr:
 		if curr.dst == dest:
-			# Standard Linked List logic
 			if prev == null:
-				edges = curr.next
+				edges = curr.next # Remove the head
 			else:
-				prev.next = curr.next
+				prev.next = curr.next # Bypass the middle/tail
 
 			degree -= 1
-			return curr # Return the data to the caller
+			return curr 
 		
 		prev = curr
 		curr = curr.next
 	
-	return null # not found
-	
-## Returns all outgoing edges as an Array.
-## NOTE:
-## Godot does not support Array[Edge] typing.
-func get_neighbors_edges() -> Array:
+	return null
+		
+# --- Helpers & Cleanup ---
+
+## Returns an array of all outgoing Edge objects.
+func get_adjacent_edges() -> Array:
 	var out: Array = []
 	var e: Edge = edges
 	while e:
 		out.append(e)
 		e = e.next
 	return out
-
+	
 ## Returns all vertices neighbors as an Array.
 func get_neighbor_vertices() -> Array:
 	var neighbors: Array = []
@@ -169,20 +137,14 @@ func get_neighbor_vertices() -> Array:
 ## Handles manual memory management for incident edges before the vertex is destroyed.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
-		var curr = edges
+		var curr: Edge = edges
 		while curr:
-			# 1. Grab the next one before we mess with the current one
-			var next_edge = curr.next
-
-			# 2. Tell edge_view (This doesn't kill 'curr' yet)
-			curr.vanished.emit()
-							
-			# 3. Break the link. If no one else is holding 'curr', 
-			# Godot will delete it from RAM automatically after this loop cycle.
-			curr.next = null
+			var next_edge: Edge = curr.next
 			
-			# 4. Move to the next link in the chain
+			curr.vanished.emit() 
+			
+			# Break circular references so Godot's GC can free the memory
+			curr.next = null 
 			curr = next_edge
 			
-		# 5. Clear the head of the list
 		edges = null
