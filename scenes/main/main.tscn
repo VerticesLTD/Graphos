@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://yxcr5kwlindq"]
 
-[ext_resource type="Script" uid="uid://c2yhxp7188k8k" path="res://graphs/undirected_graph/undirected_graph.gd" id="1_yyfjg"]
+[ext_resource type="Script" uid="uid://c2yhxp7188k8k" path="res://graphs/core/graph.gd" id="1_yyfjg"]
 [ext_resource type="Script" uid="uid://bi4h7vrxw31jb" path="res://graph_controller/graph_controller.gd" id="2_b1x3f"]
 [ext_resource type="Script" uid="uid://vvy7lpcojsga" path="res://graph_controller/animation_manager.gd" id="3_a8run"]
 [ext_resource type="Script" uid="uid://hi52ujx73vn8" path="res://graph_controller/clipboard_actions.gd" id="4_ouso4"]
