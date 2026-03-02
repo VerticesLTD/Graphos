@@ -38,7 +38,6 @@ var player: AlgorithmPlayer
 ## A map linking actions to the functions handling them
 ## <ACTION> : [<PRESS FUNCTION>, <RELEASE FUNCTION>]
 var action_map: Dictionary = {
-	&"press_B" : [null, null],
 	&"undo" : [func(_event): CommandManager.undo(), null],
 	&"redo" : [func(_event): CommandManager.redo(), null],
 }

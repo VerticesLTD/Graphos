@@ -14,6 +14,8 @@ color = Color(0.5058824, 0.5058824, 0.5058824, 0.5411765)
 thickness = 2
 vertical = true
 
+[sub_resource type="Shortcut" id="Shortcut_bkbxk"]
+
 [node name="ToolBar" type="MarginContainer" unique_id=2093412975]
 anchors_preset = 5
 anchor_left = 0.5
@@ -131,6 +133,21 @@ texture = ExtResource("5_2j54p")
 expand_mode = 1
 stretch_mode = 5
 metadata/_edit_use_anchors_ = true
+
+[node name="VSeparator2" type="VSeparator" parent="PanelContainer/HBoxContainer" unique_id=1541838938]
+layout_mode = 2
+
+[node name="Modifiers" type="VBoxContainer" parent="PanelContainer/HBoxContainer" unique_id=900645983]
+layout_mode = 2
+
+[node name="DirectedBtn" type="CheckButton" parent="PanelContainer/HBoxContainer/Modifiers" unique_id=1608271324]
+layout_mode = 2
+shortcut = SubResource("Shortcut_bkbxk")
+text = "Directed"
+
+[node name="WeightedBtn" type="CheckButton" parent="PanelContainer/HBoxContainer/Modifiers" unique_id=1787136133]
+layout_mode = 2
+text = "Weighted"
 
 [connection signal="pressed" from="PanelContainer/HBoxContainer/LockTool" to="." method="_on_lock_tool_pressed"]
 [connection signal="pressed" from="PanelContainer/HBoxContainer/Selection" to="." method="_on_selection_pressed"]
