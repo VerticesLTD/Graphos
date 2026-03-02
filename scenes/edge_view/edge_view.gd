@@ -249,7 +249,7 @@ func _get_visual_start_end(pos1: Vector2, pos2: Vector2) -> Array[Vector2]:
 ## Detects double-clicks on the line to open the weight editing UI.
 func _on_mouse_detection_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.double_click:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.double_click and edge_data.is_weighted:
 			_spawn_weight_editor()
 
 ## Spawns a floating LineEdit node for the user to type a new weight.
