@@ -22,6 +22,8 @@ antialiased = true
 
 [node name="Line2" type="Line2D" parent="." unique_id=729700405]
 
+[node name="Arrowhead" type="Polygon2D" parent="." unique_id=145492271]
+
 [node name="Weight" type="Label" parent="." unique_id=152968238]
 texture_filter = 2
 offset_right = 40.0

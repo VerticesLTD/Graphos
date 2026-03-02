@@ -297,9 +297,10 @@ func _validate_vertex(v: Vertex, target_strategy: ConnectionStrategy, is_weighte
 	
 	return ""
 	
-## Checks if a new connection breaks any of the rules.
+## Checks if a new connection breaks any connection rules.
 func _validate_connection(v_src: Vertex, v_dst: Vertex, target_strategy: ConnectionStrategy, is_weighted: bool) -> String:
-	
+	# Validates vertices against the current global state, 
+	# thus, from transitivity, we're gurenteed the conenction is safe. 
 	# Check Source
 	var src_error = _validate_vertex(v_src, target_strategy, is_weighted)
 	if src_error != "": return src_error
@@ -308,7 +309,7 @@ func _validate_connection(v_src: Vertex, v_dst: Vertex, target_strategy: Connect
 	var dst_error = _validate_vertex(v_dst, target_strategy, is_weighted)
 	if dst_error != "": return dst_error
 
-	# Ask the strategy if this is legal.
+	# Ask the strategy if the connection is legal.
 	var specific_error = target_strategy.get_connection_error(self, v_src, v_dst)
 	if specific_error != "": return specific_error
 

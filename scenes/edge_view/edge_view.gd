@@ -9,6 +9,7 @@ var edge_data: Edge
 @onready var collision_shape: CollisionShape2D = $MouseDetectionArea/CollisionShape2D
 @onready var line_1: Line2D = $Line1
 @onready var line_2: Line2D = $Line2
+@onready var arrowhead: Polygon2D = $Arrowhead
 @onready var weight_label: Label = $Weight
 
 var draw_width_hovered: float = Globals.EDGE_WIDTH
@@ -51,11 +52,13 @@ func refresh() -> void:
 		line_2.default_color = draw_color_hovered
 		line_1.width = max(draw_width_hovered, width_by_weight)
 		line_2.width = max(draw_width_hovered, width_by_weight)
+		arrowhead.color = draw_color_hovered
 	else:
 		line_1.default_color = edge_data.color
 		line_2.default_color = edge_data.color
 		line_1.width = width_by_weight
 		line_2.width = width_by_weight
+		arrowhead.color = edge_data.color
 
 	_setup_lines_and_weight()
 	_setup_detection_area()
@@ -126,6 +129,39 @@ func _stop_hover_animation() -> void:
 
 # --- Geometry Helpers ---
 
+## Draws and positions the arrowhead if this is a directed edge.
+func _update_arrowhead(pos1: Vector2, pos2: Vector2, current_line_width: float) -> void:
+	# If the data says this is Undirected, hide the arrow and stop.
+	if not edge_data.strategy is DirectedStrategy:
+		arrowhead.visible = false
+		return
+		
+	arrowhead.visible = true
+	
+	# 1. Find the exact edge of the destination vertex
+	var direction = pos1.direction_to(pos2)
+	var visual_end = pos2 - (direction * Globals.VERTEX_RADIUS)
+	
+	# 2. Position and rotate the Polygon2D
+	arrowhead.position = visual_end
+	arrowhead.rotation = direction.angle()
+	
+	# 3. Calculate dynamic size based on the line width
+	var arrow_length = current_line_width * 3.0
+	var arrow_width = current_line_width * 1.5
+	
+	# 4. Define a triangle pointing right (0 degrees)
+	# Point 1: Tip of the arrow (0,0)
+	# Point 2: Top back corner
+	# Point 3: Bottom back corner
+	var points = PackedVector2Array([
+		Vector2.ZERO,
+		Vector2(-arrow_length, -arrow_width),
+		Vector2(-arrow_length, arrow_width)
+	])
+	
+	arrowhead.polygon = points
+	
 ## Recalculates line points to leave a gap for the weight label.
 func _setup_lines_and_weight() -> void:
 	var pos1 = edge_data.src.pos
@@ -138,7 +174,8 @@ func _setup_lines_and_weight() -> void:
 	var line_1_end = mid_point - offset
 	var line_2_start = mid_point + offset
 
-	if length > (weight_gap * 3):
+	if edge_data.is_weighted and length > (weight_gap * 3):
+		# WEIGHTED
 		weight_label.visible = true
 		_update_weight_label_transform()
 		line_1.clear_points()
@@ -148,11 +185,17 @@ func _setup_lines_and_weight() -> void:
 		line_2.add_point(line_2_start)
 		line_2.add_point(pos2)
 	else:
+		# UNWEIGHTED (or too short): Draw one continuous solid line
 		weight_label.visible = false
 		line_1.clear_points()
-		line_2.clear_points()
+		line_2.clear_points() # Hide the second half completely
+		
+		# Line 1 does all the work
 		line_1.add_point(pos1)
 		line_1.add_point(pos2)
+	
+	# Arrowhead draws last so it always sits on top of whatever line_1 did
+	_update_arrowhead(pos1, pos2, line_1.width)
 	
 ## Centers and rotates the weight label within the line gap.
 func _update_weight_label_transform() -> void:

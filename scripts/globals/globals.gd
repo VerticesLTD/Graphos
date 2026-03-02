@@ -29,8 +29,8 @@ var current_state: State:
 # Tool Modifiers (For CREATE state)
 # ------------
 ## Independent modifiers that determine the type of edge being drawn.
-var active_strategy: ConnectionStrategy = DirectedStrategy.new()
-var is_weighted_mode: bool = false
+var active_strategy: ConnectionStrategy = UndirectedStrategy.new()
+var is_weighted_mode: bool = true
 
 # Tracks the state of a vertex's edges to prevent mixing.
 enum WeightState { EMPTY, WEIGHTED, UNWEIGHTED, CORRUPTED }
