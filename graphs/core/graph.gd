@@ -82,50 +82,35 @@ func delete_vertex(v: Vertex) -> void:
 	vertices.erase(v.id)
 
 
-## Adds an edge between two existing vertices via the currect strategy.
+## Adds an edge between two existing vertices via the current strategy.
+## @param target_strategy: The tool/strategy attempting to make this connection.
 ## @param shout: If false, creates data-only edges for imposters.
 func add_edge(src_id: int, dst_id: int, weight: int, target_strategy: ConnectionStrategy, is_weighted: bool, shout: bool = true) -> void:
-	# Optional, prevent self edges
+	# Optional: Allow self loops
 	if src_id == dst_id: 
-		Notify.show_error("Self-loops are not allowed.")
+		if shout: Notify.show_error("Self-loops are not allowed.")
 		return 
 		
-	# Skip if edge exists (strategies handle reverse edge logic)
-	if has_edge(src_id, dst_id): return 
+	# If the edge is already there, do nothing.
+	if has_edge(src_id, dst_id): 
+		return 
 
 	var v_src = vertices.get(src_id)
 	var v_dst = vertices.get(dst_id)
 	
 	if not v_src or not v_dst: return
 
-	# --- GATEKEEPER CHECKS ---
-	var strat_src = get_vertex_strategy(v_src)
-	var strat_dst = get_vertex_strategy(v_dst)
-
-	# 1. Check for Corrupted Vertices
-	if strat_src is ErrorStrategy or strat_dst is ErrorStrategy:
-		if shout: Notify.show_error("Graph Error: Vertex has mixed edge types. Clear edges to reset.")
-		return
-		
-	# 2. Check Vertex Compatibility 
-	# A vertex is safe IF it is Empty OR if its strategy matches the incoming target_strategy.
-	var src_clash = not strat_src is EmptyStrategy and strat_src.get_script() != target_strategy.get_script()
-	var dst_clash = not strat_dst is EmptyStrategy and strat_dst.get_script() != target_strategy.get_script()
+	# Validate the connection is legal
+	var error_msg = _validate_connection(v_src, v_dst, target_strategy, is_weighted)
 	
-	if src_clash or dst_clash:
-		if shout: Notify.show_error("Type Clash: Cannot mix Directed and Undirected edges on the same vertex.")
-		return
-
-	# 3. Check Strategy-Specific Rules (e.g. Undirected vs existing Directed collision)
-	var specific_error = target_strategy.get_connection_error(self, v_src, v_dst)
-	if specific_error != "":
-		if shout: Notify.show_error(specific_error)
+	if error_msg != "":
+		if shout: Notify.show_error(error_msg)
 		return
 
 	# --- ALL CLEAR ---
-	# Delegate the logic and the shouting behavior to the strategy
+	# The vertices passed the vibe check. Lock in the data and spawn the UI.
 	target_strategy.add_edge(self, v_src, v_dst, weight, is_weighted, shout)
-		
+				
 # Adds an Edge View to the scene
 func spawn_edge_view(edge_data: Edge) -> UIEdgeView:
 	var edge_view = EDGE_VIEW_SCENE.instantiate()
@@ -251,7 +236,84 @@ func get_vertex_strategy(v: Vertex) -> ConnectionStrategy:
 		
 	return shared_strategy
 	
+## Asks the vertex if it currently holds weighted or unweighted edges.
+func get_vertex_weight_state(v: Vertex) -> Globals.WeightState:
+	var shared_weight = null
+	
+	# 1. Check what's going out
+	for e in v.get_outgoing_edges():
+		if not e: continue
+		if shared_weight == null:
+			shared_weight = e.is_weighted
+		elif shared_weight != e.is_weighted:
+			return Globals.WeightState.CORRUPTED
 			
+	# 2. Check what's coming in
+	for e in get_incoming_edges(v):
+		if not e: continue
+		if shared_weight == null:
+			shared_weight = e.is_weighted
+		elif shared_weight != e.is_weighted:
+			return Globals.WeightState.CORRUPTED
+			
+	# 3. Deliver the verdict
+	if shared_weight == null:
+		return Globals.WeightState.EMPTY
+		
+	return Globals.WeightState.WEIGHTED if shared_weight else Globals.WeightState.UNWEIGHTED
+	
+## Validates if a single vertex can accept the target connection strategy.
+func _validate_vertex_strategy(v: Vertex, target_strategy: ConnectionStrategy) -> String:
+	var strat = get_vertex_strategy(v)
+	
+	if strat is ErrorStrategy:
+		return "Graph Error: This vertex has mixed edge types. Clear its edges to fix it."
+		
+	if not strat is EmptyStrategy and strat.get_script() != target_strategy.get_script():
+		return "Type Clash: You can't mix Directed and Undirected edges."
+		
+	return ""
+	
+## Validates if a single vertex can accept the target weight state.
+func _validate_vertex_weight(v: Vertex, is_weighted: bool) -> String:
+	var weight_state = get_vertex_weight_state(v)
+	var target_weight_state = Globals.WeightState.WEIGHTED if is_weighted else Globals.WeightState.UNWEIGHTED
+	
+	if weight_state == Globals.WeightState.CORRUPTED:
+		return "Weight Error: This vertex is confused. It has both weighted and unweighted edges."
+		
+	if weight_state != Globals.WeightState.EMPTY and weight_state != target_weight_state:
+		return "Weight Clash: You can't mix Weighted and Unweighted edges on the same vertex."
+		
+	return ""
+	
+## Runs all safety checks on a single vertex.
+func _validate_vertex(v: Vertex, target_strategy: ConnectionStrategy, is_weighted: bool) -> String:
+	var strat_error = _validate_vertex_strategy(v, target_strategy)
+	if strat_error != "": return strat_error
+	
+	var weight_error = _validate_vertex_weight(v, is_weighted)
+	if weight_error != "": return weight_error
+	
+	return ""
+	
+## Checks if a new connection breaks any of the rules.
+func _validate_connection(v_src: Vertex, v_dst: Vertex, target_strategy: ConnectionStrategy, is_weighted: bool) -> String:
+	
+	# Check Source
+	var src_error = _validate_vertex(v_src, target_strategy, is_weighted)
+	if src_error != "": return src_error
+	
+	# Check Destination
+	var dst_error = _validate_vertex(v_dst, target_strategy, is_weighted)
+	if dst_error != "": return dst_error
+
+	# Ask the strategy if this is legal.
+	var specific_error = target_strategy.get_connection_error(self, v_src, v_dst)
+	if specific_error != "": return specific_error
+
+	return ""
+		
 ## Validates that all edges in the selection share the same strategy.
 ## Returns the shared ConnectionStrategy, or null if the selection is mixed.
 func get_selection_strategy(source_vertices: Array[Vertex]) -> ConnectionStrategy:

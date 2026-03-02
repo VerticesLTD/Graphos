@@ -32,6 +32,9 @@ var current_state: State:
 var active_strategy: ConnectionStrategy = DirectedStrategy.new()
 var is_weighted_mode: bool = false
 
+# Tracks the state of a vertex's edges to prevent mixing.
+enum WeightState { EMPTY, WEIGHTED, UNWEIGHTED, CORRUPTED }
+
 # ------------
 # Appearance
 # ------------
