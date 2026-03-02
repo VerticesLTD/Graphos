@@ -29,7 +29,7 @@ func run(_start_vertex: Vertex) -> Array[Command]:
 		var u = Q.pop_front()
 		
 		# Step 4: Process vetex
-		for edge in u.get_adjacent_edges():
+		for edge in u.get_outgoing_edges():
 			var v = edge.get_other_vertex(u) # Get the other side of the vertex
 			
 			if v.color == COLOR_NOT_DISCOVERED:

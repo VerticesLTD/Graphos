@@ -120,23 +120,22 @@ func disconnect_from(dest: Vertex) -> Edge:
 # --- Helpers & Cleanup ---
 
 ## Returns an array of all outgoing Edge objects.
-func get_adjacent_edges() -> Array:
-	var out: Array = []
+func get_outgoing_edges() -> Array[Edge]:
+	var out: Array[Edge] = []
 	var e: Edge = edges
 	while e:
 		out.append(e)
 		e = e.next
 	return out
 	
-## Returns all vertices neighbors as an Array.
-func get_neighbor_vertices() -> Array:
-	var neighbors: Array = []
-	var e: Edge = edges # The head of your linked list
+## Returns all outgoing neighbor vertices as an Array.
+func get_outgoing_neighbors() -> Array[Vertex]:
+	var neighbors: Array[Vertex] = []
+	var e: Edge = edges
 	while e:
-		neighbors.append(e.dst) # dst is the Vertex on the other side
+		neighbors.append(e.dst)
 		e = e.next
-	return neighbors
-	
+	return neighbors	
 
 ## Handles manual memory management for incident edges before the vertex is destroyed.
 func _notification(what: int) -> void:

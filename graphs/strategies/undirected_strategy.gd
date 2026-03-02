@@ -20,6 +20,7 @@ func delete_edge(graph: Graph, src_node: Vertex, dst_node: Vertex) -> void:
 	var edge_b: Edge = dst_node.disconnect_from(src_node)
 
 	# Tell the UI to self-destruct
+	# Whichever one has the 'UIEdgeView' listening will trigger the queue_free().
 	if edge_a: edge_a.vanished.emit(src_node)
 	if edge_b: edge_b.vanished.emit(dst_node)
 	
@@ -42,3 +43,15 @@ func requires_incoming_capture() -> bool:
 	
 func should_paste_edge(src_id: int, dst_id: int) -> bool:
 	return src_id < dst_id # Only paste once to avoid duplicating A-B and B-A.
+
+
+func get_connection_error(graph: Graph, src: Vertex, dst: Vertex) -> String:
+	# Undirected cannot coexist if ANY directed edge is in the way (forward or backward)
+	if graph.has_edge(src.id, dst.id) or graph.has_edge(dst.id, src.id):
+		var e1 = graph.get_edge(src, dst)
+		var e2 = graph.get_edge(dst, src)
+		
+		if (e1 and e1.strategy.get_script() != self.get_script()) or \
+		   (e2 and e2.strategy.get_script() != self.get_script()):
+			return "Cannot create Undirected edge, conflict."
+	return ""

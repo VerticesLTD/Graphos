@@ -37,3 +37,10 @@ func requires_incoming_capture() -> bool:
 	
 func should_paste_edge(src_id: int, dst_id: int) -> bool:
 	return true # Directed edges are unique, always paste.
+
+
+func get_connection_error(graph: Graph, src: Vertex, dst: Vertex) -> String:
+	var existing = graph.get_edge(src, dst)
+	if existing and existing.strategy.get_script() != self.get_script():
+		return "A non-directed edge already exists here."
+	return ""

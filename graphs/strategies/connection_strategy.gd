@@ -23,3 +23,9 @@ func requires_incoming_capture() -> bool:
 ## Used to prevent undirected edges from being pasted twice.
 func should_paste_edge(src_id: int, dst_id: int) -> bool:
 	return true
+
+
+## Validates if a connection can be made between two vertices under this strategy.
+## Returns an empty String if valid, or an error message if invalid.
+func get_connection_error(_graph: Graph, _src: Vertex, _dst: Vertex) -> String:
+	return "" # Default allows everything. Subclasses will override this.

@@ -64,7 +64,7 @@ func delete_vertex(v: Vertex) -> void:
 
 	# Clean up OUTGOING edges first
 	# We copy neighbors to an array to safely iterate while the linked list is being modified.
-	var neighbors = v.get_neighbor_vertices()
+	var neighbors = v.get_outgoing_neighbors()
 	for neighbor in neighbors:
 		delete_edge(v.id, neighbor.id)
 
@@ -84,17 +84,48 @@ func delete_vertex(v: Vertex) -> void:
 
 ## Adds an edge between two existing vertices via the currect strategy.
 ## @param shout: If false, creates data-only edges for imposters.
-func add_edge(src_id: int, dst_id: int, weight: int, strategy: ConnectionStrategy, is_weighted: bool, shout: bool = true) -> void:
-	if src_id == dst_id or has_edge(src_id, dst_id): return
+func add_edge(src_id: int, dst_id: int, weight: int, target_strategy: ConnectionStrategy, is_weighted: bool, shout: bool = true) -> void:
+	# Optional, prevent self edges
+	if src_id == dst_id: 
+		Notify.show_error("Self-loops are not allowed.")
+		return 
+		
+	# Skip if edge exists (strategies handle reverse edge logic)
+	if has_edge(src_id, dst_id): return 
 
 	var v_src = vertices.get(src_id)
 	var v_dst = vertices.get(dst_id)
 	
 	if not v_src or not v_dst: return
 
-	# Delegate the logic and the shouting behavior to the strategy
-	strategy.add_edge(self, v_src, v_dst, weight, is_weighted, shout)
+	# --- GATEKEEPER CHECKS ---
+	var strat_src = get_vertex_strategy(v_src)
+	var strat_dst = get_vertex_strategy(v_dst)
+
+	# 1. Check for Corrupted Vertices
+	if strat_src is ErrorStrategy or strat_dst is ErrorStrategy:
+		if shout: Notify.show_error("Graph Error: Vertex has mixed edge types. Clear edges to reset.")
+		return
+		
+	# 2. Check Vertex Compatibility 
+	# A vertex is safe IF it is Empty OR if its strategy matches the incoming target_strategy.
+	var src_clash = not strat_src is EmptyStrategy and strat_src.get_script() != target_strategy.get_script()
+	var dst_clash = not strat_dst is EmptyStrategy and strat_dst.get_script() != target_strategy.get_script()
 	
+	if src_clash or dst_clash:
+		if shout: Notify.show_error("Type Clash: Cannot mix Directed and Undirected edges on the same vertex.")
+		return
+
+	# 3. Check Strategy-Specific Rules (e.g. Undirected vs existing Directed collision)
+	var specific_error = target_strategy.get_connection_error(self, v_src, v_dst)
+	if specific_error != "":
+		if shout: Notify.show_error(specific_error)
+		return
+
+	# --- ALL CLEAR ---
+	# Delegate the logic and the shouting behavior to the strategy
+	target_strategy.add_edge(self, v_src, v_dst, weight, is_weighted, shout)
+		
 # Adds an Edge View to the scene
 func spawn_edge_view(edge_data: Edge) -> UIEdgeView:
 	var edge_view = EDGE_VIEW_SCENE.instantiate()
@@ -183,6 +214,44 @@ func get_incoming_edges(target: Vertex) -> Array[Edge]:
 			e = e.next
 	return incoming
 		
+		
+## Returns the shared strategy of the vertex.
+## Returns EmptyStrategy if the vertex has 0 edges.
+## Returns ErrorStrategy if mixed types are found.
+func get_vertex_strategy(v: Vertex) -> ConnectionStrategy:
+	var shared_strategy: ConnectionStrategy = null
+	
+	# Check OUTGOING edges first 
+	var outgoing = v.get_outgoing_edges()
+	for e in outgoing:
+		if not e or not e.strategy: continue
+			
+		if shared_strategy == null:
+			shared_strategy = e.strategy
+		elif shared_strategy.get_script() != e.strategy.get_script():
+			return ErrorStrategy.new()
+	
+	# Check if the strategy doesn't need incoming edges
+	if shared_strategy != null and not shared_strategy.requires_incoming_capture():
+		return shared_strategy
+
+	# Check INCOMING edges, runs if Directed, or if vertex was empty
+	var incoming = get_incoming_edges(v)
+	for e in incoming:
+		if not e or not e.strategy: continue
+			
+		if shared_strategy == null:
+			shared_strategy = e.strategy
+		elif shared_strategy.get_script() != e.strategy.get_script():
+			return ErrorStrategy.new()
+
+	# Final Verdict
+	if shared_strategy == null:
+		return EmptyStrategy.new()
+		
+	return shared_strategy
+	
+			
 ## Validates that all edges in the selection share the same strategy.
 ## Returns the shared ConnectionStrategy, or null if the selection is mixed.
 func get_selection_strategy(source_vertices: Array[Vertex]) -> ConnectionStrategy:
