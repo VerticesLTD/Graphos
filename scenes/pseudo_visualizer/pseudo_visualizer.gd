@@ -32,7 +32,8 @@ extends PanelContainer
 		current_step_idx = value
 		_refresh_view()
 
-@onready var code_display: RichTextLabel = $PseudoDisplay
+@onready var code_display: RichTextLabel = $VBoxContainer/PseudoDisplay
+@onready var title: Label = $VBoxContainer/Title
 
 var is_dragging: bool = false
 var drag_offset: Vector2 = Vector2.ZERO
@@ -67,6 +68,8 @@ func _refresh_view() -> void:
 
 	if data.steps.size() > 0:
 		current_step_idx = clampi(current_step_idx,0,data.steps.size() - 1)
+	
+	title.text = data.algorithm_name
 	
 	render_step(current_step_idx)
 

@@ -7,6 +7,7 @@
 [node name="CodeBackground" type="PanelContainer" unique_id=870985294]
 modulate = Color(1, 1, 1, 0.8156863)
 z_index = 10
+texture_filter = 4
 offset_right = 268.0
 offset_bottom = 299.0
 size_flags_horizontal = 4
@@ -14,7 +15,20 @@ size_flags_vertical = 4
 theme_override_styles/panel = ExtResource("1_k23mk")
 script = ExtResource("2_a00k7")
 
-[node name="PseudoDisplay" type="RichTextLabel" parent="." unique_id=880065330]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1134767925]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBoxContainer" unique_id=1547572488]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_43rel")
+theme_override_font_sizes/font_size = 23
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer" unique_id=141020111]
+layout_mode = 2
+
+[node name="PseudoDisplay" type="RichTextLabel" parent="VBoxContainer" unique_id=880065330]
 layout_mode = 2
 mouse_filter = 2
 theme_override_fonts/normal_font = ExtResource("2_43rel")
