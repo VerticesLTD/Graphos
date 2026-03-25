@@ -1,0 +1,109 @@
+[gd_resource type="Theme" format=3 uid="uid://djbla3siny57m"]
+
+[ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="1_mlaoh"]
+
+[sub_resource type="DPITexture" id="DPITexture_nyaqk"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#fefefe\" fill-opacity=\".37\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_1vv6w"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#fefefe\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_4ljsr"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"4\" height=\"8\"><path fill=\"#fff\" fill-opacity=\".25\" d=\"M1 0h2v16H1z\"/></svg>
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gq8hn"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(1, 1, 1, 0.4)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+corner_detail = 6
+expand_margin_top = 4.0
+expand_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_urvug"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+corner_detail = 6
+expand_margin_top = 4.0
+expand_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s7dvc"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.8, 0.8, 0.30980393)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+corner_detail = 6
+expand_margin_top = 5.0
+expand_margin_bottom = 5.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_svmqo"]
+bg_color = Color(0.13319641, 0.13319641, 0.13319635, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_blend = true
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 16
+anti_aliasing_size = 2.448
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nyaqk"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2665752, 0.26657522, 0.26657504, 1)
+border_blend = true
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1vv6w"]
+bg_color = Color(0.6, 0.6, 0.6, 0.7411765)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[resource]
+default_font = ExtResource("1_mlaoh")
+HSlider/constants/center_grabber = 0
+HSlider/constants/grabber_offset = 0
+HSlider/constants/tick_offset = 0
+HSlider/icons/grabber_disabled = SubResource("DPITexture_nyaqk")
+HSlider/icons/grabber_highlight = SubResource("DPITexture_1vv6w")
+HSlider/icons/tick = SubResource("DPITexture_4ljsr")
+HSlider/styles/grabber_area = SubResource("StyleBoxFlat_gq8hn")
+HSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_urvug")
+HSlider/styles/slider = SubResource("StyleBoxFlat_s7dvc")
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_svmqo")
+ProgressBar/styles/background = SubResource("StyleBoxFlat_nyaqk")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_1vv6w")

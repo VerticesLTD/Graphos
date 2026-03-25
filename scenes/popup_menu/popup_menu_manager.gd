@@ -1,52 +1,56 @@
-## PopupMenuManager
-## -----------------------------------------------------------------------------
-## Central UI overlay that builds and opens context menus for graph objects.
-## SOLID goals:
-## - GraphController decides what was clicked (vertex/edge/canvas).
-## - PopupMenuManager decides what menu to show and how to build it.
-## - Commands hold the logic + undo/redo integration (CommandManager).
-##
-## Menu definition format (nested Array):
-## [
-##   ["Label", Command_instance],
-##   ["Label", [ submenu items... ]],
-##   ["Label", null],                  # placeholder (no action)
-## ]
-##
-## IMPORTANT:
-## - Every PopupMenu (main AND submenus) emits its own "index_pressed".
-##   So we must connect handlers for submenus too, not only MainMenu.
-## -----------------------------------------------------------------------------
+# PopupMenuManager
+# -----------------------------------------------------------------------------
+# Central UI overlay that builds and opens context menus for graph objects.
+# SOLID goals:
+# - GraphController decides what was clicked (vertex/edge/canvas).
+# - PopupMenuManager decides what menu to show and how to build it.
+# - Commands hold the logic + undo/redo integration (CommandManager).
+#
+# Menu definition format (nested Array):
+# [
+#   ["Label", Command_instance],
+#   ["Label", [ submenu items... ]],
+#   ["Label", null],                  # placeholder (no action)
+# ]
+#
+# IMPORTANT:
+# - Every PopupMenu (main AND submenus) emits its own "index_pressed".
+#   So we must connect handlers for submenus too, not only MainMenu.
+# -----------------------------------------------------------------------------
 class_name GraphContextMenuManager
 extends Control
 
+# SIGNALS
+signal run_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, start_node: Vertex)
+
+const LOG_TAG = "POPUP_MENU"
 
 @onready var MainMenu: PopupMenu = $MainMenu
 
-## The graph the commands operate on.
-## We inject it from GraphController in _ready().
+# The graph the commands operate on.
+# We inject it from GraphController in _ready().
 var graph: UndirectedGraph
 
-## Save the controller in order to access its properties
+# Save the controller in order to access its properties
 var controller: GraphController 
 
 
-## Format: { "Menu Label": ScriptResource }
+# Format: { "Menu Label": ScriptResource }
 var ALGO_REGISTRY = {
-	"Breadth First Search": BFS,
+	"Breadth First Search": AlgorithmPlayer.ALGORITHMS.BFS,
 }
 
-## Helper to generate the color square icon
+# Helper to generate the color square icon
 func _get_swatch(c: Color) -> Texture2D:
 	return IconGenerator.make_color_swatch(c)
 	
 	
-## Active context (what was clicked)
+# Active context (what was clicked)
 var active = null
 var mode: String = "general"
 
-## We create submenu PopupMenus dynamically on each open.
-## Store them so we can free them next time (avoid leaks / duplicates).
+# We create submenu PopupMenus dynamically on each open.
+# Store them so we can free them next time (avoid leaks / duplicates).
 var _dynamic_menus: Array[PopupMenu] = []
 
 func _ready() -> void:
@@ -54,9 +58,9 @@ func _ready() -> void:
 			_wire_menu(MainMenu)
 			
 		
-## -----------------------------------------------------------------------------
-## PUBLIC API: GraphController calls exactly ONE of these
-## -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# PUBLIC API: GraphController calls exactly ONE of these
+# -----------------------------------------------------------------------------
 
 func open_for_vertex(v: Vertex, mouse_pos: Vector2) -> void:
 	active = v
@@ -74,109 +78,123 @@ func open_for_canvas(mouse_pos: Vector2) -> void:
 	_open_at(mouse_pos, _make_canvas_menu(mouse_pos))
 
 
-## -----------------------------------------------------------------------------
-## OPEN + BUILD
-## -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# OPEN + BUILD
+# -----------------------------------------------------------------------------
 
 ## Opens the main popup at a specific position, rebuilds all items.
 func _open_at(mouse_pos: Vector2, menu_def: Array) -> void:
-	## 1. Clean old dynamically-created submenus (critical)
+	# 1. Clean old dynamically-created submenus (critical)
 	_clear_dynamic_menus()
 
-	## 2. Build menu tree recursively (MainMenu + all submenus)
+	# 2. Build menu tree recursively (MainMenu + all submenus)
 	_build_menu_recursive(MainMenu, menu_def)
 
-	## 3. Show the main menu at mouse position
-	## PopupMenu inherits Popup, and popup(rect) is the clean way to place it.
+	# 3. Show the main menu at mouse position
+	# PopupMenu inherits Popup, and popup(rect) is the clean way to place it.
 	MainMenu.popup(Rect2i(Vector2i(mouse_pos), Vector2i.ZERO))
 
 
 ## Recursively builds menu items and submenu nodes.
 func _build_menu_recursive(menu: PopupMenu, menu_def: Array) -> void:
-	## Clean slate
+	# Clean slate
 	menu.clear()
 
-	## Loop entries like: ["Delete", Command] or ["Algorithms", [...]] etc.
+	# Loop entries like: ["Delete", Command] or ["Algorithms", [...]] etc.
 	for item in menu_def:
 		var label = item[0]
-		var value = item[1] if item.size() > 1 else null ## allow ["test"] too
-		var icon  = item[2] if item.size() > 2 else null ## Icon
+		var value = item[1] if item.size() > 1 else null # allow ["test"] too
+		var icon  = item[2] if item.size() > 2 else null # Icon
 
-		## Add seperator
+		# Add seperator
 		if label == "---":
 				menu.add_separator()
 				continue # Skip the rest of the loop for this item
 				
-		## CASE 1: Real Command instance -> clickable item
-		if value is Command:
+		# CASE 1: Callable -> clickable item
+		if value is Callable:
 			var idx = menu.item_count
 			menu.add_item(label)
-			menu.set_item_metadata(idx, value) ## store command object here
+			menu.set_item_metadata(idx,value)
+
+			if icon:
+				menu.set_item_icon(idx,icon)
+
+		# CASE 2: Real Command instance -> clickable item
+		elif value is Command:
+			var idx = menu.item_count
+			menu.add_item(label)
+			menu.set_item_metadata(idx, value) # store command object here
 			
 			if icon:
 				menu.set_item_icon(idx, icon)
 
-		## CASE 2: Submenu -> nested Array
+		# CASE 2: Submenu -> nested Array
 		elif value is Array:
 			var submenu := PopupMenu.new()
 			submenu.name = item[0]
 			menu.add_child(submenu)
 
-			## Track dynamic menus so we can free them next open
+			# Track dynamic menus so we can free them next open
 			_dynamic_menus.append(submenu)
 
-			## Wire submenu clicks too (very important)
+			# Wire submenu clicks too (very important)
 			_wire_menu(submenu)
 
-			## Link submenu to this item (Godot handles submenu UI behavior)
+			# Link submenu to this item (Godot handles submenu UI behavior)
 			menu.add_submenu_node_item(label, submenu)
 
-			## Fill submenu contents
+			# Fill submenu contents
 			_build_menu_recursive(submenu, value)
 
-			## Optional UX: hide submenu when mouse exits it
-			## (You wanted this behavior)
+			# Optional UX: hide submenu when mouse exits it
+			# (You wanted this behavior)
 			#submenu.mouse_exited.connect(func(): submenu.hide())
 
-		## CASE 3: Placeholder / missing command / debug
+		# CASE 3: Placeholder / missing command / debug
 		else:
 			var idx = menu.item_count
 			menu.add_item(label)
-			menu.set_item_metadata(idx, null) ## no action
+			menu.set_item_metadata(idx, null) # no action
 			
 			if value == null:
 				menu.set_item_disabled(idx, true)
 
 
-## Connects a PopupMenu's clicks to a handler that reads metadata and executes command.
+# Connects a PopupMenu's clicks to a handler that reads metadata and executes command.
 func _wire_menu(menu: PopupMenu) -> void:
-	## Avoid double-connecting if you ever reuse menus
+	# Avoid double-connecting if you ever reuse menus
 	if menu.index_pressed.is_connected(_on_any_menu_item_pressed):
 		return
 	menu.index_pressed.connect(_on_any_menu_item_pressed.bind(menu))
 
 
-## This runs for MainMenu AND for any submenu.
-## We get the clicked menu instance + index, then fetch metadata from that menu.
+# This runs for MainMenu AND for any submenu.
+# We get the clicked menu instance + index, then fetch metadata from that menu.
 func _on_any_menu_item_pressed(index: int, menu: PopupMenu) -> void:
 	var cmd = menu.get_item_metadata(index)
 
-	## Placeholder: do nothing (but keep it safe and debuggable)
+	# Placeholder: do nothing (but keep it safe and debuggable)
 	if cmd == null:
-		print("Popup placeholder clicked: '%s' (mode=%s)" % [menu.get_item_text(index), mode])
+		GLogger.debug("Popup placeholder clicked: '%s' (mode=%s)" % [menu.get_item_text(index), mode],LOG_TAG)
 		return
 
-	## Real command: execute through CommandManager so undo/redo works
+	# Real command: execute through CommandManager so undo/redo works
 	if cmd is Command:
 		CommandManager.execute(cmd)
 		return
+
+	if cmd is Callable:
+		cmd.call()
+		return
+		
 	
-	## If someone accidentally stored something else, fail safely
-	push_warning("Popup item metadata is not a Command: %s" % [str(cmd)])
+	# If someone accidentally stored something else, fail safely
+	push_warning("Popup item metadata not recognized: %s" % [str(cmd)])
 
 
 func _clear_dynamic_menus() -> void:
-	## Free previously created submenu nodes
+	# Free previously created submenu nodes
 	for m in _dynamic_menus:
 		if is_instance_valid(m):
 			m.queue_free()
@@ -188,33 +206,33 @@ func _clear_context() -> void:
 	mode = "general"
 
 
-## -----------------------------------------------------------------------------
-## MENU FACTORIES (ALL MENUS DEFINED HERE, SOLID)
-## -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# MENU FACTORIES (ALL MENUS DEFINED HERE, SOLID)
+# -----------------------------------------------------------------------------
 
 
 func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
-	# Determine if we cal paste
+	# Determine if we call paste
 	var paste_cmd = null
 	if Globals.clipboard_graph != null:
 		paste_cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, controller)
 
-	## You can put placeholders (null) while implementing commands.
-	## This lets you test menu opening immediately.
+	# You can put placeholders (null) while implementing commands.
+	# This lets you test menu opening immediately.
 	var buffer_snapshot = controller.selection_buffer.duplicate() if controller else []
 
-	## Create the algorithm sub-menu
+	# Create the algorithm sub-menu
 	var algo_submenu = [] 
 	
 	for algo_name in ALGO_REGISTRY:
-		var algo_script = ALGO_REGISTRY[algo_name]
+		var algorithm = ALGO_REGISTRY[algo_name]
 		
 		# Create the command automatically using the shared params
 		var cmd = null
 		
 		# ONLY create the command if we actually have nodes selected.
 		if not buffer_snapshot.is_empty() and v in buffer_snapshot:
-			cmd = ExecuteAlgorithm.new(algo_script, v, buffer_snapshot, graph, controller)	
+			cmd = func(): run_algorithm.emit(algorithm, v)
 				
 		# Add to the list
 		algo_submenu.append([algo_name, cmd])
