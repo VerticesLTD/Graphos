@@ -16,18 +16,18 @@ func _draw() -> void:
 	
 	# Corners
 	var tl = rect.position
-	var tr = Vector2(rect.end.x, rect.position.y)
+	var _tr = Vector2(rect.end.x, rect.position.y) # tr alone is define in Object class
 	var bl = Vector2(rect.position.x, rect.end.y)
 	var br = rect.end
 	
 	# Draw Dashed Border
-	draw_dashed_line(tl, tr, color, 1.5, dash_gap)
-	draw_dashed_line(tr, br, color, 1.5, dash_gap)
+	draw_dashed_line(tl, _tr, color, 1.5, dash_gap)
+	draw_dashed_line(_tr, br, color, 1.5, dash_gap)
 	draw_dashed_line(br, bl, color, 1.5, dash_gap)
 	draw_dashed_line(bl, tl, color, 1.5, dash_gap)
 	
 	# Draw Excalidraw-style Handles
-	for pos in [tl, tr, bl, br]:
+	for pos in [tl, _tr, bl, br]:
 		_draw_handle(pos)
 
 func _draw_handle(pos: Vector2) -> void:

@@ -23,7 +23,7 @@ func delete_edge(graph: Graph, src_node: Vertex, dst_node: Vertex) -> void:
 
 
 ## Directed edges are unique, so we clone every single one we find.
-func clone_edges(source_graph: Graph, target_graph: Graph, vertices: Array[Vertex]) -> void:
+func clone_edges(_source_graph: Graph, target_graph: Graph, vertices: Array[Vertex]) -> void:
 	for v in vertices:
 		var e = v.edges
 		while e:
@@ -35,7 +35,7 @@ func clone_edges(source_graph: Graph, target_graph: Graph, vertices: Array[Verte
 func requires_incoming_capture() -> bool:
 	return true
 	
-func should_paste_edge(src_id: int, dst_id: int) -> bool:
+func should_paste_edge(_src_id: int, _dst_id: int) -> bool:
 	return true # Directed edges are unique, always paste.
 
 

@@ -14,6 +14,7 @@ signal state_changed
 signal vanished(v: Vertex)
 
 ## Signal to trigger UI animations (like hovers) from data/algorithms.
+@warning_ignore("unused_signal")
 signal animation_requested(anim_name: String)
 
 ## Source vertex of the edge.

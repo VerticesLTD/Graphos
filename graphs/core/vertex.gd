@@ -8,6 +8,7 @@ signal state_changed
 signal vanished(v: Vertex)
 
 ## This lets algorithms say vertex.animation_requested.emit("hover_start")
+@warning_ignore("unused_signal")
 signal animation_requested(anim_name: String)
 
 var id: int 
