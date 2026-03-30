@@ -46,3 +46,15 @@ func update_selected_elements_hover_animations() -> void:
 				if is_instance_valid(e):
 					e.animation_requested.emit("hover_stop")
 				e = e.next
+
+## Force-stops all highlights for the current selection.
+func clear_all_selection_hovers() -> void:
+	for v in current_selection:
+		if is_instance_valid(v):
+			v.animation_requested.emit("hover_stop")
+			
+			var e = v.edges
+			while e:
+				if is_instance_valid(e):
+					e.animation_requested.emit("hover_stop")
+				e = e.next
