@@ -352,9 +352,6 @@ func get_valid_selection_strategy(source_vertices: Array[Vertex]) -> ConnectionS
 ## Returns a new sub-graph from given vertices
 ## This graph is 'Data-Only' and will not appear on screen.
 func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> Graph:
-	var strategy = get_selection_strategy(source_vertices)
-	if not strategy: return null # Safety check
-
 	var imposter_graph = Graph.new()
 	
 	# Clone the Nodes
@@ -362,11 +359,74 @@ func create_induced_subgraph_from_vertices(source_vertices: Array[Vertex]) -> Gr
 		var imposter_v = Vertex.new(v.id, v.color, v.distance, v.key, v.pos, true)
 		imposter_graph.vertices[v.id] = imposter_v
 
-	# DELEGATION: Let the strategy build the edges its own way
-	strategy.clone_edges(self, imposter_graph, source_vertices)
+	# Fast lookup for selection
+	var selection_ids = {}
+	for v in source_vertices: selection_ids[v.id] = true
+
+	# Clone the edges 
+	for v in source_vertices:
+		var e = v.edges
+		while e:
+			# Only clone if the destination is also selected
+			if selection_ids.has(e.dst.id):
+				# CRITICAL: Only add if the imposter doesn't have it yet. Prevents duplications.
+				if not imposter_graph.has_edge(e.src.id, e.dst.id):
+					imposter_graph.add_edge(
+						e.src.id, 
+						e.dst.id, 
+						e.weight, 
+						e.strategy, # Use the ACTUAL strategy of this edge
+						e.is_weighted, 
+						false # silent
+					)
+			e = e.next
 	
 	return imposter_graph
 		
+
+## Scans the entire graph. Returns the common strategy if all match types.
+## Returns null if the graph contains a mix (e.g., some Directed, some Undirected).
+func get_graph_dominant_strategy() -> ConnectionStrategy:
+	var all_edges = _get_unique_edges()
+	if all_edges.is_empty(): return null
+	
+	var first_strat_script = all_edges[0].strategy.get_script()
+	
+	for e in all_edges:
+		if e.strategy.get_script() != first_strat_script:
+			return null # Mixed strategies 
+			
+	return all_edges[0].strategy
+	
+
+## Returns "weighted" if all edges are weighted, "unweighted" if all are unweighted.
+## Returns null if the graph contains a mix (Inconsistent).
+func get_graph_weight_state() -> Variant:
+	var all_edges = _get_unique_edges()
+	
+	# An empty graph, defaults to unweighted
+	if all_edges.is_empty(): 
+		return "unweighted" 
+	
+	var first_is_weighted = all_edges[0].is_weighted
+	
+	for e in all_edges:
+		if e.is_weighted != first_is_weighted:
+			return null # MIXED
+			
+	return "weighted" if first_is_weighted else "unweighted"
+		
+## Helper: Returns a flat array containing every unique edge object in the graph.
+func _get_unique_edges() -> Array[Edge]:
+	var list: Array[Edge] = []
+	for v in vertices.values():
+		var e = v.edges
+		while e:
+			if not list.has(e):
+				list.append(e)
+			e = e.next
+	return list
+	
 ## Resets the graph to its base state for algorithm visualizers
 func reset_for_algorithm() -> void:
 	for v: Vertex in vertices.values():

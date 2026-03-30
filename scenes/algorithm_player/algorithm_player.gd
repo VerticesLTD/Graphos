@@ -50,7 +50,19 @@ func start_algorithm(
 			await visualizer_tween.finished
 
 	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
+	
+	if not imposter_graph.get_graph_dominant_strategy():
+		Notify.show_error("Mixed Strategy Error: Directed and Undirected edges cannot coexist during an algorithm.")
+		return
 
+	if not imposter_graph.get_graph_weight_state():
+		Notify.show_error("Mixed Weight Error: All edges must be either Weighted or Unweighted in order to run an algorithm.")
+		return
+	
+	if not imposter_graph:
+		Notify.show_error("Algorithm Error: Selection contains mixed graph types.")
+		return # ABORT
+	
 	var algorithm_instance: GraphAlgorithm = _algorithm_map[algorithm_type].get(0)
 	var pseudo_resource: PseudoCodeData = _algorithm_map[algorithm_type].get(1)
 
