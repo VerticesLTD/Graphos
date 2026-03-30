@@ -21,11 +21,10 @@ var timeline: Array[Command] = []
 ## A null value represents a step in the timeline with no pseudo equivilent.
 var pseudo_steps: Array = []
 
-## Initialize the algorithm
-## @param undirected_graph   The graph the algorithm uses.
-func _init(_imposter_graph: Graph, _real_graph: Graph):
+## Set the algorithm variables
+func set_alg_variables(_imposter_graph: Graph, _real_graph: Graph) -> void:
 	imposter_graph = _imposter_graph
-	real_graph =_real_graph
+	real_graph = _real_graph
 
 func verify_initialization() -> void:
 	assert(imposter_graph != null and real_graph != null,
@@ -78,27 +77,21 @@ func change_and_log_vertex_color(target_vertex: Vertex, target_color: Color, pse
 
 ## Changes an edge color and records the Command in the timeline.
 func change_and_log_edge_color(target_edge: Edge, target_color: Color, pseudo_step = null) -> void:
-	# 1. Normalize the IDs to find the 'Real' (shouting) edge
-	var u_id = target_edge.src.id
-	var v_id = target_edge.dst.id
+	# Get the real vertices using the IDs from the imposter edge
+	var real_src = real_graph.get_vertex(target_edge.src.id)
+	var real_dst = real_graph.get_vertex(target_edge.dst.id)
 	
-	var lower_id = u_id if u_id < v_id else v_id
-	var higher_id = v_id if u_id < v_id else u_id
-	
-	# 2. Get the actual vertices from the REAL graph
-	var real_src = real_graph.get_vertex(lower_id)
-	var real_dst = real_graph.get_vertex(higher_id)
-	
-	# 3. Find the edge that actually owns the Visual Sprite
+	# Find the edge that goes EXACTLY from src to dst
+	# This works for both:
+	# - Undirected: It finds the one shared edge.
+	# - Directed: It finds the specific arrow for this direction.
 	var real_edge = real_graph.get_edge(real_src, real_dst)
 	
 	if real_edge:
-		# Record the command targeting the visual edge
 		timeline.append(ChangeEdgeColorCommand.new(real_edge, target_color))
 	
-	# Update the imposter edge so the algorithm's state stays consistent
+	# Update the imposter for algorithm logic
 	target_edge.color = target_color
-
 	log_pseudo_step(pseudo_step)
 	
 ## Changes a vertex key and records the Command in the timeline.

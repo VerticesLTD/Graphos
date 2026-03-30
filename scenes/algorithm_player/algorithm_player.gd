@@ -41,7 +41,7 @@ func start_algorithm(
 	algorithm_type: ALGORITHMS,
 	starting_node: Vertex,
 	selection_buffer: Array[Vertex],
-	graph: UndirectedGraph
+	graph: Graph
 	) -> void:
 	
 	if _is_algorithm_running:

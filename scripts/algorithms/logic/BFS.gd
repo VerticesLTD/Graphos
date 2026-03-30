@@ -45,7 +45,7 @@ func run(_start_vertex: Vertex) -> Array:
 		
 		log_pseudo_step(5,true)
 		data_updates.append(null)
-		for edge in u.get_neighbors_edges():
+		for edge in u.get_outgoing_edges():
 			var v = edge.get_other_vertex(u) # Get the other side of the vertex
 			
 			log_pseudo_step(6,true)
