@@ -35,11 +35,11 @@ func show_error(message: String):
 	active_tween.parallel().tween_property(panel, "position:y", 40.0, 0.4)
 
 func show_notification(message: String):
-	panel.add_theme_stylebox_override("panel",PANEL_STYLE_REGULAR_MESSAGE)
-	label.text = message
-	
 	if active_tween:
 		active_tween.kill()
+
+	panel.add_theme_stylebox_override("panel",PANEL_STYLE_REGULAR_MESSAGE)
+	label.text = message
 	
 	active_tween = create_tween()
 	active_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)

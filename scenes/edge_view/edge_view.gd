@@ -27,23 +27,31 @@ func _ready() -> void:
 		weight_label.text = str(edge_data.weight)
 		_setup_detection_area()
 
-		# Connections
-		edge_data.state_changed.connect(refresh)
-		edge_data.vanished.connect(_on_edge_vanished)
+		# Make sure to NOT create double connections(two vertices but one edge)
+		# Data connections
+		if not edge_data.state_changed.is_connected(refresh):
+			edge_data.state_changed.connect(refresh)
+		if not edge_data.vanished.is_connected(_on_edge_vanished):
+			edge_data.vanished.connect(_on_edge_vanished)
 
 		# Interaction connections
-		mouse_detection_area.mouse_entered.connect(_on_mouse_entered)
-		mouse_detection_area.mouse_exited.connect(_on_mouse_exited)
-		
+		if not mouse_detection_area.mouse_entered.is_connected(_on_mouse_entered):
+			mouse_detection_area.mouse_entered.connect(_on_mouse_entered)
+		if not mouse_detection_area.mouse_exited.is_connected(_on_mouse_exited):
+			mouse_detection_area.mouse_exited.connect(_on_mouse_exited)		
+			
 		# Algorithm support
-		edge_data.animation_requested.connect(_on_animation_requested)
+		if not edge_data.animation_requested.is_connected(_on_animation_requested):
+			edge_data.animation_requested.connect(_on_animation_requested)
 		
 		# Input handling
-		mouse_detection_area.input_event.connect(_on_mouse_detection_area_input_event)
+		if not mouse_detection_area.input_event.is_connected(_on_mouse_detection_area_input_event):
+			mouse_detection_area.input_event.connect(_on_mouse_detection_area_input_event)
 		
 		refresh()
 	else:
 		queue_free()
+
 
 # --- Visual Refresh ---
 
@@ -54,19 +62,19 @@ func refresh() -> void:
 	weight_label.text = str(edge_data.weight)
 	weight_gap = 43.0 if weight_label.text.length() >= 3 else 30.0
 	
-	var width_by_weight = clampf(Globals.EDGE_WIDTH * edge_data.weight / 5.0, 5.0, 15.0)
-
+	var fixed_width = Globals.EDGE_WIDTH
+	
 	if is_hovered:
 		line_1.default_color = draw_color_hovered
 		line_2.default_color = draw_color_hovered
-		line_1.width = max(draw_width_hovered, width_by_weight)
-		line_2.width = max(draw_width_hovered, width_by_weight)
+		line_1.width = max(draw_width_hovered, fixed_width)
+		line_2.width = max(draw_width_hovered, fixed_width)
 		arrowhead.color = draw_color_hovered
 	else:
 		line_1.default_color = edge_data.color
 		line_2.default_color = edge_data.color
-		line_1.width = width_by_weight
-		line_2.width = width_by_weight
+		line_1.width = fixed_width
+		line_2.width = fixed_width
 		arrowhead.color = edge_data.color
 
 	_setup_lines_and_weight()
@@ -140,72 +148,86 @@ func _stop_hover_animation() -> void:
 
 ## Draws and positions the arrowhead if this is a directed edge.
 func _update_arrowhead(pos1: Vector2, pos2: Vector2, current_line_width: float) -> void:
-	# If the data says this is Undirected, hide the arrow and stop.
 	if not edge_data.strategy is DirectedStrategy:
 		arrowhead.visible = false
 		return
 		
 	arrowhead.visible = true
 	
-	# 1. Find the exact edge of the destination vertex
 	var direction = pos1.direction_to(pos2)
-	var visual_end = pos2 - (direction * Globals.VERTEX_RADIUS)
+	# Tiny gap so it doesn't touch the circle
+	var visual_end = pos2 - (direction * (Globals.VERTEX_RADIUS + 4.0))
 	
-	# 2. Position and rotate the Polygon2D
 	arrowhead.position = visual_end
 	arrowhead.rotation = direction.angle()
 	
-	# 3. Calculate dynamic size based on the line width
-	var arrow_length = current_line_width * 3.0
-	var arrow_width = current_line_width * 1.5
+	# Proportions: 5x line width for length, 2x for width
+	var arrow_length = current_line_width * 5.0
+	var arrow_width = current_line_width * 2.2
 	
-	# 4. Define a triangle pointing right (0 degrees)
-	# Point 1: Tip of the arrow (0,0)
-	# Point 2: Top back corner
-	# Point 3: Bottom back corner
+	# 4-point design: Tip, Top Wing, Back Indent, Bottom Wing
 	var points = PackedVector2Array([
-		Vector2.ZERO,
-		Vector2(-arrow_length, -arrow_width),
-		Vector2(-arrow_length, arrow_width)
+		Vector2.ZERO,                               # Tip (Sharp!)
+		Vector2(-arrow_length, -arrow_width),       # Top wing
+		Vector2(-arrow_length * 0.75, 0),           # The "Stealth" indent
+		Vector2(-arrow_length, arrow_width)         # Bottom wing
 	])
 	
 	arrowhead.polygon = points
-	
+		
 ## Recalculates line points to leave a gap for the weight label.
 func _setup_lines_and_weight() -> void:
-	var pos1 = edge_data.src.pos
-	var pos2 = edge_data.dst.pos
-	var mid_point = pos1.lerp(pos2,0.5)
-	var direction = (pos2-pos1).normalized()
-	var offset = direction * (weight_gap / 2.0)
-	var length = pos1.distance_to(pos2)
-
-	var line_1_end = mid_point - offset
-	var line_2_start = mid_point + offset
-
-	if edge_data.is_weighted and length > (weight_gap * 3):
-		# WEIGHTED
-		weight_label.visible = true
-		_update_weight_label_transform()
-		line_1.clear_points()
-		line_2.clear_points()
-		line_1.add_point(pos1)
-		line_1.add_point(line_1_end)
-		line_2.add_point(line_2_start)
-		line_2.add_point(pos2)
+	var src_pos = edge_data.src.pos
+	var dst_pos = edge_data.dst.pos
+	
+	# 1. The "Visual End" for the line (Shortened for arrows)
+	var direction = src_pos.direction_to(dst_pos)
+	var visual_dst = dst_pos - (direction * Globals.VERTEX_RADIUS)
+	
+	if edge_data.strategy is DirectedStrategy:
+		line_1.end_cap_mode = Line2D.LINE_CAP_NONE  # Flat end where it hits the arrow
+		line_2.end_cap_mode = Line2D.LINE_CAP_NONE
+		# Stop the line 10px early to make room for the arrow
+		visual_dst -= direction * 10.0 
 	else:
-		# UNWEIGHTED (or too short): Draw one continuous solid line
-		weight_label.visible = false
-		line_1.clear_points()
-		line_2.clear_points() # Hide the second half completely
+		line_1.end_cap_mode = Line2D.LINE_CAP_ROUND # Round end for undirected
+		line_2.end_cap_mode = Line2D.LINE_CAP_ROUND
+	
+	# 2. The "True Mid" for the Label (Center-to-Center)
+	# Using dst_pos here ensures the label stays in the mathematical middle
+	var true_mid = src_pos.lerp(dst_pos, 0.5)
+	var offset = direction * (weight_gap / 2.0)
+	var actual_dist = src_pos.distance_to(dst_pos)
+
+	line_1.clear_points()
+	line_2.clear_points()
+
+	# 3. Draw logic
+	if edge_data.is_weighted and actual_dist > (weight_gap * 2.2):
+		_draw_weighted_edge(src_pos, visual_dst, true_mid, offset)
+	else:
+		_draw_simple_edge(src_pos, visual_dst)
+	
+	_update_arrowhead(src_pos, dst_pos, line_1.width)
+
+## Helper: Line segments stop at visual_dst, but gap is centered at true_mid
+func _draw_weighted_edge(start: Vector2, end: Vector2, mid: Vector2, offset: Vector2) -> void:
+	weight_label.visible = true
+	# Force the label to the mathematical midpoint
+	weight_label.position = mid - (weight_label.size / 2.0)
+	_update_weight_label_transform() # Handles rotation
+	
+	line_1.add_point(start)
+	line_1.add_point(mid - offset)
+	
+	line_2.add_point(mid + offset)
+	line_2.add_point(end)
+
+func _draw_simple_edge(start: Vector2, end: Vector2) -> void:
+	weight_label.visible = false
+	line_1.add_point(start)
+	line_1.add_point(end)
 		
-		# Line 1 does all the work
-		line_1.add_point(pos1)
-		line_1.add_point(pos2)
-	
-	# Arrowhead draws last so it always sits on top of whatever line_1 did
-	_update_arrowhead(pos1, pos2, line_1.width)
-	
 ## Centers and rotates the weight label within the line gap.
 func _update_weight_label_transform() -> void:
 	var pos1 = edge_data.src.pos

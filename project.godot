@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="Graphos"
-run/main_scene="uid://bq1um7bo8tkkx"
+run/main_scene="uid://yxcr5kwlindq"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 boot_splash/stretch_mode=0
 boot_splash/image="uid://c4kcswmb35gkq"
@@ -29,11 +29,11 @@ Notify="*res://scenes/notifier/notify.tscn"
 
 [display]
 
-window/size/viewport_width=1920
-window/size/viewport_height=1080
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/mode=2
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-window/stretch/scale=1.25
 
 [file_customization]
 

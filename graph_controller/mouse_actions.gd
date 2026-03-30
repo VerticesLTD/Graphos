@@ -94,8 +94,12 @@ func _handle_left_click(event: InputEventMouseButton):
 	controller.clear_selection_buffer()
 	
 func _handle_left_release(_event: InputEventMouseButton):
-	# Always stop dragging when the mouse is let go
+	# Stop dragging
 	controller.stop_dragging()
+	
+	# Stop the hover animations
+	if controller.animation_manager:
+		controller.animation_manager.clear_all_selection_hovers()
 
 ## Handles connecting a few vertices in a row.
 ## If user clicked on a vertex, it's ID is remembered.

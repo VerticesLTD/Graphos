@@ -38,7 +38,7 @@ func _handle_delete_pressed(_event: InputEvent) -> void:
 	var graph = controller.graph
 
 	if selection_buffer:
-		CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
+		CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer, controller))
 
 func _handle_copy_pressed(_event: InputEvent) -> void:
 	var selection_buffer = controller.selection_buffer
@@ -80,14 +80,9 @@ func _handle_cut_pressed(_event: InputEvent) -> void:
 	var selection_buffer = controller.selection_buffer
 	var graph = controller.graph
 
-	if selection_buffer:
-		# Clean up old clipboard memory
-		if Globals.clipboard_graph:
-			Globals.clipboard_graph.queue_free()
-		
-		# Create the snapshot
-		Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
-		GLogger.debug("Selection copied to clipboard.","CLIPBOARD")
-		
-		# Delete the selected sub-graph	
-		CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
+	# Check if the buffer actually has vertices
+	if not selection_buffer.is_empty():
+		var cut_cmd = CutCommand.new(graph, selection_buffer, controller)
+		CommandManager.execute(cut_cmd)
+	else:
+		GLogger.debug("Cut ignored: Selection buffer is empty.", "CLIPBOARD")
