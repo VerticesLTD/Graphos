@@ -10,8 +10,10 @@ func _init(g: Graph, selected_vertices: Array[Vertex], _controller: GraphControl
 	super(g)
 	controller = _controller 
 	
+	var safe_selection = selected_vertices.duplicate()
+	
 	# Prepare delete vertex command
-	for v in selected_vertices:
+	for v in safe_selection:
 		commands.append(DeleteVertexCommand.new(graph, v))
 			
 func execute() -> void:
