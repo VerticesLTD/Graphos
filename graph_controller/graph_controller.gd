@@ -205,16 +205,18 @@ func _populate_selection_buffer() -> void:
 ## Manually sets the selection buffer to a specific set of vertices.
 ## Useful for PasteCommand.
 func select_vertices(vertices_to_select: Array[Vertex]) -> void:
-	# 1. Start fresh
-	clear_selection_buffer()
+	# Clear current selection
+	selection_buffer.clear() 
 	
-	# 2. Add each vertex to selection (AnimationManager will highlight)
+	# Populate the buffer
 	for v in vertices_to_select:
 		v.z_idx = VERTEX_ON_TOP
 		selection_buffer.append(v)
 	
-	animation_manager.update_current_selection(selection_buffer)
-	
+	# Update the box
+	update_selection_bounds()
+
+		
 ## Clears selection buffer.
 func clear_selection_buffer() -> void:
 	# Resetting color
@@ -278,3 +280,6 @@ func update_selection_bounds() -> void:
 		for v in selection_buffer:
 			new_bounds = new_bounds.expand(v.pos)
 		selection_bounds = new_bounds.grow(Globals.VERTEX_RADIUS + 5.0)
+
+	if has_node("UISelectionBounds"):
+		get_node("UISelectionBounds").queue_redraw()

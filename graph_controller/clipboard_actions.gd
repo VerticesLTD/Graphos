@@ -38,7 +38,7 @@ func _handle_delete_pressed(_event: InputEvent) -> void:
 	var graph = controller.graph
 
 	if selection_buffer:
-		CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
+		CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer, controller))
 
 func _handle_copy_pressed(_event: InputEvent) -> void:
 	var selection_buffer = controller.selection_buffer
@@ -90,4 +90,4 @@ func _handle_cut_pressed(_event: InputEvent) -> void:
 		GLogger.debug("Selection copied to clipboard.","CLIPBOARD")
 		
 		# Delete the selected sub-graph	
-		CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer))
+		CommandManager.execute(DeleteSelectionCommand.new(graph, selection_buffer, controller))

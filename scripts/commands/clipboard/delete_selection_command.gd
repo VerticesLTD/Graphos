@@ -1,29 +1,38 @@
 ## Command to remove a selected area based on a group of vertices.
+
 class_name DeleteSelectionCommand
 extends Command
 
-var induced_graph: Graph
 var commands: Array[Command] = []
+var controller: GraphController # <--- ADD THIS
 
-
-func _init(g: Graph, selected_vertices: Array[Vertex]):
+func _init(g: Graph, selected_vertices: Array[Vertex], _controller: GraphController):
 	super(g)
-
+	controller = _controller 
+	
 	# Prepare delete vertex command
 	for v in selected_vertices:
-		var v_cmd = DeleteVertexCommand.new(graph, v)
-		commands.append(v_cmd)
+		commands.append(DeleteVertexCommand.new(graph, v))
 			
 func execute() -> void:
-	# Execute them in order
+	# Delete data
 	for cmd in commands:
 		cmd.execute()
 	
-	# TBD: Update bounds box
+	# Clear selection
+	if controller:
+		controller.clear_selection_buffer()		
 		
 func undo() -> void:
+	var restored_vertices: Array[Vertex] = []
+	
 	# Execute in reverse order
 	var i = commands.size() - 1
 	while i >= 0:
-		commands[i].undo()
+		var cmd = commands[i]
+		cmd.undo()
+		restored_vertices.append(cmd.vertex)
 		i -= 1
+		
+	if controller:
+		controller.select_vertices(restored_vertices)
