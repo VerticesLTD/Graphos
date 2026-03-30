@@ -93,3 +93,8 @@ const NOT_FOUND = -1
 # Capacity and Limits
 # ------------
 const MAX_VERTICES: int = 500
+
+# ------------
+# EDGE LINE EDIT
+# ------------
+var active_weight_editor: LineEdit = null
