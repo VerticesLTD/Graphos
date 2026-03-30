@@ -1,5 +1,5 @@
 @tool
-extends MarginContainer
+extends PanelContainer
 
 @export var data: PseudoCodeData:
 	set(value):
@@ -32,10 +32,35 @@ extends MarginContainer
 		current_step_idx = value
 		_refresh_view()
 
-@onready var code_display: RichTextLabel = $CodeBackground/PseudoDisplay
+@onready var code_display: RichTextLabel = $VBoxContainer/PseudoDisplay
+@onready var title: Label = $VBoxContainer/Title
+
+var is_dragging: bool = false
+var drag_offset: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	_refresh_view()
+
+func _has_point(point: Vector2) -> bool:
+	# This calculation is done to ensure clicks register in the corners as well (its an override)
+	var style = get_theme_stylebox("panel")
+	var extra_hitbox_margin = style.expand_margin_left
+	var expanded_rect: Rect2 = Rect2(Vector2.ZERO, size).grow(extra_hitbox_margin)
+	return expanded_rect.has_point(point)
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mouse_event = event as InputEventMouseButton
+
+		if mouse_event.button_index == MOUSE_BUTTON_LEFT:
+			if mouse_event.pressed:
+				is_dragging = true
+				drag_offset = get_global_mouse_position() - global_position
+			else:
+				is_dragging = false
+
+	elif event is InputEventMouseMotion and is_dragging:
+		global_position = get_global_mouse_position() - drag_offset
 
 func _refresh_view() -> void:
 	if not is_node_ready() or not data or not code_display:
@@ -44,20 +69,12 @@ func _refresh_view() -> void:
 	if data.steps.size() > 0:
 		current_step_idx = clampi(current_step_idx,0,data.steps.size() - 1)
 	
+	title.text = data.algorithm_name
+	
 	render_step(current_step_idx)
 
 func _on_data_changed() -> void:
 	_refresh_view()
-
-func _unhandled_key_input(event: InputEvent) -> void:
-	# Only take input while app is running
-	if Engine.is_editor_hint():
-		return
-
-	event = event as InputEventKey
-
-	if event.is_pressed() and event.keycode == KEY_SPACE:
-		next_step()
 
 func next_step() -> void:
 	if not data or current_step_idx >= data.steps.size() -1:

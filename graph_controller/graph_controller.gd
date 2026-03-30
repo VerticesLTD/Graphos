@@ -9,7 +9,7 @@ const VERTEX_BELOW = 1
 @export var graph: UndirectedGraph
 
 ## UI overlay that draws/opens context menus
-@export var popup: GraphContextMenuManager
+@onready var popup_menu: GraphContextMenuManager = $PopupMenu
 
 ## The selection buffer to link multiple nodes with an edge
 var link_buffer: Array[int] = []
@@ -30,9 +30,9 @@ var selection_buffer: Array[Vertex] = []:
 ## Animation manager responsible for animations at the controller level
 @onready var animation_manager: AnimationManager = $AnimationManager
 
-# TODO: Breakdown the player into a component after the visualization is integrated.
 ## A class which holds a player with all the algorithm commands.
-var player: AlgorithmPlayer
+@onready var player: AlgorithmPlayer = $AlgorithmPlayer
+
 
 
 ## A map linking actions to the functions handling them
@@ -59,11 +59,15 @@ func _ready() -> void:
 	Globals.app_state_changed.connect(self.clear_selection_buffer)
 
 	## Inject graph into popup manager so it can create commands like DeleteVertexCommand.new(graph, v)
-	if popup:
-		popup.graph = graph
-		popup.controller = self 
+	if popup_menu:
+		popup_menu.graph = graph
+		popup_menu.controller = self 
+
+		# Making sure the menu starts algorithm execution
+		popup_menu.run_algorithm.connect(self.execute_algorithm)
 	else:
 		push_warning("GraphController: popup manager not assigned in Inspector.")
+	
 
 func _process(_delta: float) -> void:
 	# If we are currently dragging nodes, we do not want to touch
@@ -263,32 +267,8 @@ func close_active_editor() -> void:
 ## ALGORITHM PLAYER
 ## ------------------------------------------------------------------------------
 
-## This function can now run BFS, DFS, Dijkstra, or any future algorithm.
-## @param algo_class: The Script/Class of the algorithm (e.g., BFS)
-## @param start_node: The real vertex where we want to begin
-func execute_algorithm(algo_class: GDScript, start_node: Vertex) -> void:
-	# 1. Create the Imposter Graph (The Sandbox)
-	# Pass the selection buffer to run the algo on the sub-graph
-	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
-	
-	# 2. Instantiate the specific algorithm generically
-	# Every child of GraphAlgorithm uses the same _init(_imposter, _real)
-	var algo_instance: GraphAlgorithm = algo_class.new(imposter_graph, graph)
-	
-	# 3. Find the starting vertex's equivalent in the imposter graph
-	var imposter_start_node = imposter_graph.get_vertex(start_node.id)
-	
-	# 4. RUN the algorithm to generate the timeline
-	var timeline = algo_instance.run(imposter_start_node)
-	
-	# 5. Initialize the playback
-	player = AlgorithmPlayer.new(timeline)
-	
-	# 6. Cleanup the imposter graph
-	# The timeline already has the Commands targeting the REAL graph
-	imposter_graph.queue_free()
-	
-	print("Algorithm logic finished. Timeline recorded with %d steps." % timeline.size())
+func execute_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, start_node: Vertex) -> void:
+	player.start_algorithm(algorithm,start_node,selection_buffer,graph)
 
 func update_selection_bounds() -> void:
 	if selection_buffer.is_empty():
@@ -300,11 +280,3 @@ func update_selection_bounds() -> void:
 		for v in selection_buffer:
 			new_bounds = new_bounds.expand(v.pos)
 		selection_bounds = new_bounds.grow(Globals.VERTEX_RADIUS + 5.0)
-		
-			
-## Recieves the player from the Command
-func set_algorithm_player(new_player: AlgorithmPlayer) -> void:
-	self.player = new_player
-	GLogger.debug("New algorithm player")
-	# Trigger first step immidietly
-	player.step_forward()
