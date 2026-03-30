@@ -21,6 +21,7 @@ boot_splash/image="uid://c4kcswmb35gkq"
 Globals="*uid://b66flw6uqbdop"
 GLogger="*uid://b7vp5dn120dii"
 CommandManager="*uid://bstobjaowschd"
+Notify="*res://scenes/notifier/notify.tscn"
 
 [display]
 
@@ -28,6 +29,7 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/stretch/scale=1.25
 
 [file_customization]
 
@@ -36,6 +38,10 @@ folder_colors={
 "res://graph_controller/": "blue",
 "res://scenes/": "green"
 }
+
+[gui]
+
+theme/default_font_multichannel_signed_distance_field=true
 
 [input]
 
@@ -108,6 +114,5 @@ press_B={
 
 [rendering]
 
-textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://d3us80b4t04od"]
+
+[ext_resource type="Script" uid="uid://di3nbirupqsap" path="res://scenes/algorithm_player/algorithm_player.gd" id="1_polfl"]
+[ext_resource type="PackedScene" uid="uid://bncd71mkqi3wv" path="res://scenes/pseudo_visualizer/pseudo_visualizer.tscn" id="2_6sljs"]
+[ext_resource type="PackedScene" uid="uid://dnnuv5puoc3js" path="res://scenes/algorithm_controls/algorithm_controls.tscn" id="3_6sljs"]
+
+[node name="AlgorithmPlayer" type="Node2D" unique_id=539023221]
+script = ExtResource("1_polfl")
+
+[node name="PseudoVisualizer" parent="." unique_id=1374754234 instance=ExtResource("2_6sljs")]
+visible = false
+
+[node name="AlgorithmControls" parent="." unique_id=1698095556 instance=ExtResource("3_6sljs")]
+visible = false
+
+[connection signal="step_back" from="AlgorithmControls" to="." method="step_backward"]
+[connection signal="step_forward" from="AlgorithmControls" to="." method="step_forward"]
+[connection signal="stop" from="AlgorithmControls" to="." method="cancel_algorithm_execution"]
+[connection signal="user_changed_execution_progress" from="AlgorithmControls" to="." method="_on_user_changed_progress"]

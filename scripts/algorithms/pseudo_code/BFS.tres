@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_5kq1g")
+algorithm_name = "BFS Pseudo"
 source_text = "Q ← new Queue()--1
 S ← {s}--2
 Q.enqueue(s)--3
