@@ -27,11 +27,20 @@ func _ready() -> void:
 		weight_label.text = str(edge_data.weight)
 		_setup_detection_area()
 
+		# Connections
 		edge_data.state_changed.connect(refresh)
 		edge_data.vanished.connect(_on_edge_vanished)
+
+		# Interaction connections
+		mouse_detection_area.mouse_entered.connect(_on_mouse_entered)
+		mouse_detection_area.mouse_exited.connect(_on_mouse_exited)
+		
+		# Algorithm support
 		edge_data.animation_requested.connect(_on_animation_requested)
 		
-		mouse_detection_area.input_event.connect(_on_mouse_detection_area_input_event)		
+		# Input handling
+		mouse_detection_area.input_event.connect(_on_mouse_detection_area_input_event)
+		
 		refresh()
 	else:
 		queue_free()
@@ -73,7 +82,7 @@ func _on_animation_requested(anim_name: String) -> void:
 			is_manual_hover = true
 			_start_hover_animation()
 		"hover_stop":
-			_stop_hover_animation()
+			manual_hover_stop()
 
 ## Triggers the start of the hover state on mouse enter.
 func _on_mouse_entered() -> void:
