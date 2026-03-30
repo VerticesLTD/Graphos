@@ -21,6 +21,7 @@ boot_splash/image="uid://c4kcswmb35gkq"
 Globals="*uid://b66flw6uqbdop"
 GLogger="*uid://b7vp5dn120dii"
 CommandManager="*uid://bstobjaowschd"
+Notify="*res://scenes/notifier/notify.tscn"
 
 [display]
 
