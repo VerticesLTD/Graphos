@@ -28,6 +28,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		event.button_index == MOUSE_BUTTON_LEFT \
 		and Globals.current_state == Globals.State.SELECTION:
 		if event.is_pressed():
+			
+			# Check if we're inside the bounds rect
+			if graph_controller.selection_buffer.size() > 1 and \
+				graph_controller.selection_bounds.has_point(event.global_position):
+					return 
+			
 			# Mouse down, start timer
 			_monitoring_input = true
 			_press_timer = 0.0
