@@ -69,8 +69,6 @@ func _refresh_view() -> void:
 	if data.steps.size() > 0:
 		current_step_idx = clampi(current_step_idx,0,data.steps.size() - 1)
 	
-	title.text = data.algorithm_name
-	
 	render_step(current_step_idx)
 
 func _on_data_changed() -> void:
@@ -88,35 +86,54 @@ func prev_step() -> void:
 	current_step_idx -= 1
 	render_step(current_step_idx)
 
+
 func render_step(step_idx:int) -> void:
 	if data.steps.is_empty() or step_idx >= data.steps.size():
 		code_display.text = "[color=red]No steps found or index out of bounds[/color]"
 		return
-
 	var lines: PackedStringArray = data.raw_code.split("\n")
 	var active_lines: Array = data.steps[step_idx]
-
 	var vibrancy = highlight_color
 	vibrancy.s = 1.0
 	vibrancy.v = 1.0
-
 	var hex_active: String = "#" + vibrancy.to_html()
-	var hex_dim: String = "#" + default_font_color.darkened(0.5).to_html()
-
+	var hex_context: String = "#4f5f8f"
+	var hex_dim: String = "#" + default_font_color.to_html()
+	var hex_title: String = "#1e1e2e"	
+	var primary_line_idx := -1
+	if not active_lines.is_empty():
+		primary_line_idx = active_lines[active_lines.size() - 1]
+	var contextual_lines: Array = []
+	if primary_line_idx > 0:
+		for j in range(primary_line_idx - 1, -1, -1):
+			var trimmed: String = lines[j].strip_edges().to_lower()
+			if (
+				trimmed.begins_with("while ")
+				or trimmed.begins_with("for each ")
+				or trimmed.begins_with("if ")
+			):
+				if not contextual_lines.has(j):
+					contextual_lines.append(j)
+				if trimmed.begins_with("while "):
+					break
+	# Keep focus tight: at most 2 context lines + primary.
+	contextual_lines.sort()
+	if contextual_lines.size() > 2:
+		contextual_lines = contextual_lines.slice(contextual_lines.size() - 2, contextual_lines.size())
 	var final_bbcode: String = ""
-
-
 	for i in range(lines.size()):
 		var line: String = lines[i]
-
 		line = line.replace("[","[lb]")
 		line = line.replace("\t","    ")
-
-		if i in active_lines:
-			line = "[outline_size=2][outline_color=black][color=%s][b]%s. %s[/b][/color][/outline_color][/outline_size]" % [hex_active, i+1, line]
+		if i == 0:
+			line = "[font_size=17][color=%s][b]%s[/b][/color][/font_size]" % [hex_title, line]
+		elif i == primary_line_idx:
+			# Main focus line: strong text emphasis, no blocky background.
+			line = "[font_size=15][color=%s][b]%d.  %s[/b][/color][/font_size]" % [hex_active, i, line]
+		elif i in contextual_lines:
+			# Gentle context line.
+			line = "[font_size=15][color=%s]%d.  %s[/color][/font_size]" % [hex_context, i, line]
 		else:
-			line = "[color=%s][b]%s. %s[/b][/color]" % [hex_dim, i+1, line]
-
+			line = "[font_size=15][color=%s]%d.  %s[/color][/font_size]" % [hex_dim, i, line]
 		final_bbcode += line + "\n"
-	
 	code_display.text = final_bbcode

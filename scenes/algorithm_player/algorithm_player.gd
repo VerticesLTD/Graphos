@@ -8,7 +8,8 @@ const LOG_TAG = "ALG_PLAYER"
 var pseudo_steps: Array
 
 enum ALGORITHMS {
-	BFS
+	BFS,
+	DFS
 }
 
 # Animations
@@ -17,8 +18,9 @@ var controls_tween: Tween
 
 ## <ALG> : [<ALG_SCRIPT>, <PSEUDO_RES>]
 var _algorithm_map: Dictionary = {
-	ALGORITHMS.BFS : [BFS.new(),preload("uid://b6pr3p6u5gqym")]
-	}
+	ALGORITHMS.BFS : [BFS.new(),preload("uid://b6pr3p6u5gqym")],
+	ALGORITHMS.DFS : [DFS.new(), preload("uid://chwkrpy8dpkfk")]
+}
 
 ## Stores the events by order of the algorithm's execution.
 var timeline: Array[Command] = []
@@ -88,6 +90,11 @@ func start_algorithm(
 
 	# Setting visualizer
 	pseudo_visualizer.data = pseudo_resource
+	# Show initialization block immediately before first playback step.
+	if pseudo_resource and pseudo_resource.steps.size() > 1:
+		pseudo_visualizer.render_step(1)
+	else:
+		pseudo_visualizer.render_step(0)
 	_expose_visualizer()
 
 	algorithm_controls.set_data_layout(algorithm_type)

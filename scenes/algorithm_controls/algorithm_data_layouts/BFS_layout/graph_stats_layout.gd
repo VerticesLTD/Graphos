@@ -1,4 +1,4 @@
-class_name BFSDataLayout
+class_name GraphStatsLayout
 extends AlgorithmBaseDataLayout
 
 var total_number_of_vertices := 0

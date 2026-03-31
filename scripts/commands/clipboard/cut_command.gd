@@ -22,7 +22,6 @@ func execute() -> void:
 		Globals.clipboard_graph.queue_free()
 	
 	Globals.clipboard_graph = graph.create_induced_subgraph_from_vertices(selection_to_cut)
-	Notify.show_notification("Copied to clipboard.")
 
 	# Delegate Deletion 
 	internal_delete_cmd.execute()

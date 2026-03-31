@@ -1,37 +1,37 @@
-[gd_resource type="Resource" script_class="PseudoCodeData" format=3 uid="uid://b6pr3p6u5gqym"]
+[gd_resource type="Resource" script_class="PseudoCodeData" format=3 uid="uid://chwkrpy8dpkfk"]
 
-[ext_resource type="Script" uid="uid://c8h8cvjik2tcu" path="res://scripts/algorithms/pseudo_code/pseudo_code_resource.gd" id="1_5kq1g"]
+[ext_resource type="Script" uid="uid://c8h8cvjik2tcu" path="res://scripts/algorithms/pseudo_code/pseudo_code_resource.gd" id="1_g18le"]
 
 [resource]
-script = ExtResource("1_5kq1g")
-algorithm_name = "BFS Pseudo"
-source_text = "BFS(G, s)--1
+script = ExtResource("1_g18le")
+algorithm_name = "DFS Pseudo"
+source_text = "DFS(G, s)--1
 for each vertex v in G--2
     color v as Undiscovered--2
-Q ← new Queue()--3
+S ← new Stack()--3
 color s as Discovered--4
-Q.enqueue(s)--4
-while Q ≠ ∅ do--5,6,7,8,9,10,11
-    u ← Q.dequeue()--6
+S.push(s)--4
+while S ≠ ∅ do--5,6,7,8,9,10,11
+    u ← S.pop()--6
     for each v ∈ Adj[u]--7,8,9,10
         if v is not discovered--8,9,10
             color (u, v) as Path--9
             color v as Discovered--10
-            Q.enqueue(v)--10
+            S.push(v)--10
     color u as Finished--11"
-raw_code = "BFS(G, s)
+raw_code = "DFS(G, s)
 for each vertex v in G
 	color v as Undiscovered
-Q ← new Queue()
+S ← new Stack()
 color s as Discovered
-Q.enqueue(s)
-while Q ≠ ∅ do
-	u ← Q.dequeue()
+S.push(s)
+while S ≠ ∅ do
+	u ← S.pop()
 	for each v ∈ Adj[u]
 		if v is not discovered
 			color (u, v) as Path
 			color v as Discovered
-			Q.enqueue(v)
+			S.push(v)
 	color u as Finished"
 steps = [[0], [1, 2, 3], [], [], [5, 4], [], [], [], [], [10], [12, 11], [13]]
 metadata/_custom_type_script = "uid://c8h8cvjik2tcu"

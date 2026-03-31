@@ -38,7 +38,8 @@ var _is_user_dragging_progress := false
 
 # Available algorithm data layouts
 var alg_to_layout: Dictionary = {
-		AlgorithmPlayer.ALGORITHMS.BFS : [preload("uid://jgjoys0wtvpl"),"BFS Undirected"],
+		AlgorithmPlayer.ALGORITHMS.BFS : [preload("uid://jgjoys0wtvpl"),"BFS"], # Graph Stats 
+		AlgorithmPlayer.ALGORITHMS.DFS : [preload("uid://jgjoys0wtvpl"), "DFS"], # Graph Stats 
 	}
 
 # Dragging logic

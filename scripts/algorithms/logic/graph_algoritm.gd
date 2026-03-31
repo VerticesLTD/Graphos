@@ -2,10 +2,10 @@
 @abstract class_name GraphAlgorithm
 
 ## Define consts for the algorithms vertices's state.
-const COLOR_NOT_DISCOVERED = Color(0.9, 0.9, 0.9)  # Off-white / Pearl
-const COLOR_VISITING       = Color(0.3, 0.6, 0.9)  # Soft Sky Blue
-const COLOR_FINISHED       = Color(0.2, 0.2, 0.2)  # Charcoal (Softer Black)
-const COLOR_EDGE_PATH      = Color(0.40, 0.75, 1.00) # Bright Blue for the "Tree"
+const COLOR_NOT_DISCOVERED = Color(0.62, 0.64, 0.74)    # Undiscovered
+const COLOR_VISITING       = Color(0.263, 0.38, 0.933)  # Discovered / frontier
+const COLOR_FINISHED       = Color(0.149, 0.651, 0.604) # Finished
+const COLOR_EDGE_PATH      = Color(0.263, 0.38, 0.933)  # Traversal edge
 
 ## The graph as an adjacency list.(if we add diff types of graphs, we can generelize this)
 var imposter_graph: Graph
@@ -104,3 +104,10 @@ func change_and_log_vertex_key(target_vertex: Vertex, target_key: float, pseudo_
 	target_vertex.key = target_key
 
 	log_pseudo_step(pseudo_step)
+
+## Changes a vertex color on both real and imposter graphs, without logging a step.
+func set_vertex_color_silent(target_vertex: Vertex, target_color: Color) -> void:
+	target_vertex.color = target_color
+	var real_v = real_graph.get_vertex(target_vertex.id)
+	if real_v:
+		real_v.color = target_color

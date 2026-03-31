@@ -4,4 +4,3 @@
 .vscode/
 .secrets
 export/**
-**.tmp

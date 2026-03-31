@@ -24,7 +24,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
-color = Color(0.02745098, 0.050980393, 0.12941177, 0.90588236)
 
 [node name="UndirectedGraph" type="Node2D" parent="." unique_id=1415093803]
 script = ExtResource("1_yyfjg")

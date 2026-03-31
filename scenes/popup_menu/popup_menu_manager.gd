@@ -38,6 +38,7 @@ var controller: GraphController
 # Format: { "Menu Label": ScriptResource }
 var ALGO_REGISTRY = {
 	"Breadth First Search": AlgorithmPlayer.ALGORITHMS.BFS,
+	"Depth First Search": AlgorithmPlayer.ALGORITHMS.DFS,
 }
 
 # Helper to generate the color square icon
@@ -56,6 +57,50 @@ var _dynamic_menus: Array[PopupMenu] = []
 func _ready() -> void:
 	if MainMenu:
 			_wire_menu(MainMenu)
+			_apply_excalidraw_style(MainMenu)
+
+
+func _apply_excalidraw_style(menu: PopupMenu) -> void:
+	var panel := StyleBoxFlat.new()
+	panel.bg_color = Color.WHITE
+	panel.border_width_left = 1
+	panel.border_width_top = 1
+	panel.border_width_right = 1
+	panel.border_width_bottom = 1
+	panel.border_color = Color(0.878, 0.878, 0.878)
+	panel.corner_radius_top_left = 8
+	panel.corner_radius_top_right = 8
+	panel.corner_radius_bottom_right = 8
+	panel.corner_radius_bottom_left = 8
+	panel.shadow_color = Color(0, 0, 0, 0.14)
+	panel.shadow_size = 10
+	panel.shadow_offset = Vector2(0, 2)
+	panel.content_margin_left = 4.0
+	panel.content_margin_top = 4.0
+	panel.content_margin_right = 4.0
+	panel.content_margin_bottom = 4.0
+	menu.add_theme_stylebox_override("panel", panel)
+
+	var hover := StyleBoxFlat.new()
+	hover.bg_color = Color(0.906, 0.922, 0.988)
+	hover.corner_radius_top_left = 6
+	hover.corner_radius_top_right = 6
+	hover.corner_radius_bottom_right = 6
+	hover.corner_radius_bottom_left = 6
+	hover.content_margin_left = 8.0
+	hover.content_margin_top = 4.0
+	hover.content_margin_right = 8.0
+	hover.content_margin_bottom = 4.0
+	menu.add_theme_stylebox_override("hover", hover)
+
+	menu.add_theme_color_override("font_color", Color(0.118, 0.118, 0.18))
+	menu.add_theme_color_override("font_hover_color", Color(0.263, 0.38, 0.933))
+	menu.add_theme_color_override("font_disabled_color", Color(0.65, 0.65, 0.7))
+	menu.add_theme_color_override("font_separator_color", Color(0.6, 0.6, 0.65))
+	menu.add_theme_font_size_override("font_size", 14)
+	menu.add_theme_constant_override("item_start_padding", 12)
+	menu.add_theme_constant_override("item_end_padding", 12)
+	menu.add_theme_constant_override("v_separation", 4)
 			
 		
 # -----------------------------------------------------------------------------
@@ -140,6 +185,7 @@ func _build_menu_recursive(menu: PopupMenu, menu_def: Array) -> void:
 
 			# Wire submenu clicks too (very important)
 			_wire_menu(submenu)
+			_apply_excalidraw_style(submenu)
 
 			# Link submenu to this item (Godot handles submenu UI behavior)
 			menu.add_submenu_node_item(label, submenu)

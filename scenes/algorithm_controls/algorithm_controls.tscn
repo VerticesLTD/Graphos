@@ -13,13 +13,12 @@
 [ext_resource type="Texture2D" uid="uid://baqm2liugn1ds" path="res://assets/algorithm_player/Stop Default.svg" id="8_mahcd"]
 [ext_resource type="Texture2D" uid="uid://co75yfyqlh1e7" path="res://assets/algorithm_player/Stop Pressed.svg" id="9_y27ya"]
 [ext_resource type="Texture2D" uid="uid://d1lo52qteydle" path="res://assets/algorithm_player/Stop Hover.svg" id="10_piqyh"]
-[ext_resource type="PackedScene" uid="uid://jgjoys0wtvpl" path="res://scenes/algorithm_controls/algorithm_data_layouts/BFS_layout/BFS_layout.tscn" id="11_ty3q8"]
+[ext_resource type="PackedScene" uid="uid://jgjoys0wtvpl" path="res://scenes/algorithm_controls/algorithm_data_layouts/BFS_layout/GraphStatsLayout.tscn" id="11_ty3q8"]
 [ext_resource type="Texture2D" uid="uid://caimwm2jbbhsf" path="res://assets/algorithm_player/Stop Disabled.svg" id="11_yme0v"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ty3q8"]
 
 [node name="AlgorithmControls" type="MarginContainer" unique_id=1698095556]
-modulate = Color(1, 1, 1, 0.72156864)
 z_index = 22
 texture_filter = 4
 custom_minimum_size = Vector2(345, 0)
@@ -55,6 +54,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 2
+theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
 theme_override_fonts/font = ExtResource("7_7uv6k")
 theme_override_font_sizes/font_size = 24
 text = "Algorithm Name"
@@ -70,6 +70,7 @@ theme_override_constants/separation = 47
 alignment = 1
 
 [node name="Back" type="TextureButton" parent="MainPanel/MainVBox/TopButtons" unique_id=920975986]
+modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
 custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
@@ -84,6 +85,7 @@ stretch_mode = 5
 script = ExtResource("8_afb50")
 
 [node name="Stop" type="TextureButton" parent="MainPanel/MainVBox/TopButtons" unique_id=2067944935]
+modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
 custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
@@ -99,6 +101,7 @@ flip_h = true
 script = ExtResource("8_afb50")
 
 [node name="Forward" type="TextureButton" parent="MainPanel/MainVBox/TopButtons" unique_id=49606324]
+modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
 custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
@@ -133,7 +136,7 @@ layout_mode = 2
 value = 8.0
 
 [node name="Label" type="Label" parent="MainPanel/MainVBox/ProgressBar" unique_id=1780651247]
-modulate = Color(1, 1, 1, 0.27058825)
+modulate = Color(0.118, 0.118, 0.18, 0.27)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -164,7 +167,7 @@ size_flags_vertical = 8
 mouse_filter = 2
 
 [node name="DragLines" type="TextureButton" parent="MainPanel/DragIndicator" unique_id=206925501]
-modulate = Color(0.3403393, 0.34033933, 0.3403393, 1)
+modulate = Color(0.6, 0.6, 0.62, 1)
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0

@@ -1,7 +1,7 @@
 extends MarginContainer
 
-@onready var directed_btn: CheckButton = $PanelContainer/HBoxContainer/Modifiers/DirectedBtn
-@onready var weighted_btn: CheckButton = $PanelContainer/HBoxContainer/Modifiers/WeightedBtn
+@onready var directed_btn: Button = $PanelContainer/HBoxContainer/Modifiers/DirectedBtn
+@onready var weighted_btn: Button = $PanelContainer/HBoxContainer/Modifiers/WeightedBtn
 
 func _ready() -> void:
 	# Sync the UI to whatever the Globals are on startup
@@ -34,11 +34,6 @@ func _on_directed_toggled(is_on: bool) -> void:
 func _on_weighted_toggled(is_on: bool) -> void:
 	Globals.is_weighted_mode = is_on
 	
-## Should let the user stay in the tool it's currently using
-func _on_lock_tool_pressed() -> void:
-	pass # Replace with function body.
-
-
 func _on_selection_pressed() -> void:
 	Globals.current_state = Globals.State.SELECTION
 
