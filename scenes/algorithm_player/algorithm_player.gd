@@ -90,6 +90,11 @@ func start_algorithm(
 
 	# Setting visualizer
 	pseudo_visualizer.data = pseudo_resource
+	# Show initialization block immediately before first playback step.
+	if pseudo_resource and pseudo_resource.steps.size() > 1:
+		pseudo_visualizer.render_step(1)
+	else:
+		pseudo_visualizer.render_step(0)
 	_expose_visualizer()
 
 	algorithm_controls.set_data_layout(algorithm_type)

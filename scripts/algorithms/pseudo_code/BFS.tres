@@ -33,5 +33,5 @@ while Q ≠ ∅ do
 			color v as Discovered
 			Q.enqueue(v)
 	color u as Finished"
-steps = [[0], [1, 2, 3], [], [], [0, 4, 5], [6], [6, 7], [6, 7, 8], [6, 7, 8], [6, 7, 8, 9], [6, 7, 8, 10, 11], [6, 11]]
+steps = [[0], [1, 2, 3], [], [], [5, 4], [], [], [], [], [10], [12, 11], [13]]
 metadata/_custom_type_script = "uid://c8h8cvjik2tcu"
