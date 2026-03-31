@@ -17,7 +17,7 @@ debug_color = Color(0.99500614, 0, 0.22036028, 0.41960785)
 
 [node name="Line1" type="Line2D" parent="." unique_id=1691405498]
 points = PackedVector2Array(0, 0, 64, -87, 236, 1)
-width = 5.06
+width = 5.0
 joint_mode = 2
 begin_cap_mode = 2
 round_precision = 16

@@ -43,7 +43,8 @@ func _ready() -> void:
 
 ## Re-syncs visual state and position with the underlying data
 func refresh() -> void:
-	global_position = vertex_data.pos
+	# Pixel-align the vertex center to reduce subpixel blur.
+	global_position = vertex_data.pos.round()
 	label.text = str(vertex_data.id)
 	self.z_index = vertex_data.z_idx
 	queue_redraw()
