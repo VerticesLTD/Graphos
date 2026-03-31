@@ -188,7 +188,7 @@ func _setup_lines_and_weight() -> void:
 		line_1.end_cap_mode = Line2D.LINE_CAP_NONE  # Flat end where it hits the arrow
 		line_2.end_cap_mode = Line2D.LINE_CAP_NONE
 		# Stop the line 10px early to make room for the arrow
-		visual_dst -= direction * 10.0 
+		visual_dst = (visual_dst - (direction * 10.0)).round()
 	else:
 		line_1.end_cap_mode = Line2D.LINE_CAP_ROUND # Round end for undirected
 		line_2.end_cap_mode = Line2D.LINE_CAP_ROUND
@@ -218,9 +218,9 @@ func _draw_weighted_edge(start: Vector2, end: Vector2, mid: Vector2, offset: Vec
 	_update_weight_label_transform() # Handles rotation
 	
 	line_1.add_point(start)
-	line_1.add_point(mid - offset)
+	line_1.add_point((mid - offset).round())
 	
-	line_2.add_point(mid + offset)
+	line_2.add_point((mid + offset).round())
 	line_2.add_point(end)
 
 func _draw_simple_edge(start: Vector2, end: Vector2) -> void:
