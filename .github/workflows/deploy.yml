@@ -10,10 +10,17 @@ jobs:
   export-web:
     runs-on: ubuntu-latest
     container:
-      image: barichello/godot-ci:4.6
+      image: barichello/godot-ci:4.3
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install Godot 4.6 Export Templates
+        run: |
+          mkdir -p /github/home/.local/share/godot/export_templates/4.6.stable
+          wget -q https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_export_templates.tpz -O /tmp/templates.tpz
+          unzip -q /tmp/templates.tpz -d /tmp/templates
+          mv /tmp/templates/templates/* /github/home/.local/share/godot/export_templates/4.6.stable/
 
       - name: Setup Web Export
         run: |
