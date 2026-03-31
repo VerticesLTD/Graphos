@@ -52,6 +52,10 @@ const EDGE_HOVER_COLOR = Color("4361ee")
 const EDGE_HOVER_SCALE = 1.3
 const EDGE_TWEEN_TIME = 0.2
 const EDGE_FLOW_TWEEN_TIME = 0.08
+# Panel / UI Theme
+const PANEL_INK_COLOR   = Color("1e1e2e")  # primary dark text
+const PANEL_DIM_COLOR   = Color("555577")  # dim/secondary text
+const APP_ERROR_COLOR   = Color("ef233c")  # error red
 # Selection rectangle
 const SELECTION_BORDER_WIDTH: float = 2.0
 const SELECTION_BORDER_COLOR: Color = Color("4da1a9")

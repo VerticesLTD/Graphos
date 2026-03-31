@@ -97,8 +97,8 @@ func render_step(step_idx:int) -> void:
 	vibrancy.s = 1.0
 	vibrancy.v = 1.0
 	var hex_active: String = "#" + vibrancy.to_html()
-	var hex_dim: String = "#aaaaaa"
-	var hex_title: String = "#ffffff"
+	var hex_dim: String = "#" + default_font_color.to_html()
+	var hex_title: String = "#1e1e2e"	
 	var final_bbcode: String = ""
 	for i in range(lines.size()):
 		var line: String = lines[i]

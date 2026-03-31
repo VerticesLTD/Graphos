@@ -1,6 +1,5 @@
 extends HBoxContainer
 
-@onready var lock_tool: Button = $LockTool
 @onready var create: Button  = $Create
 @onready var selection: Button = $Selection
 

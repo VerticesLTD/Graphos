@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://dcl6ckcas6der" path="res://scenes/tool_bar/tool_bar.gd" id="1_gdu6t"]
 [ext_resource type="Script" uid="uid://css85v57pq6ys" path="res://scenes/tool_bar/button_highlights.gd" id="1_uiivm"]
 [ext_resource type="StyleBox" uid="uid://bdiessvqitwl2" path="res://scenes/tool_bar/tool_bar_background.tres" id="2_u1pd4"]
-[ext_resource type="Texture2D" uid="uid://dnyrl4sa00ffg" path="res://assets/icons/lock-alt-svgrepo-com.svg" id="3_l8ge4"]
 [ext_resource type="StyleBox" uid="uid://npixnrumei6q" path="res://scenes/tool_bar/button_normal.tres" id="3_lpcgc"]
 [ext_resource type="StyleBox" uid="uid://edc2pra87k3x" path="res://scenes/tool_bar/button_hover.tres" id="4_u1pd4"]
 [ext_resource type="Texture2D" uid="uid://v5eliv4lx04j" path="res://assets/icons/cursor-alt-svgrepo-com.svg" id="4_vgevf"]
@@ -36,44 +35,9 @@ layout_mode = 2
 theme_override_constants/separation = 25
 script = ExtResource("1_uiivm")
 
-[node name="LockTool" type="Button" parent="PanelContainer/HBoxContainer" unique_id=1991985838]
-texture_filter = 4
-custom_minimum_size = Vector2(70, 70)
-layout_mode = 2
-focus_mode = 0
-theme_override_styles/normal = ExtResource("3_lpcgc")
-theme_override_styles/pressed = ExtResource("4_u1pd4")
-theme_override_styles/hover = ExtResource("4_u1pd4")
-theme_override_styles/focus = ExtResource("4_u1pd4")
-toggle_mode = true
-
-[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/HBoxContainer/LockTool" unique_id=606205850]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_constants/margin_left = 5
-theme_override_constants/margin_top = 5
-theme_override_constants/margin_right = 5
-theme_override_constants/margin_bottom = 5
-
-[node name="Icon" type="TextureRect" parent="PanelContainer/HBoxContainer/LockTool/MarginContainer" unique_id=1191661722]
-layout_mode = 2
-mouse_filter = 2
-texture = ExtResource("3_l8ge4")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="VSeparator" type="VSeparator" parent="PanelContainer/HBoxContainer" unique_id=1270561645]
-layout_mode = 2
-theme_override_styles/separator = SubResource("StyleBoxLine_lpcgc")
-
 [node name="Selection" type="Button" parent="PanelContainer/HBoxContainer" unique_id=1013943299]
 texture_filter = 4
-custom_minimum_size = Vector2(70, 70)
+custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
@@ -104,7 +68,7 @@ stretch_mode = 5
 
 [node name="Create" type="Button" parent="PanelContainer/HBoxContainer" unique_id=11624605]
 texture_filter = 4
-custom_minimum_size = Vector2(70, 70)
+custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
@@ -158,6 +122,5 @@ theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_font_sizes/font_size = 13
 text = "Weighted"
 
-[connection signal="pressed" from="PanelContainer/HBoxContainer/LockTool" to="." method="_on_lock_tool_pressed"]
 [connection signal="pressed" from="PanelContainer/HBoxContainer/Selection" to="." method="_on_selection_pressed"]
 [connection signal="pressed" from="PanelContainer/HBoxContainer/Create" to="." method="_on_create_pressed"]
