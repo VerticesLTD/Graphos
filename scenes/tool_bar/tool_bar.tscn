@@ -136,6 +136,7 @@ metadata/_edit_use_anchors_ = true
 
 [node name="VSeparator2" type="VSeparator" parent="PanelContainer/HBoxContainer" unique_id=1541838938]
 layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_lpcgc")
 
 [node name="Modifiers" type="VBoxContainer" parent="PanelContainer/HBoxContainer" unique_id=900645983]
 layout_mode = 2
@@ -143,10 +144,18 @@ layout_mode = 2
 [node name="DirectedBtn" type="CheckButton" parent="PanelContainer/HBoxContainer/Modifiers" unique_id=1608271324]
 layout_mode = 2
 shortcut = SubResource("Shortcut_bkbxk")
+theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
+theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
+theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
+theme_override_font_sizes/font_size = 13
 text = "Directed"
 
 [node name="WeightedBtn" type="CheckButton" parent="PanelContainer/HBoxContainer/Modifiers" unique_id=1787136133]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
+theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
+theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
+theme_override_font_sizes/font_size = 13
 text = "Weighted"
 
 [connection signal="pressed" from="PanelContainer/HBoxContainer/LockTool" to="." method="_on_lock_tool_pressed"]
