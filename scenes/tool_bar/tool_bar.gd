@@ -1,7 +1,7 @@
 extends MarginContainer
 
-@onready var directed_btn: CheckButton = $PanelContainer/HBoxContainer/Modifiers/DirectedBtn
-@onready var weighted_btn: CheckButton = $PanelContainer/HBoxContainer/Modifiers/WeightedBtn
+@onready var directed_btn: Button = $PanelContainer/HBoxContainer/Modifiers/DirectedBtn
+@onready var weighted_btn: Button = $PanelContainer/HBoxContainer/Modifiers/WeightedBtn
 
 func _ready() -> void:
 	# Sync the UI to whatever the Globals are on startup
