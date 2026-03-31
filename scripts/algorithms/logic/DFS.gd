@@ -7,14 +7,15 @@ func run(_start_vertex: Vertex) -> Array:
 	verify_initialization()
 	assert(_start_vertex.is_imposter, "Algorithm instructed to run on a REAL graph (not imposter)")
 
+	# Silent pre-run state setup (visible in graph, not part of timeline playback).
 	for v in imposter_graph.vertices.values():
-		v.color = COLOR_NOT_DISCOVERED
+		set_vertex_color_silent(v, COLOR_NOT_DISCOVERED)
 		v.parent = null
 
 	var data_updates = []
 
-	# S.push(s) + mark start
-	change_and_log_vertex_color(_start_vertex, COLOR_VISITING, 1)
+	# Mark start as discovered and push it.
+	change_and_log_vertex_color(_start_vertex, COLOR_VISITING, 4)
 	data_updates.append({
 		&"E": imposter_graph.num_edges,
 		&"V": imposter_graph.num_vertices,
@@ -27,26 +28,20 @@ func run(_start_vertex: Vertex) -> Array:
 	while stack:
 		var u = stack.pop_back()
 
-		# u = S.pop()
-		change_and_log_vertex_color(u, COLOR_VISITING, 3)
-		data_updates.append(null)
-
 		for edge in u.get_outgoing_edges():
 			var v = edge.get_other_vertex(u)
 
 			if v.color == COLOR_NOT_DISCOVERED:
-				# for v in Adj[u] — push neighbor
-				change_and_log_edge_color(edge, COLOR_EDGE_PATH, 7)
+				change_and_log_edge_color(edge, COLOR_EDGE_PATH, 9)
 				data_updates.append(null)
 
-				change_and_log_vertex_color(v, COLOR_VISITING, 7)
+				change_and_log_vertex_color(v, COLOR_VISITING, 10)
 				data_updates.append(null)
 
 				v.parent = u
 				stack.push_back(v)
 
-		# mark finished
-		change_and_log_vertex_color(u, COLOR_FINISHED, 5)
+		change_and_log_vertex_color(u, COLOR_FINISHED, 11)
 		current_v_processed += 1
 		data_updates.append({&"vertices_processed": current_v_processed})
 

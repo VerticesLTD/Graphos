@@ -5,31 +5,33 @@
 [resource]
 script = ExtResource("1_5kq1g")
 algorithm_name = "BFS Pseudo"
-source_text = "Q ← new Queue()--1
-S ← {s}--2
-Q.enqueue(s)--3
-
-while Q ≠ ∅ do--4,5,6,7,8,9,10,11
-	u ← Q.dequeue()--5
-	for each v ∈ Adj[u] do--6
-		if v ∉ S then--7
-			S ← S ∪ {v}--8
-			Q.enqueue(v)--9
-		end if--10
-	end for--11
-end while--12"
-raw_code = "Q ← new Queue()
-S ← {s}
+source_text = "BFS(G, s)--1
+for each vertex v in G--2
+    color v as Undiscovered--2
+Q ← new Queue()--3
+color s as Discovered--4
+Q.enqueue(s)--4
+while Q ≠ ∅ do--5,6,7,8,9,10,11
+    u ← Q.dequeue()--6
+    for each v ∈ Adj[u]--7,8,9,10
+        if v is not discovered--8,9,10
+            color (u, v) as Path--9
+            color v as Discovered--10
+            Q.enqueue(v)--10
+    color u as Finished--11"
+raw_code = "BFS(G, s)
+for each vertex v in G
+	color v as Undiscovered
+Q ← new Queue()
+color s as Discovered
 Q.enqueue(s)
-
 while Q ≠ ∅ do
 	u ← Q.dequeue()
-	for each v ∈ Adj[u] do
-		if v ∉ S then
-			S ← S ∪ {v}
+	for each v ∈ Adj[u]
+		if v is not discovered
+			color (u, v) as Path
+			color v as Discovered
 			Q.enqueue(v)
-		end if
-	end for
-end while"
-steps = [[0], [1], [2], [4], [4, 5], [4, 6], [4, 7], [4, 8], [4, 9], [4, 10], [4, 11], [12]]
+	color u as Finished"
+steps = [[0], [1, 2, 3], [], [], [0, 4, 5], [6], [6, 7], [6, 7, 8], [6, 7, 8], [6, 7, 8, 9], [6, 7, 8, 10, 11], [6, 11]]
 metadata/_custom_type_script = "uid://c8h8cvjik2tcu"

@@ -6,86 +6,47 @@ extends GraphAlgorithm
 ## @param _start_vertex    The vertex the algorithm starts from
 func run(_start_vertex: Vertex) -> Array:
 	var current_v_processed = 0
-	var data_updates = [
-		{
-			&"E":imposter_graph.num_edges,
-			&"V":imposter_graph.num_vertices,
-			&"vertices_processed": current_v_processed
-			},null,null
-		]
+	var data_updates = []
 
 	verify_initialization()
 	assert(_start_vertex.is_imposter, "Algorithm instructed to run on a REAL graph (not imposter)")
 
-	# First 3 steps of the pseudo code have no visible effect:
-	for i in range(3):
-		log_pseudo_step(i,true)
-
-	# Step 1: Initialize the veritces state
+	# Silent pre-run state setup (visible in graph, not part of timeline playback).
 	for v in imposter_graph.vertices.values():
-		v.color = COLOR_NOT_DISCOVERED # NOT LOGGING so we start AFTER initialization
+		set_vertex_color_silent(v, COLOR_NOT_DISCOVERED)
 		v.parent = null
-		
-				
-	change_and_log_vertex_color(_start_vertex, COLOR_VISITING)
-	data_updates.append(null)
-	
-	# Step 2: Initialize the queue
-	var Q = []
-	Q.push_back(_start_vertex)
 
-	# We now start looping, so we first show us starting the loop in the pseudo code:
-	log_pseudo_step(3,true)
-	data_updates.append(null)
+	change_and_log_vertex_color(_start_vertex, COLOR_VISITING, 4)
+	data_updates.append({
+		&"E": imposter_graph.num_edges,
+		&"V": imposter_graph.num_vertices,
+		&"vertices_processed": current_v_processed
+	})
 
-	while Q:
-		var u = Q.pop_front()
-		log_pseudo_step(4,true)
-		data_updates.append(null)
-		
-		log_pseudo_step(5,true)
-		data_updates.append(null)
+	var queue = []
+	queue.push_back(_start_vertex)
+
+	while queue:
+		var u = queue.pop_front()
 		for edge in u.get_outgoing_edges():
-			var v = edge.get_other_vertex(u) # Get the other side of the vertex
-			
-			log_pseudo_step(6,true)
-			data_updates.append(null)
+			var v = edge.get_other_vertex(u)
 			if v.color == COLOR_NOT_DISCOVERED:
-				# This if's inside is steps 8,9
-				for i in range (7,9):
-					log_pseudo_step(i,true)
-					data_updates.append(null)
-
-				# 1. Log and change the edge color (The path)
-				change_and_log_edge_color(edge, COLOR_EDGE_PATH)
+				change_and_log_edge_color(edge, COLOR_EDGE_PATH, 9)
 				data_updates.append(null)
 
-				# 2. Log and change the VERTEX color (The destination)
-				change_and_log_vertex_color(v, COLOR_VISITING)
+				change_and_log_vertex_color(v, COLOR_VISITING, 10)
 				data_updates.append(null)
 
-				# 3. Update metadata and queue
 				v.parent = u
-				Q.push_back(v)
-			# End if
-			log_pseudo_step(9,true)	
-			data_updates.append(null)
+				queue.push_back(v)
 
-		# End for
-		log_pseudo_step(10, true)
-		data_updates.append(null)
-			
-		change_and_log_vertex_color(u, COLOR_FINISHED)
+		change_and_log_vertex_color(u, COLOR_FINISHED, 11)
 		current_v_processed += 1
-		data_updates.append({&"vertices_processed":current_v_processed})
+		data_updates.append({&"vertices_processed": current_v_processed})
 
-	# End while
-	log_pseudo_step(11,true)
-	data_updates.append(null)
-
-	assert(timeline.size() == pseudo_steps.size() and pseudo_steps.size()== data_updates.size(),
-	"After running the algorithm on the imposter graph, the size of pseudo steps" +
-	" doesn't match the size of the timeline and data steps. This means there is a mistake in the steps setup"
+	assert(
+		timeline.size() == pseudo_steps.size() and pseudo_steps.size() == data_updates.size(),
+		"BFS mismatch: timeline=%d pseudo=%d data=%d" % [timeline.size(), pseudo_steps.size(), data_updates.size()]
 	)
 
 	var result = [timeline.duplicate(), pseudo_steps.duplicate(), data_updates.duplicate(true)]

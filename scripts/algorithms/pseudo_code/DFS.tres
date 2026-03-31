@@ -5,26 +5,33 @@
 [resource]
 script = ExtResource("1_g18le")
 algorithm_name = "DFS Pseudo"
-source_text = "DFS(G, s)
-S ← Stack()  --1
-S.push(s)  --2
-while S ≠ ∅  --3,4,5,6,7,8
-    u ← S.pop()  --4
-    if u ∉ Visited  --5
-        mark u as visited  --6
-        for v ∈ Adj[u]  --7,8
-            S.push(v)  --8"
+source_text = "DFS(G, s)--1
+for each vertex v in G--2
+    color v as Undiscovered--2
+S ← new Stack()--3
+color s as Discovered--4
+S.push(s)--4
+while S ≠ ∅ do--5,6,7,8,9,10,11
+    u ← S.pop()--6
+    for each v ∈ Adj[u]--7,8,9,10
+        if v is not discovered--8,9,10
+            color (u, v) as Path--9
+            color v as Discovered--10
+            S.push(v)--10
+    color u as Finished--11"
 raw_code = "DFS(G, s)
+for each vertex v in G
+	color v as Undiscovered
 S ← new Stack()
+color s as Discovered
 S.push(s)
 while S ≠ ∅ do
 	u ← S.pop()
-	if u ∉ Visited then
-		mark u as Visited
-		for each v ∈ Adj[u] do
+	for each v ∈ Adj[u]
+		if v is not discovered
+			color (u, v) as Path
+			color v as Discovered
 			S.push(v)
-		end for
-	end if
-end while"
-steps = [[0], [1], [2], [3], [3, 4], [3, 5], [3, 6], [3, 7], [3, 7, 8], [3, 7, 9], [3, 10], [11]]
+	color u as Finished"
+steps = [[0], [1, 2, 3], [], [], [0, 4, 5], [6], [6, 7], [6, 7, 8], [6, 7, 8], [6, 7, 8, 9], [6, 7, 8, 10, 11], [6, 11]]
 metadata/_custom_type_script = "uid://c8h8cvjik2tcu"
