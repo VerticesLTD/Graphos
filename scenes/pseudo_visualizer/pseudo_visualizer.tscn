@@ -19,6 +19,7 @@ script = ExtResource("2_a00k7")
 layout_mode = 2
 
 [node name="Title" type="Label" parent="VBoxContainer" unique_id=1547572488]
+visible = false
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_43rel")
 theme_override_font_sizes/font_size = 23
@@ -26,6 +27,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer" unique_id=141020111]
+visible = false
 layout_mode = 2
 
 [node name="PseudoDisplay" type="RichTextLabel" parent="VBoxContainer" unique_id=880065330]

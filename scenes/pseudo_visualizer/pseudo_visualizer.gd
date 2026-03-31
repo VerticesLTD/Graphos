@@ -86,35 +86,29 @@ func prev_step() -> void:
 	current_step_idx -= 1
 	render_step(current_step_idx)
 
+
 func render_step(step_idx:int) -> void:
 	if data.steps.is_empty() or step_idx >= data.steps.size():
 		code_display.text = "[color=red]No steps found or index out of bounds[/color]"
 		return
-
 	var lines: PackedStringArray = data.raw_code.split("\n")
 	var active_lines: Array = data.steps[step_idx]
-
 	var vibrancy = highlight_color
 	vibrancy.s = 1.0
 	vibrancy.v = 1.0
-
 	var hex_active: String = "#" + vibrancy.to_html()
-	var hex_dim: String = "#" + default_font_color.darkened(0.2).to_html()
-
+	var hex_dim: String = "#aaaaaa"
+	var hex_title: String = "#ffffff"
 	var final_bbcode: String = ""
-
-
 	for i in range(lines.size()):
 		var line: String = lines[i]
-
 		line = line.replace("[","[lb]")
 		line = line.replace("\t","    ")
-
-		if i in active_lines:
-			line = "[outline_size=2][outline_color=black][color=%s][b]%s. %s[/b][/color][/outline_color][/outline_size]" % [hex_active, i+1, line]
+		if i == 0:
+			line = "[font_size=16][color=%s][b]%s[/b][/color][/font_size]" % [hex_title, line]
+		elif i in active_lines:
+			line = "[font_size=14][outline_size=2][outline_color=black][color=%s][b]%d.  %s[/b][/color][/outline_color][/outline_size][/font_size]" % [hex_active, i, line]
 		else:
-			line = "[color=%s][b]%s. %s[/b][/color]" % [hex_dim, i+1, line]
-
+			line = "[font_size=14][color=%s]%d.  %s[/color][/font_size]" % [hex_dim, i, line]
 		final_bbcode += line + "\n"
-	
 	code_display.text = final_bbcode
