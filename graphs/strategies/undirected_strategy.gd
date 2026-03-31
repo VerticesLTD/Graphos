@@ -44,7 +44,6 @@ func requires_incoming_capture() -> bool:
 func should_paste_edge(src_id: int, dst_id: int) -> bool:
 	return src_id < dst_id # Only paste once to avoid duplicating A-B and B-A.
 
-
 func get_connection_error(graph: Graph, src: Vertex, dst: Vertex) -> String:
 	# Undirected cannot coexist if ANY directed edge is in the way (forward or backward)
 	if graph.has_edge(src.id, dst.id) or graph.has_edge(dst.id, src.id):
