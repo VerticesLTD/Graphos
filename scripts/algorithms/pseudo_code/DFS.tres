@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="PseudoCodeData" format=3 uid="uid://chwkrpy8dpkfk"]
+
+[ext_resource type="Script" uid="uid://c8h8cvjik2tcu" path="res://scripts/algorithms/pseudo_code/pseudo_code_resource.gd" id="1_g18le"]
+
+[resource]
+script = ExtResource("1_g18le")
+algorithm_name = "DFS Pseudo"
+source_text = "DFS(G, s)
+S ← Stack()  --1
+S.push(s)  --2
+while S ≠ ∅  --3,4,5,6,7,8
+    u ← S.pop()  --4
+    if u ∉ Visited  --5
+        mark u as visited  --6
+        for v ∈ Adj[u]  --7,8
+            S.push(v)  --8"
+raw_code = "DFS(G, s)
+S ← new Stack()
+S.push(s)
+while S ≠ ∅ do
+	u ← S.pop()
+	if u ∉ Visited then
+		mark u as Visited
+		for each v ∈ Adj[u] do
+			S.push(v)
+		end for
+	end if
+end while"
+steps = [[0], [1], [2], [3], [3, 4], [3, 5], [3, 6], [3, 7], [3, 7, 8], [3, 7, 9], [3, 10], [11]]
+metadata/_custom_type_script = "uid://c8h8cvjik2tcu"

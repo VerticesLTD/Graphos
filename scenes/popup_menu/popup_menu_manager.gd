@@ -38,6 +38,7 @@ var controller: GraphController
 # Format: { "Menu Label": ScriptResource }
 var ALGO_REGISTRY = {
 	"Breadth First Search": AlgorithmPlayer.ALGORITHMS.BFS,
+	"Depth First Search": AlgorithmPlayer.ALGORITHMS.DFS,
 }
 
 # Helper to generate the color square icon

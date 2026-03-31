@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://jgjoys0wtvpl"]
 
-[ext_resource type="Script" uid="uid://cri4b5a5v3m6i" path="res://scenes/algorithm_controls/algorithm_data_layouts/BFS_layout/bfs_layout.gd" id="1_iofmx"]
-[ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="2_q0quv"]
+[ext_resource type="Script" uid="uid://cri4b5a5v3m6i" path="res://scenes/algorithm_controls/algorithm_data_layouts/BFS_layout/graph_stats_layout.gd" id="1_7mw0o"]
+[ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="2_7mi5r"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8i47o"]
 
@@ -18,7 +18,7 @@ vertical = true
 size_flags_vertical = 3
 size_flags_stretch_ratio = 1.78
 mouse_filter = 2
-script = ExtResource("1_iofmx")
+script = ExtResource("1_7mw0o")
 
 [node name="Spacer" type="HSeparator" parent="." unique_id=1316771674]
 layout_mode = 2
@@ -35,7 +35,7 @@ mouse_filter = 2
 custom_minimum_size = Vector2(49.345, 0)
 layout_mode = 2
 mouse_filter = 2
-theme_override_fonts/normal_font = ExtResource("2_q0quv")
+theme_override_fonts/normal_font = ExtResource("2_7mi5r")
 bbcode_enabled = true
 text = "[table=2]
 [cell][b]|V|[/b] = [/cell][cell]2[/cell]
@@ -59,7 +59,7 @@ mouse_filter = 2
 [node name="StatusMsg1" type="Label" parent="AlgorithmStatusArea" unique_id=403907452]
 layout_mode = 2
 size_flags_vertical = 0
-theme_override_fonts/font = ExtResource("2_q0quv")
+theme_override_fonts/font = ExtResource("2_7mi5r")
 theme_override_font_sizes/font_size = 19
 text = "Processed Vertices:"
 horizontal_alignment = 1
@@ -67,7 +67,7 @@ horizontal_alignment = 1
 [node name="ProcessedVertices" type="Label" parent="AlgorithmStatusArea" unique_id=385815392]
 layout_mode = 2
 size_flags_vertical = 6
-theme_override_fonts/font = ExtResource("2_q0quv")
+theme_override_fonts/font = ExtResource("2_7mi5r")
 theme_override_font_sizes/font_size = 30
 text = "1/2"
 horizontal_alignment = 1

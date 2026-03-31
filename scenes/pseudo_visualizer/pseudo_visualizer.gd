@@ -69,8 +69,6 @@ func _refresh_view() -> void:
 	if data.steps.size() > 0:
 		current_step_idx = clampi(current_step_idx,0,data.steps.size() - 1)
 	
-	title.text = data.algorithm_name
-	
 	render_step(current_step_idx)
 
 func _on_data_changed() -> void:
@@ -101,7 +99,7 @@ func render_step(step_idx:int) -> void:
 	vibrancy.v = 1.0
 
 	var hex_active: String = "#" + vibrancy.to_html()
-	var hex_dim: String = "#" + default_font_color.darkened(0.5).to_html()
+	var hex_dim: String = "#" + default_font_color.darkened(0.2).to_html()
 
 	var final_bbcode: String = ""
 
