@@ -8,10 +8,12 @@ var vertex_data: Vertex
 
 @onready var label: Label = $Label
 @onready var collision_circle: CollisionShape2D = $MouseDetectionArea/CollisionShape2D
+@onready var circle_visual: Polygon2D = $CircleVisual
 
 # Drawing properties - Will be tweened for animations
 var draw_radius_hovered = Globals.VERTEX_RADIUS
 var draw_color_hovered = Globals.VERTEX_COLOR
+const VERTEX_POLYGON_POINTS := 96
 
 # Animations
 var is_hovered: bool = false
@@ -43,32 +45,31 @@ func _ready() -> void:
 
 ## Re-syncs visual state and position with the underlying data
 func refresh() -> void:
-	global_position = vertex_data.pos
+	# Pixel-align the vertex center to reduce subpixel blur.
+	global_position = vertex_data.pos.round()
 	label.text = str(vertex_data.id)
 	self.z_index = vertex_data.z_idx
-	queue_redraw()
+	if is_hovered:
+		_update_vertex_visual(draw_radius_hovered, draw_color_hovered)
+	else:
+		_update_vertex_visual(Globals.VERTEX_RADIUS, vertex_data.color)
 	
 ## This function handles the actual pixel drawing on screen.
 func _draw() -> void:
-	# If the brain isn't plugged in yet, stop everything.
-	if not vertex_data:
-		return
+	# Visuals are rendered via CircleVisual (Polygon2D).
+	pass
 
-	# If hovered, draw animated properties. Else, draw vertex_data properties
-	if is_hovered:
-		draw_circle(
-			Vector2.ZERO,
-			draw_radius_hovered,
-			draw_color_hovered,
-			true,
-		)
-	else:
-		draw_circle(
-			Vector2.ZERO,
-			Globals.VERTEX_RADIUS,
-			vertex_data.color,
-			true,
-		)
+func _update_vertex_visual(radius: float, color: Color) -> void:
+	circle_visual.polygon = _build_circle_polygon(radius, VERTEX_POLYGON_POINTS)
+	circle_visual.color = color
+
+func _build_circle_polygon(radius: float, point_count: int) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	points.resize(point_count)
+	for i in range(point_count):
+		var angle := (TAU * i) / float(point_count)
+		points[i] = Vector2(cos(angle), sin(angle)) * radius
+	return points
 
 # Called when we delete the vertex
 func _on_vanished(_v: Vertex) -> void:
@@ -122,7 +123,7 @@ func _start_hover_animation() -> void:
 	)
 	
 	# This makes the "growth" look smooth. 
-	_tween.tween_method(func(_val): queue_redraw(), 0.0, 1.0, Globals.VERTEX_TWEEN_TIME)
+	_tween.tween_method(func(_val): _update_vertex_visual(draw_radius_hovered, draw_color_hovered), 0.0, 1.0, Globals.VERTEX_TWEEN_TIME)
 	
 
 func _on_mouse_exited() -> void:
@@ -162,7 +163,7 @@ func _stop_hover_animation() -> void:
 	)
 
 	# Force Godot to redraw the circle every frame of this animation
-	_tween.tween_method(func(_val): queue_redraw(), 0.0, 1.0, Globals.VERTEX_TWEEN_TIME)
+	_tween.tween_method(func(_val): _update_vertex_visual(draw_radius_hovered, draw_color_hovered), 0.0, 1.0, Globals.VERTEX_TWEEN_TIME)
 
 	# Once the animation is totally finished, clean up the state flags
 	_tween.chain().tween_callback(func(): 
@@ -170,4 +171,5 @@ func _stop_hover_animation() -> void:
 		is_manual_hover = false
 		# Sync the hover color variable to the current data color as a final safety step
 		draw_color_hovered = vertex_data.color 
+		_update_vertex_visual(Globals.VERTEX_RADIUS, vertex_data.color)
 	)

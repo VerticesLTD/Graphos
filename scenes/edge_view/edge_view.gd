@@ -156,7 +156,7 @@ func _update_arrowhead(pos1: Vector2, pos2: Vector2, current_line_width: float) 
 	
 	var direction = pos1.direction_to(pos2)
 	# Tiny gap so it doesn't touch the circle
-	var visual_end = pos2 - (direction * (Globals.VERTEX_RADIUS + 4.0))
+	var visual_end = (pos2 - (direction * (Globals.VERTEX_RADIUS + 4.0))).round()
 	
 	arrowhead.position = visual_end
 	arrowhead.rotation = direction.angle()
@@ -177,25 +177,25 @@ func _update_arrowhead(pos1: Vector2, pos2: Vector2, current_line_width: float) 
 		
 ## Recalculates line points to leave a gap for the weight label.
 func _setup_lines_and_weight() -> void:
-	var src_pos = edge_data.src.pos
-	var dst_pos = edge_data.dst.pos
+	var src_pos = edge_data.src.pos.round()
+	var dst_pos = edge_data.dst.pos.round()
 	
 	# 1. The "Visual End" for the line (Shortened for arrows)
 	var direction = src_pos.direction_to(dst_pos)
-	var visual_dst = dst_pos - (direction * Globals.VERTEX_RADIUS)
+	var visual_dst = (dst_pos - (direction * Globals.VERTEX_RADIUS)).round()
 	
 	if edge_data.strategy is DirectedStrategy:
 		line_1.end_cap_mode = Line2D.LINE_CAP_NONE  # Flat end where it hits the arrow
 		line_2.end_cap_mode = Line2D.LINE_CAP_NONE
 		# Stop the line 10px early to make room for the arrow
-		visual_dst -= direction * 10.0 
+		visual_dst = (visual_dst - (direction * 10.0)).round()
 	else:
 		line_1.end_cap_mode = Line2D.LINE_CAP_ROUND # Round end for undirected
 		line_2.end_cap_mode = Line2D.LINE_CAP_ROUND
 	
 	# 2. The "True Mid" for the Label (Center-to-Center)
 	# Using dst_pos here ensures the label stays in the mathematical middle
-	var true_mid = src_pos.lerp(dst_pos, 0.5)
+	var true_mid = src_pos.lerp(dst_pos, 0.5).round()
 	var offset = direction * (weight_gap / 2.0)
 	var actual_dist = src_pos.distance_to(dst_pos)
 
@@ -214,13 +214,13 @@ func _setup_lines_and_weight() -> void:
 func _draw_weighted_edge(start: Vector2, end: Vector2, mid: Vector2, offset: Vector2) -> void:
 	weight_label.visible = true
 	# Force the label to the mathematical midpoint
-	weight_label.position = mid - (weight_label.size / 2.0)
+	weight_label.position = (mid - (weight_label.size / 2.0)).round()
 	_update_weight_label_transform() # Handles rotation
 	
 	line_1.add_point(start)
-	line_1.add_point(mid - offset)
+	line_1.add_point((mid - offset).round())
 	
-	line_2.add_point(mid + offset)
+	line_2.add_point((mid + offset).round())
 	line_2.add_point(end)
 
 func _draw_simple_edge(start: Vector2, end: Vector2) -> void:
@@ -230,14 +230,14 @@ func _draw_simple_edge(start: Vector2, end: Vector2) -> void:
 		
 ## Centers and rotates the weight label within the line gap.
 func _update_weight_label_transform() -> void:
-	var pos1 = edge_data.src.pos
-	var pos2 = edge_data.dst.pos
-	var mid_point = (pos1 + pos2) / 2.0
+	var pos1 = edge_data.src.pos.round()
+	var pos2 = edge_data.dst.pos.round()
+	var mid_point = ((pos1 + pos2) / 2.0).round()
 	var direction = pos2-pos1
 	var angle = direction.angle()
 
 	weight_label.pivot_offset = weight_label.size / 2.0
-	weight_label.position = mid_point - (weight_label.size / 2.0)
+	weight_label.position = (mid_point - (weight_label.size / 2.0)).round()
 
 	if abs(angle) > PI / 2: angle += PI
 	weight_label.rotation = angle

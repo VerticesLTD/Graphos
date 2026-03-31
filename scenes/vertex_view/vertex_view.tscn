@@ -7,6 +7,9 @@
 [node name="VertexView" type="Node2D" unique_id=926614656]
 script = ExtResource("1_qqj3q")
 
+[node name="CircleVisual" type="Polygon2D" parent="." unique_id=1803499992]
+color = Color(0.118, 0.118, 0.18, 1)
+
 [node name="Label" type="Label" parent="." unique_id=1701305434]
 anchors_preset = 8
 anchor_left = 0.5
