@@ -12,6 +12,8 @@ var vertex_data: Vertex
 # Drawing properties - Will be tweened for animations
 var draw_radius_hovered = Globals.VERTEX_RADIUS
 var draw_color_hovered = Globals.VERTEX_COLOR
+const VERTEX_EDGE_STROKE := 1.25
+const VERTEX_EDGE_POINTS := 72
 
 # Animations
 var is_hovered: bool = false
@@ -57,19 +59,23 @@ func _draw() -> void:
 
 	# If hovered, draw animated properties. Else, draw vertex_data properties
 	if is_hovered:
-		draw_circle(
-			Vector2.ZERO,
-			draw_radius_hovered,
-			draw_color_hovered,
-			true,
-		)
+		_draw_vertex_circle(draw_radius_hovered, draw_color_hovered)
 	else:
-		draw_circle(
-			Vector2.ZERO,
-			Globals.VERTEX_RADIUS,
-			vertex_data.color,
-			true,
-		)
+		_draw_vertex_circle(Globals.VERTEX_RADIUS, vertex_data.color)
+
+func _draw_vertex_circle(radius: float, color: Color) -> void:
+	# Keep fill hard, then add a same-color vector edge stroke.
+	draw_circle(Vector2.ZERO, radius, color, true, -1.0, false)
+	draw_arc(
+		Vector2.ZERO,
+		radius,
+		0.0,
+		TAU,
+		VERTEX_EDGE_POINTS,
+		color,
+		VERTEX_EDGE_STROKE,
+		false
+	)
 
 # Called when we delete the vertex
 func _on_vanished(_v: Vertex) -> void:

@@ -125,4 +125,6 @@ toggle_direction={
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true
 environment/defaults/default_clear_color=Color(1, 1, 1, 1)
