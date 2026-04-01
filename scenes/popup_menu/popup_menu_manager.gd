@@ -36,11 +36,10 @@ var graph: Graph
 var controller: GraphController 
 
 
-# Format: { "Menu Label": ScriptResource }
-var ALGO_REGISTRY = {
-	"Breadth First Search": AlgorithmPlayer.ALGORITHMS.BFS,
-	"Depth First Search": AlgorithmPlayer.ALGORITHMS.DFS,
-}
+const ALGORITHM_MENU_ITEMS := [
+	{"label": "Breadth First Search", "id": AlgorithmPlayer.ALGORITHMS.BFS},
+	{"label": "Depth First Search", "id": AlgorithmPlayer.ALGORITHMS.DFS},
+]
 
 # Helper to generate the color square icon
 func _get_swatch(c: Color) -> Texture2D:
@@ -123,6 +122,11 @@ func open_for_canvas(mouse_pos_world: Vector2, mouse_pos_screen: Vector2 = get_v
 	active = null
 	mode = "general"
 	_open_at(mouse_pos_screen, _make_canvas_menu(mouse_pos_world))
+
+func open_for_selection(clicked_vertex: Vertex, mouse_pos_world: Vector2, mouse_pos_screen: Vector2 = get_viewport().get_mouse_position()) -> void:
+	active = clicked_vertex
+	mode = "selection"
+	_open_at(mouse_pos_screen, _make_selection_menu(clicked_vertex, mouse_pos_world))
 
 
 # -----------------------------------------------------------------------------
@@ -271,23 +275,6 @@ func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
 	if buffer_snapshot.is_empty() and v:
 		buffer_snapshot = [v]
 
-	# Create the algorithm sub-menu
-	var algo_submenu = [] 
-	
-	for algo_name in ALGO_REGISTRY:
-		var algorithm = ALGO_REGISTRY[algo_name]
-		
-		# Create the command automatically using the shared params
-		var cmd = null
-		
-		# ONLY create the command if we actually have nodes selected.
-		if not buffer_snapshot.is_empty() and v in buffer_snapshot:
-			cmd = func(): run_algorithm.emit(algorithm, v)
-				
-		# Add to the list
-		algo_submenu.append([algo_name, cmd])
-		
-		
 	var color_vertex_submenu = [
 	["Black",  ChangeVertexColorCommand.new(v, Color.BLACK),  _get_swatch(Color.BLACK)],
 	["Red",    ChangeVertexColorCommand.new(v, Color.RED),    _get_swatch(Color.RED)],
@@ -299,20 +286,16 @@ func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
 
 
 	return [
-			# Algorithms
-			["Algorithms", algo_submenu],
+			# Color
+			["Color Vertex", color_vertex_submenu], 
 			["---", null],
-			
+
 			# ClipBoard
 			["Copy", CopyCommand.new(graph, buffer_snapshot)],
 			["Paste", paste_cmd],
 			["Cut", CutCommand.new(graph, buffer_snapshot, controller)],
 			["---", null],
-			
-			# Color
-			["Color Vertex", color_vertex_submenu], 
-			["---", null],
-			
+
 			# Delete
 			["Delete Vertex", DeleteVertexCommand.new(graph, v)]
 		]
@@ -350,6 +333,90 @@ func _make_canvas_menu(mouse_pos: Vector2) -> Array:
 			["---", null],
 			[_grid_toggle_menu_label(), func(): _toggle_grid_from_menu()]
 		]
+
+func _make_selection_menu(clicked_vertex: Vertex, mouse_pos: Vector2) -> Array:
+	var selection_snapshot: Array[Vertex] = controller.selection_buffer.duplicate() if controller else []
+	var paste_cmd = null
+	if Globals.clipboard_graph != null:
+		paste_cmd = PasteCommand.new(graph, Globals.clipboard_graph, mouse_pos, controller)
+
+	var algo_submenu := []
+	for entry in ALGORITHM_MENU_ITEMS:
+		var algo_name: String = entry["label"]
+		var algorithm: AlgorithmPlayer.ALGORITHMS = entry["id"]
+		var cmd = null
+		if not selection_snapshot.is_empty():
+			cmd = func(): run_algorithm.emit(algorithm, clicked_vertex)
+		algo_submenu.append([algo_name, cmd])
+
+	var color_vertices_submenu = _build_color_vertices_selection_submenu(selection_snapshot)
+	var color_edges_submenu = _build_color_edges_selection_submenu(selection_snapshot)
+	var delete_selection_cmd = DeleteSelectionCommand.new(graph, selection_snapshot, controller) if not selection_snapshot.is_empty() else null
+
+	return [
+		["Algorithms", algo_submenu],
+		["---", null],
+		["Copy", CopyCommand.new(graph, selection_snapshot)],
+		["Paste", paste_cmd],
+		["Cut", CutCommand.new(graph, selection_snapshot, controller)],
+		["---", null],
+		["Color Vertices", color_vertices_submenu],
+		["Color Edges", color_edges_submenu],
+		["---", null],
+		["Delete Selection", delete_selection_cmd]
+	]
+
+func _build_color_vertices_selection_submenu(selection_vertices: Array[Vertex]) -> Array:
+	if selection_vertices.is_empty():
+		return [["No vertices in selection", null]]
+	return [
+		["Black",  ChangeSelectionVertexColorCommand.new(selection_vertices, Color.BLACK),  _get_swatch(Color.BLACK)],
+		["Red",    ChangeSelectionVertexColorCommand.new(selection_vertices, Color.RED),    _get_swatch(Color.RED)],
+		["Blue",   ChangeSelectionVertexColorCommand.new(selection_vertices, Color.BLUE),   _get_swatch(Color.BLUE)],
+		["White",  ChangeSelectionVertexColorCommand.new(selection_vertices, Color.WHITE),  _get_swatch(Color.WHITE)],
+		["Yellow", ChangeSelectionVertexColorCommand.new(selection_vertices, Color.YELLOW), _get_swatch(Color.YELLOW)],
+		["Green",  ChangeSelectionVertexColorCommand.new(selection_vertices, Color.GREEN),  _get_swatch(Color.GREEN)]
+	]
+
+func _build_color_edges_selection_submenu(selection_vertices: Array[Vertex]) -> Array:
+	var edges := _get_edges_within_selection(selection_vertices)
+	if edges.is_empty():
+		return [["No edges in selection", null]]
+	return [
+		["Black",  ChangeSelectionEdgeColorCommand.new(edges, Color.BLACK),  _get_swatch(Color.BLACK)],
+		["Red",    ChangeSelectionEdgeColorCommand.new(edges, Color.RED),    _get_swatch(Color.RED)],
+		["Blue",   ChangeSelectionEdgeColorCommand.new(edges, Color.BLUE),   _get_swatch(Color.BLUE)],
+		["White",  ChangeSelectionEdgeColorCommand.new(edges, Color.WHITE),  _get_swatch(Color.WHITE)],
+		["Yellow", ChangeSelectionEdgeColorCommand.new(edges, Color.YELLOW), _get_swatch(Color.YELLOW)],
+		["Green",  ChangeSelectionEdgeColorCommand.new(edges, Color.GREEN),  _get_swatch(Color.GREEN)]
+	]
+
+func _get_edges_within_selection(selection_vertices: Array[Vertex]) -> Array[Edge]:
+	var unique_edges: Array[Edge] = []
+	var selected_ids := {}
+	var seen_keys := {}
+
+	for v in selection_vertices:
+		selected_ids[v.id] = true
+
+	for v in selection_vertices:
+		var e = v.edges
+		while e:
+			if selected_ids.has(e.dst.id):
+				var key := ""
+				if e.strategy is UndirectedStrategy:
+					var a := mini(e.src.id, e.dst.id)
+					var b := maxi(e.src.id, e.dst.id)
+					key = "U:%d-%d" % [a, b]
+				else:
+					key = "D:%d>%d" % [e.src.id, e.dst.id]
+
+				if not seen_keys.has(key):
+					seen_keys[key] = true
+					unique_edges.append(e)
+			e = e.next
+
+	return unique_edges
 
 func _grid_toggle_menu_label() -> String:
 	# Use popup shortcut column so the icon appears on the far right.

@@ -11,7 +11,7 @@
 [ext_resource type="Script" uid="uid://xj2wpodslblo" path="res://scenes/selection_bounds/selection_bounds_view.gd" id="9_selection_bounds"]
 [ext_resource type="PackedScene" uid="uid://d3us80b4t04od" path="res://scenes/algorithm_player/algorithm_player.tscn" id="10_algorithm_player"]
 [ext_resource type="PackedScene" uid="uid://cjtn7ni7fjvft" path="res://scenes/camera/camera.tscn" id="11_camera"]
-[ext_resource type="Script" path="res://scenes/background/math_grid_background.gd" id="12_math_grid"]
+[ext_resource type="Script" uid="uid://brhvjsox00got" path="res://scenes/background/math_grid_background.gd" id="12_math_grid"]
 
 [node name="Main" type="Node2D" unique_id=446252932]
 script = ExtResource("1_yyfjg")

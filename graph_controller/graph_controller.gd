@@ -333,7 +333,43 @@ func close_active_editor() -> void:
 ## ------------------------------------------------------------------------------
 
 func execute_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, start_node: Vertex) -> void:
-	player.start_algorithm(algorithm,start_node,selection_buffer,graph)
+	var resolved_start: Vertex = _resolve_start_vertex_for_algorithm(algorithm, start_node)
+	if _algorithm_requires_start_vertex(algorithm) and resolved_start == null:
+		return
+	player.start_algorithm(algorithm, resolved_start, selection_buffer, graph)
+
+func _resolve_start_vertex_for_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, start_node: Vertex) -> Vertex:
+	if not _algorithm_requires_start_vertex(algorithm):
+		return start_node
+
+	if start_node != null:
+		return start_node
+
+	var fallback_start := _pick_smallest_id_vertex(selection_buffer)
+	if fallback_start:
+		Notify.show_notification(
+			"No start vertex selected. Starting from vertex %d." % fallback_start.id
+		)
+		return fallback_start
+
+	Notify.show_error("Algorithm Error: Please select at least one vertex.")
+	return null
+
+func _algorithm_requires_start_vertex(algorithm: AlgorithmPlayer.ALGORITHMS) -> bool:
+	match algorithm:
+		AlgorithmPlayer.ALGORITHMS.BFS, AlgorithmPlayer.ALGORITHMS.DFS:
+			return true
+		_:
+			return false
+
+func _pick_smallest_id_vertex(vertices: Array[Vertex]) -> Vertex:
+	if vertices.is_empty():
+		return null
+	var best: Vertex = vertices[0]
+	for v in vertices:
+		if v and v.id < best.id:
+			best = v
+	return best
 
 func update_selection_bounds(radius_scale: float = Globals.VERTEX_HOVER_SCALE) -> void:
 	if selection_buffer.is_empty():
