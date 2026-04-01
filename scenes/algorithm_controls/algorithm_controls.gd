@@ -39,24 +39,6 @@ func _resolve_progress_fill() -> ProgressBar:
 	return progress_node
 
 
-func _unhandled_key_input(event: InputEvent) -> void:
-	if not visible:
-		return
-	if event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
-			KEY_LEFT:
-				set_auto_playing(false)
-				step_back.emit()
-				get_viewport().set_input_as_handled()
-			KEY_RIGHT:
-				set_auto_playing(false)
-				step_forward.emit()
-				get_viewport().set_input_as_handled()
-			KEY_SPACE:
-				set_auto_playing(not _playing)
-				get_viewport().set_input_as_handled()
-
-
 func _snap_to_bottom_center() -> void:
 	await get_tree().process_frame
 	var vp := get_viewport().get_visible_rect().size
@@ -115,6 +97,10 @@ func set_auto_playing(playing: bool) -> void:
 		_auto_play_timer.start()
 	else:
 		_auto_play_timer.stop()
+
+
+func is_auto_playing() -> bool:
+	return _playing
 
 
 ## Update the thin fill bar. progress is 0–100.

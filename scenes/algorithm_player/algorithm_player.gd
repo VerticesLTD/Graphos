@@ -39,6 +39,16 @@ func _ready() -> void:
 	pseudo_visualizer.visible = false
 	algorithm_controls.visible = false
 
+
+func is_algorithm_running() -> bool:
+	return _is_algorithm_running
+
+
+func toggle_auto_playing() -> void:
+	if not _is_algorithm_running:
+		return
+	algorithm_controls.set_auto_playing(not algorithm_controls.is_auto_playing())
+
 func start_algorithm(
 	algorithm_type: ALGORITHMS,
 	starting_node: Vertex,
