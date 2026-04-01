@@ -10,6 +10,7 @@ const VERTEX_BELOW = 1
 
 ## UI overlay that draws/opens context menus
 @onready var popup_menu: GraphContextMenuManager = $"../CanvasLayer/PopupMenuLayer"
+@onready var math_grid_background: MathGridBackground = $"../MathGridBackground"
 
 ## The selection buffer to link multiple nodes with an edge
 var link_buffer: Array[int] = []
@@ -71,8 +72,12 @@ func _ready() -> void:
 
 		# Making sure the menu starts algorithm execution
 		popup_menu.run_algorithm.connect(self.execute_algorithm)
+		popup_menu.toggle_grid_requested.connect(_on_toggle_grid_requested)
 	else:
 		push_warning("GraphController: popup manager not assigned in Inspector.")
+
+	if math_grid_background:
+		math_grid_background.set_grid_enabled(false)
 	
 
 func _process(delta: float) -> void:
@@ -328,7 +333,43 @@ func close_active_editor() -> void:
 ## ------------------------------------------------------------------------------
 
 func execute_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, start_node: Vertex) -> void:
-	player.start_algorithm(algorithm,start_node,selection_buffer,graph)
+	var resolved_start: Vertex = _resolve_start_vertex_for_algorithm(algorithm, start_node)
+	if _algorithm_requires_start_vertex(algorithm) and resolved_start == null:
+		return
+	player.start_algorithm(algorithm, resolved_start, selection_buffer, graph)
+
+func _resolve_start_vertex_for_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, start_node: Vertex) -> Vertex:
+	if not _algorithm_requires_start_vertex(algorithm):
+		return start_node
+
+	if start_node != null:
+		return start_node
+
+	var fallback_start := _pick_smallest_id_vertex(selection_buffer)
+	if fallback_start:
+		Notify.show_notification(
+			"No start vertex selected. Starting from vertex %d." % fallback_start.id
+		)
+		return fallback_start
+
+	Notify.show_error("Algorithm Error: Please select at least one vertex.")
+	return null
+
+func _algorithm_requires_start_vertex(algorithm: AlgorithmPlayer.ALGORITHMS) -> bool:
+	match algorithm:
+		AlgorithmPlayer.ALGORITHMS.BFS, AlgorithmPlayer.ALGORITHMS.DFS:
+			return true
+		_:
+			return false
+
+func _pick_smallest_id_vertex(vertices: Array[Vertex]) -> Vertex:
+	if vertices.is_empty():
+		return null
+	var best: Vertex = vertices[0]
+	for v in vertices:
+		if v and v.id < best.id:
+			best = v
+	return best
 
 func update_selection_bounds(radius_scale: float = Globals.VERTEX_HOVER_SCALE) -> void:
 	if selection_buffer.is_empty():
@@ -344,3 +385,7 @@ func update_selection_bounds(radius_scale: float = Globals.VERTEX_HOVER_SCALE) -
 
 	if has_node("UISelectionBounds"):
 		get_node("UISelectionBounds").queue_redraw()
+
+func _on_toggle_grid_requested(enabled: bool) -> void:
+	if math_grid_background:
+		math_grid_background.set_grid_enabled(enabled)

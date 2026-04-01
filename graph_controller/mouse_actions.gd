@@ -185,23 +185,35 @@ func _handle_right_click(event: InputEventMouseButton):
 	var mouse_global_pos = graph.get_global_mouse_position()
 	var mouse_screen_pos = event.position
 
+	var selection_count := controller.selection_buffer.size()
+	var has_multi_selection := selection_count > 1
+	var inside_selection := has_multi_selection and controller.selection_bounds.has_point(mouse_global_pos)
+
 	## 1. Check vertex at mouse
 	var v_id = graph.get_vertex_id_at(mouse_global_pos)
 	if v_id != Globals.NOT_FOUND:
 		var v: Vertex = graph.get_vertex(v_id)
 		if v and popup_menu:
-			controller.select_vertices([v])
-			popup_menu.open_for_vertex(v, mouse_global_pos, mouse_screen_pos)
+			if has_multi_selection and controller.selection_buffer.has(v):
+				popup_menu.open_for_selection(v, mouse_global_pos, mouse_screen_pos)
+			else:
+				controller.select_vertices([v])
+				popup_menu.open_for_vertex(v, mouse_global_pos, mouse_screen_pos)
 		return
 
-	## 2. Check edge at mouse
+	## 2. Multi-selection empty-space context
+	if popup_menu and inside_selection:
+		popup_menu.open_for_selection(null, mouse_global_pos, mouse_screen_pos)
+		return
+
+	## 3. Check edge at mouse
 	var edge = graph.get_edge_at(mouse_global_pos)
 	if edge != null:
 		if popup_menu:
 			popup_menu.open_for_edge(edge, mouse_global_pos, mouse_screen_pos)
 		return
 
-	## 3. Empty space
+	## 4. Empty space
 	if popup_menu:
 		popup_menu.open_for_canvas(mouse_global_pos, mouse_screen_pos)
 	pass
