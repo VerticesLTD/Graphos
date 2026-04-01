@@ -266,6 +266,8 @@ func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
 	# You can put placeholders (null) while implementing commands.
 	# This lets you test menu opening immediately.
 	var buffer_snapshot = controller.selection_buffer.duplicate() if controller else []
+	if buffer_snapshot.is_empty() and v:
+		buffer_snapshot = [v]
 
 	# Create the algorithm sub-menu
 	var algo_submenu = [] 

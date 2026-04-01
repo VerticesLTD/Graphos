@@ -75,9 +75,12 @@ func _handle_left_click(event: InputEventMouseButton):
 			
 	# Clicked Vertex (not inside the rectangle)  
 	if id != Globals.NOT_FOUND:
+		var clicked_v: Vertex = graph.get_vertex(id)
 		if is_ctrl and Globals.current_state == Globals.State.CREATE:
 			_handle_path_connection(mouse_global_pos)
 		else:
+			if clicked_v:
+				controller.select_vertices([clicked_v])
 			controller.start_dragging(id)
 		return
 		
@@ -154,6 +157,7 @@ func _handle_right_click(event: InputEventMouseButton):
 	if v_id != Globals.NOT_FOUND:
 		var v: Vertex = graph.get_vertex(v_id)
 		if v and popup_menu:
+			controller.select_vertices([v])
 			popup_menu.open_for_vertex(v, mouse_global_pos, mouse_screen_pos)
 		return
 
