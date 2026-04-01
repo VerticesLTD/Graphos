@@ -20,14 +20,23 @@
 [ext_resource type="Texture2D" path="res://assets/algorithm_player/Close Pressed.svg" id="22_clp"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(1, 1, 1, 0.97)
-corner_radius_top_left = 40
-corner_radius_top_right = 40
-corner_radius_bottom_right = 40
-corner_radius_bottom_left = 40
-shadow_color = Color(0.08, 0.08, 0.2, 0.18)
-shadow_size = 16
-shadow_offset = Vector2(0, 6)
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.878, 0.878, 0.878, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 10.0
+expand_margin_top = 10.0
+expand_margin_right = 10.0
+expand_margin_bottom = 10.0
+shadow_color = Color(0, 0, 0, 0.12)
+shadow_size = 8
+shadow_offset = Vector2(0, 2)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_bg"]
 bg_color = Color(0.1, 0.1, 0.15, 0.0)
@@ -47,7 +56,6 @@ script = ExtResource("1_o0rq8")
 
 [node name="Panel" type="PanelContainer" parent="."]
 layout_mode = 2
-clip_contents = true
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
@@ -58,8 +66,8 @@ theme_override_constants/separation = 0
 layout_mode = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_right = 16
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="Row" type="HBoxContainer" parent="Panel/VBox/RowMargin"]
 layout_mode = 2
@@ -68,7 +76,7 @@ theme_override_constants/separation = 0
 [node name="XBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row"]
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
-custom_minimum_size = Vector2(20, 20)
+custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 size_flags_vertical = 4
 tooltip_text = "Stop algorithm"
@@ -85,13 +93,13 @@ size_flags_horizontal = 3
 
 [node name="CenterGroup" type="HBoxContainer" parent="Panel/VBox/RowMargin/Row"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 alignment = 1
 
 [node name="BackBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup"]
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
-custom_minimum_size = Vector2(30, 30)
+custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 tooltip_text = "Step backward"
 texture_normal = ExtResource("4_fh3io")
@@ -105,7 +113,7 @@ script = ExtResource("8_afb50")
 [node name="PlayBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup"]
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
-custom_minimum_size = Vector2(46, 46)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Play"
 texture_normal = ExtResource("12_pld")
@@ -120,7 +128,7 @@ script = ExtResource("8_afb50")
 visible = false
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
-custom_minimum_size = Vector2(46, 46)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Pause"
 texture_normal = ExtResource("16_pad")
@@ -134,7 +142,7 @@ script = ExtResource("8_afb50")
 [node name="ForwardBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup"]
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
-custom_minimum_size = Vector2(30, 30)
+custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 tooltip_text = "Step forward"
 texture_normal = ExtResource("4_fh3io")
@@ -153,13 +161,13 @@ size_flags_horizontal = 3
 [node name="SpeedBtn" type="Button" parent="Panel/VBox/RowMargin/Row"]
 layout_mode = 2
 size_flags_vertical = 4
-custom_minimum_size = Vector2(28, 0)
+custom_minimum_size = Vector2(24, 0)
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 0.55)
 theme_override_colors/font_hover_color = Color(0.118, 0.118, 0.18, 0.85)
 theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1.0)
 theme_override_colors/font_focus_color = Color(0.118, 0.118, 0.18, 0.55)
 theme_override_fonts/font = ExtResource("7_7uv6k")
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxEmpty_spd")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_spd")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_spd")
@@ -170,7 +178,7 @@ tooltip_text = "Cycle speed: ×0.5 → ×1 → ×2 → ×4"
 
 [node name="ProgressFill" type="ProgressBar" parent="Panel/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 3)
+custom_minimum_size = Vector2(0, 2)
 size_flags_horizontal = 3
 show_percentage = false
 value = 0
