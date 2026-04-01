@@ -22,6 +22,7 @@ extends Control
 
 # SIGNALS
 signal run_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, start_node: Vertex)
+signal toggle_grid_requested(enabled: bool)
 
 const LOG_TAG = "POPUP_MENU"
 
@@ -49,6 +50,7 @@ func _get_swatch(c: Color) -> Texture2D:
 # Active context (what was clicked)
 var active = null
 var mode: String = "general"
+var _is_grid_enabled := false
 
 # We create submenu PopupMenus dynamically on each open.
 # Store them so we can free them next time (avoid leaks / duplicates).
@@ -344,8 +346,18 @@ func _make_canvas_menu(mouse_pos: Vector2) -> Array:
 
 	return [
 			["Create Vertex", AddVertexCommand.new(graph, mouse_pos)],
-			["Paste", paste_cmd]		
+			["Paste", paste_cmd],
+			["---", null],
+			[_grid_toggle_menu_label(), func(): _toggle_grid_from_menu()]
 		]
+
+func _grid_toggle_menu_label() -> String:
+	# Use popup shortcut column so the icon appears on the far right.
+	return "Toggle Grid\t✓" if _is_grid_enabled else "Toggle Grid"
+
+func _toggle_grid_from_menu() -> void:
+	_is_grid_enabled = not _is_grid_enabled
+	toggle_grid_requested.emit(_is_grid_enabled)
 
 
 func find_vertex_view(node: Node) -> UIVertexView:

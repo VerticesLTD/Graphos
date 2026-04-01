@@ -10,6 +10,7 @@ const VERTEX_BELOW = 1
 
 ## UI overlay that draws/opens context menus
 @onready var popup_menu: GraphContextMenuManager = $"../CanvasLayer/PopupMenuLayer"
+@onready var math_grid_background: MathGridBackground = $"../MathGridBackground"
 
 ## The selection buffer to link multiple nodes with an edge
 var link_buffer: Array[int] = []
@@ -71,8 +72,12 @@ func _ready() -> void:
 
 		# Making sure the menu starts algorithm execution
 		popup_menu.run_algorithm.connect(self.execute_algorithm)
+		popup_menu.toggle_grid_requested.connect(_on_toggle_grid_requested)
 	else:
 		push_warning("GraphController: popup manager not assigned in Inspector.")
+
+	if math_grid_background:
+		math_grid_background.set_grid_enabled(false)
 	
 
 func _process(delta: float) -> void:
@@ -344,3 +349,7 @@ func update_selection_bounds(radius_scale: float = Globals.VERTEX_HOVER_SCALE) -
 
 	if has_node("UISelectionBounds"):
 		get_node("UISelectionBounds").queue_redraw()
+
+func _on_toggle_grid_requested(enabled: bool) -> void:
+	if math_grid_background:
+		math_grid_background.set_grid_enabled(enabled)
