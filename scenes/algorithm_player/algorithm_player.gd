@@ -44,6 +44,7 @@ func is_algorithm_running() -> bool:
 	return _is_algorithm_running
 
 
+# Toggles auto playing on/off
 func toggle_auto_playing() -> void:
 	if not _is_algorithm_running:
 		return
@@ -77,6 +78,7 @@ func start_algorithm(
 
 	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
 
+	# Check if the graph is correpted
 	if not imposter_graph.get_graph_dominant_strategy():
 		Notify.show_error("Mixed Strategy Error: Directed and Undirected edges cannot coexist during an algorithm.")
 		return
