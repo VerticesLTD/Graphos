@@ -47,6 +47,8 @@ func is_algorithm_running() -> bool:
 
 # Toggles auto playing on/off
 func toggle_auto_playing() -> void:
+	if Globals.current_state == Globals.State.PAN:
+		return
 	if not _is_algorithm_running:
 		return
 	if algorithm_controls.is_auto_playing():
@@ -59,6 +61,8 @@ func toggle_auto_playing() -> void:
 
 
 func request_play() -> void:
+	if Globals.current_state == Globals.State.PAN:
+		return
 	if not _is_algorithm_running:
 		return
 	if current_step_index >= timeline.size():
@@ -79,8 +83,10 @@ func start_algorithm(
 
 	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
 
-	# Check if the graph is correpted
-	if not imposter_graph.get_graph_dominant_strategy():
+	# Check if the graph is corrupted.
+	# Empty-edge selections are valid and should not be treated as "mixed".
+	var dominant_strategy = imposter_graph.get_graph_dominant_strategy()
+	if imposter_graph.num_edges > 0 and not dominant_strategy:
 		Notify.show_error("Mixed Strategy Error: Directed and Undirected edges cannot coexist during an algorithm.")
 		return
 
@@ -192,6 +198,8 @@ func _collapse_controls() -> void:
 
 ## Move to next timeline and/or pseudo step
 func step_forward(update_progress_bar = true) -> void:
+	if Globals.current_state == Globals.State.PAN:
+		return
 	# Check if we are already at the end
 	if current_step_index >= timeline.size():
 		algorithm_controls.set_auto_playing(false)
@@ -218,6 +226,8 @@ func step_forward(update_progress_bar = true) -> void:
 
 ## Move to previous timeline and/or pseudo step
 func step_backward(update_progress_bar = true) -> void:
+	if Globals.current_state == Globals.State.PAN:
+		return
 	# Check if we are already at the start (Initial State)
 	if current_step_index <= 0:
 		return

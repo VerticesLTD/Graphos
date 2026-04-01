@@ -14,6 +14,7 @@ signal app_state_changed
 enum State {
 	SELECTION,
 	CREATE,
+	PAN,
 	ALG,
 	ERASER,
 }

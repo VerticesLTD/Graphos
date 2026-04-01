@@ -52,6 +52,7 @@ const HOLD_REPEAT_INITIAL_DELAY := 0.28
 const HOLD_REPEAT_INTERVAL := 0.07
 var _held_algorithm_action: StringName = &""
 var _held_algorithm_timer := 0.0
+var _last_tool_state: int = -1
 
 ## Vars to handle dragging
 ## Stores { Vertex: Vector2_Initial_Pos } for whatever is being dragged
@@ -75,6 +76,11 @@ func _ready() -> void:
 	
 
 func _process(delta: float) -> void:
+	if Globals.current_state != _last_tool_state:
+		if Globals.current_state == Globals.State.PAN and animation_manager:
+			animation_manager.clear_all_selection_hovers()
+		_last_tool_state = Globals.current_state
+
 	# If we are currently dragging nodes, we do not want to touch
 	# the selection buffer.
 	if Globals.is_mass_select and not is_dragging:
@@ -86,6 +92,9 @@ func _process(delta: float) -> void:
 ## ------------------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Globals.current_state == Globals.State.PAN:
+		return
+
 	# Close text editor if needed
 	if event is InputEventMouseButton and event.pressed:
 		close_active_editor()

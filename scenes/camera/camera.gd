@@ -10,6 +10,28 @@ extends Camera2D
 var _target_zoom: float = 1.0
 var _is_dragging: bool = false
 var _pan_mode_enabled: bool = false 
+var _last_pan_mode_enabled: bool = false
+var _applied_cursor_state := -1
+
+const CURSOR_STATE_ARROW := 0
+const CURSOR_STATE_PAN_IDLE := 1
+const CURSOR_STATE_PAN_DRAG := 2
+
+const PAN_HAND_CURSOR: Texture2D = preload("res://assets/icons/hand.svg")
+const PAN_GRAB_CURSOR: Texture2D = preload("res://assets/icons/hand-grabbing.svg")
+
+func _process(_delta: float) -> void:
+	# Pan mode is driven by global tool state.
+	_pan_mode_enabled = Globals.current_state == Globals.State.PAN
+	if _pan_mode_enabled != _last_pan_mode_enabled:
+		if not _pan_mode_enabled:
+			_is_dragging = false
+		_last_pan_mode_enabled = _pan_mode_enabled
+		_update_cursor_shape()
+
+	# Enforce cursor while panning/dragging so other hover handlers cannot override it.
+	if _pan_mode_enabled or _is_dragging:
+		_update_cursor_shape()
 
 # Input handling
 func _input(event: InputEvent) -> void:
@@ -28,6 +50,9 @@ func _input(event: InputEvent) -> void:
 		
 		if is_middle_click or is_left_click_pan:
 			_is_dragging = event.pressed
+			if not event.pressed:
+				# Safety reset when drag ends.
+				_is_dragging = false
 			# UPDATE: Trigger the cursor change immediately
 			_update_cursor_shape()
 
@@ -35,6 +60,7 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and _is_dragging:
 		# Divide by zoom so the 'relative' pixels match the world coordinates
 		position -= event.relative / zoom.x
+		_update_cursor_shape()
 
 # Zoom the camera by a factor
 func _zoom_camera(factor: float) -> void:
@@ -60,12 +86,28 @@ func toggle_pan_mode(enabled: bool) -> void:
 
 # Internal helper to handle the cursor logic
 func _update_cursor_shape() -> void:
+	var target_state := CURSOR_STATE_ARROW
 	if _is_dragging:
-		# Grasping hand when actually moving
-		Input.set_default_cursor_shape(Input.CURSOR_DRAG)
+		target_state = CURSOR_STATE_PAN_DRAG
 	elif _pan_mode_enabled:
-		# Open hand when in Pan Mode but not clicking yet
-		Input.set_default_cursor_shape(Input.CURSOR_DRAG)
-	else:
-		# Normal arrow otherwise
+		target_state = CURSOR_STATE_PAN_IDLE
+
+	if target_state == _applied_cursor_state:
+		return
+	_applied_cursor_state = target_state
+
+	if _is_dragging:
+		# Closed hand while panning.
+		Input.set_custom_mouse_cursor(PAN_GRAB_CURSOR, Input.CURSOR_ARROW, Vector2(8, 8))
 		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
+	elif _pan_mode_enabled:
+		# Open hand while pan mode is enabled.
+		Input.set_custom_mouse_cursor(PAN_HAND_CURSOR, Input.CURSOR_ARROW, Vector2(8, 8))
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
+	else:
+		# Normal arrow otherwise.
+		Input.set_custom_mouse_cursor(null, Input.CURSOR_ARROW)
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)

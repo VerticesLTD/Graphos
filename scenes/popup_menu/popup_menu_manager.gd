@@ -112,7 +112,7 @@ func open_for_vertex(v: Vertex, mouse_pos_world: Vector2, mouse_pos_screen: Vect
 	mode = "vertex"
 	_open_at(mouse_pos_screen, _make_vertex_menu(v, mouse_pos_world))
 
-func open_for_edge(e: Edge, mouse_pos_world: Vector2, mouse_pos_screen: Vector2 = get_viewport().get_mouse_position()) -> void:
+func open_for_edge(e: Edge, _mouse_pos_world: Vector2, mouse_pos_screen: Vector2 = get_viewport().get_mouse_position()) -> void:
 	active = e
 	mode = "edge"
 	_open_at(mouse_pos_screen, _make_edge_menu(e))

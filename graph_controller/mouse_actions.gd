@@ -22,6 +22,20 @@ func _ready() -> void:
 	controller = par_node
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Globals.current_state == Globals.State.PAN:
+		# In pan mode, keep right-click context menu working.
+		if event is InputEventMouseButton:
+			if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+				_handle_right_click(event)
+				return
+			if event.button_index == MOUSE_BUTTON_RIGHT and not event.pressed:
+				_handle_right_release(event)
+				return
+			# Disable left graph interactions while panning.
+			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+				get_viewport().set_input_as_handled()
+		return
+
 	# If the menu closed less than 200ms ago, ignore ALL clicks.
 	# This prevents "Accidental Vertices" (Left Click)
 	if controller.popup_menu and controller.popup_menu.MainMenu.visible:

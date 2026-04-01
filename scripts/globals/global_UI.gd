@@ -24,6 +24,17 @@ func _process(delta: float) -> void:
 			_on_hold_start()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Globals.current_state == Globals.State.PAN:
+		if selection_rect != null:
+			remove_child(selection_rect)
+			selection_rect.queue_free()
+			selection_rect = null
+		_monitoring_input = false
+		_is_holding = false
+		Globals.selection_rectangle = Rect2(Vector2.ZERO, Vector2.ZERO)
+		Globals.is_mass_select = false
+		return
+
 	if event is InputEventMouseButton and \
 		event.button_index == MOUSE_BUTTON_LEFT \
 		and Globals.current_state == Globals.State.SELECTION:
@@ -104,6 +115,8 @@ func _handle_keyboard(event: InputEventKey) -> void:
 	match event.keycode:
 		KEY_C:
 			Globals.current_state = Globals.State.CREATE
+		KEY_H:
+			Globals.current_state = Globals.State.PAN
 		KEY_A:
 			Globals.current_state = Globals.State.ALG
 		KEY_S:
