@@ -19,6 +19,10 @@
 [ext_resource type="Texture2D" path="res://assets/algorithm_player/Close Pressed.svg" id="22_clp"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
 bg_color = Color(1, 1, 1, 1)
 border_width_left = 1
 border_width_top = 1
@@ -38,14 +42,14 @@ shadow_size = 8
 shadow_offset = Vector2(0, 2)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_bg"]
-bg_color = Color(0.1, 0.1, 0.15, 0.0)
-corner_radius_bottom_right = 40
-corner_radius_bottom_left = 40
+bg_color = Color(0.263, 0.38, 0.933, 0.12)
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_fill"]
 bg_color = Color(0.263, 0.38, 0.933, 1.0)
-corner_radius_bottom_right = 40
-corner_radius_bottom_left = 40
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_spd"]
 
@@ -224,7 +228,7 @@ tooltip_text = "Cycle speed: ×0.5 → ×1 → ×2 → ×4"
 
 [node name="ProgressFill" type="ProgressBar" parent="Panel/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 2)
+custom_minimum_size = Vector2(0, 5)
 size_flags_horizontal = 3
 show_percentage = false
 value = 0

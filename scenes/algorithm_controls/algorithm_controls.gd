@@ -114,8 +114,8 @@ func set_algorithm_progress(progress: int) -> void:
 	progress = clampi(progress, 0, 100)
 	var tween := create_tween()
 	tween.set_ease(Tween.EASE_OUT)
-	tween.set_trans(Tween.TRANS_CUBIC)
-	tween.tween_property(progress_fill, "value", progress, 0.18)
+	tween.set_trans(Tween.TRANS_SINE)
+	tween.tween_property(progress_fill, "value", progress, 0.14)
 
 
 func set_step_info(_current: int, _max_steps: int) -> void:

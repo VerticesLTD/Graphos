@@ -217,9 +217,9 @@ func go_to_step(target_index: int, update_progress_bar = true) -> void:
 		step_backward(update_progress_bar)
 
 func _update_progress_bar() -> void:
-	var current = float(current_step_index)
-	var maximum = float(max_step)
-	var progress = int(current / maximum * 100)
+	var current := float(current_step_index)
+	var maximum := maxf(float(max_step), 1.0)
+	var progress := int(roundf(current / maximum * 100.0))
 
 	algorithm_controls.set_algorithm_progress(progress)
 	algorithm_controls.set_step_info(current_step_index, max_step)
