@@ -3,6 +3,7 @@ extends Node
 var controller: GraphController
 var _last_mouse_world_pos: Vector2 = Vector2.ZERO
 var _has_last_mouse_world_pos := false
+var _bounds_scale_tween: Tween
 
 var action_map: Dictionary = {
 	&"left_click" : [_handle_left_click, _handle_left_release],
@@ -104,10 +105,28 @@ func _handle_left_release(_event: InputEventMouseButton):
 	# Stop dragging
 	controller.stop_dragging()
 	_has_last_mouse_world_pos = false
-	
-	# Stop the hover animations
+
+	# Stop selection hover visuals to reduce screen clutter.
 	if controller.animation_manager:
 		controller.animation_manager.clear_all_selection_hovers()
+
+	# Shrink bounds in sync with vertex shrink animation.
+	if not controller.selection_buffer.is_empty():
+		if _bounds_scale_tween:
+			_bounds_scale_tween.kill()
+		_bounds_scale_tween = create_tween()
+		_bounds_scale_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		_bounds_scale_tween.tween_method(
+			func(scale: float):
+				if is_instance_valid(controller):
+					controller.update_selection_bounds(scale),
+			Globals.VERTEX_HOVER_SCALE,
+			1.0,
+			Globals.VERTEX_TWEEN_TIME
+		)
+	else:
+		controller.update_selection_bounds(1.0)
+	
 
 ## Handles connecting a few vertices in a row.
 ## If user clicked on a vertex, it's ID is remembered.

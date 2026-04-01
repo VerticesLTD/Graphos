@@ -321,7 +321,7 @@ func close_active_editor() -> void:
 func execute_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, start_node: Vertex) -> void:
 	player.start_algorithm(algorithm,start_node,selection_buffer,graph)
 
-func update_selection_bounds() -> void:
+func update_selection_bounds(radius_scale: float = Globals.VERTEX_HOVER_SCALE) -> void:
 	if selection_buffer.is_empty():
 		selection_bounds = Rect2()
 		return
@@ -330,7 +330,8 @@ func update_selection_bounds() -> void:
 		var new_bounds = Rect2(selection_buffer[0].pos, Vector2.ZERO)
 		for v in selection_buffer:
 			new_bounds = new_bounds.expand(v.pos)
-		selection_bounds = new_bounds.grow(Globals.VERTEX_RADIUS + 5.0)
+		var selected_visual_radius = Globals.VERTEX_RADIUS * radius_scale
+		selection_bounds = new_bounds.grow(selected_visual_radius + Globals.SELECTION_BOUNDS_PADDING)
 
 	if has_node("UISelectionBounds"):
 		get_node("UISelectionBounds").queue_redraw()
