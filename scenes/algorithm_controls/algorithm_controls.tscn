@@ -1,80 +1,134 @@
 [gd_scene format=3 uid="uid://dnnuv5puoc3js"]
 
-[ext_resource type="Theme" uid="uid://djbla3siny57m" path="res://scenes/algorithm_controls/controls_theme.tres" id="1_jtqyn"]
 [ext_resource type="Script" uid="uid://dqg2l6iolcwj7" path="res://scenes/algorithm_controls/algorithm_controls.gd" id="1_o0rq8"]
-[ext_resource type="Texture2D" uid="uid://cfipu831he4cy" path="res://assets/algorithm_player/DragIndicator.svg" id="2_euqy7"]
-[ext_resource type="StyleBox" uid="uid://5fptmgnku5my" path="res://scenes/algorithm_controls/separator_style.tres" id="2_q7e6r"]
 [ext_resource type="Texture2D" uid="uid://cq8sad2un3de5" path="res://assets/algorithm_player/Arrow Default.svg" id="4_fh3io"]
 [ext_resource type="Texture2D" uid="uid://n30msroo4q83" path="res://assets/algorithm_player/Arrow Pressed.svg" id="5_afb50"]
 [ext_resource type="Texture2D" uid="uid://788ul33sa73c" path="res://assets/algorithm_player/Arrow Hover.svg" id="6_21ssy"]
-[ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="7_7uv6k"]
 [ext_resource type="Texture2D" uid="uid://db7l8qoopkapv" path="res://assets/algorithm_player/Arrow Disabled.svg" id="7_cqdmf"]
 [ext_resource type="Script" uid="uid://dbl0hfamnto5t" path="res://scenes/algorithm_controls/texture_button_script.gd" id="8_afb50"]
-[ext_resource type="Texture2D" uid="uid://baqm2liugn1ds" path="res://assets/algorithm_player/Stop Default.svg" id="8_mahcd"]
-[ext_resource type="Texture2D" uid="uid://co75yfyqlh1e7" path="res://assets/algorithm_player/Stop Pressed.svg" id="9_y27ya"]
-[ext_resource type="Texture2D" uid="uid://d1lo52qteydle" path="res://assets/algorithm_player/Stop Hover.svg" id="10_piqyh"]
-[ext_resource type="PackedScene" uid="uid://jgjoys0wtvpl" path="res://scenes/algorithm_controls/algorithm_data_layouts/BFS_layout/GraphStatsLayout.tscn" id="11_ty3q8"]
-[ext_resource type="Texture2D" uid="uid://caimwm2jbbhsf" path="res://assets/algorithm_player/Stop Disabled.svg" id="11_yme0v"]
+[ext_resource type="Texture2D" uid="uid://diwqdyjikmwpu" path="res://assets/algorithm_player/Play Default.svg" id="12_pld"]
+[ext_resource type="Texture2D" uid="uid://dkax76jupqrdr" path="res://assets/algorithm_player/Play Hover.svg" id="13_plh"]
+[ext_resource type="Texture2D" uid="uid://dt808kp2nugpg" path="res://assets/algorithm_player/Play Pressed.svg" id="14_plp"]
+[ext_resource type="Texture2D" uid="uid://dqnwwkq32nha5" path="res://assets/algorithm_player/Play Disabled.svg" id="15_plx"]
+[ext_resource type="Texture2D" uid="uid://c463l4wu7ontc" path="res://assets/algorithm_player/Pause Default.svg" id="16_pad"]
+[ext_resource type="Texture2D" uid="uid://djp14od5ywg44" path="res://assets/algorithm_player/Pause Hover.svg" id="17_pah"]
+[ext_resource type="Texture2D" uid="uid://ci42vqgfrsuca" path="res://assets/algorithm_player/Pause Pressed.svg" id="18_pap"]
+[ext_resource type="Texture2D" uid="uid://c6aolq5r0n8ag" path="res://assets/algorithm_player/Pause Disabled.svg" id="19_pax"]
+[ext_resource type="Texture2D" uid="uid://s4lij4m4ysfs" path="res://assets/algorithm_player/Close Default.svg" id="20_cld"]
+[ext_resource type="Texture2D" uid="uid://m3os05ws685o" path="res://assets/algorithm_player/Close Hover.svg" id="21_clh"]
+[ext_resource type="Texture2D" uid="uid://bkfs50jn275fe" path="res://assets/algorithm_player/Close Pressed.svg" id="22_clp"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ty3q8"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.878, 0.878, 0.878, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 11.0
+expand_margin_top = 5.0
+shadow_color = Color(0, 0, 0, 0.12)
+shadow_size = 8
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_speed_normal"]
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 3.0
+bg_color = Color(1, 1, 1, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.118, 0.118, 0.18, 0.14)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_speed_pressed"]
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 3.0
+bg_color = Color(0.83, 0.882, 0.98, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.263, 0.38, 0.933, 0.55)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_speed_hover"]
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 3.0
+bg_color = Color(0.906, 0.922, 0.988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_bg"]
+bg_color = Color(0.263, 0.38, 0.933, 0.12)
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_fill"]
+bg_color = Color(0.263, 0.38, 0.933, 1)
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
 
 [node name="AlgorithmControls" type="MarginContainer" unique_id=1698095556]
 z_index = 22
-texture_filter = 4
-custom_minimum_size = Vector2(345, 0)
-offset_left = 249.0
-offset_right = 594.0
-offset_bottom = 188.0
-mouse_filter = 0
 script = ExtResource("1_o0rq8")
 
-[node name="MainPanel" type="PanelContainer" parent="." unique_id=1906732688]
+[node name="Panel" type="PanelContainer" parent="." unique_id=783858207]
 layout_mode = 2
-mouse_filter = 2
-theme = ExtResource("1_jtqyn")
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="MainVBox" type="VBoxContainer" parent="MainPanel" unique_id=980346517]
+[node name="VBox" type="VBoxContainer" parent="Panel" unique_id=1753582557]
 layout_mode = 2
+theme_override_constants/separation = 0
 
-[node name="Spacer" type="VSeparator" parent="MainPanel/MainVBox" unique_id=1967577063]
+[node name="RowMargin" type="MarginContainer" parent="Panel/VBox" unique_id=926313704]
 layout_mode = 2
-theme_override_styles/separator = SubResource("StyleBoxEmpty_ty3q8")
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 8
 
-[node name="TitleSpace" type="Control" parent="MainPanel/MainVBox" unique_id=1129166355]
-custom_minimum_size = Vector2(0, 25)
+[node name="Row" type="HBoxContainer" parent="Panel/VBox/RowMargin" unique_id=2086760242]
 layout_mode = 2
-size_flags_stretch_ratio = 0.39
-mouse_filter = 2
+theme_override_constants/separation = 0
 
-[node name="Title" type="Label" parent="MainPanel/MainVBox/TitleSpace" unique_id=1928942679]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_vertical = 2
-theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
-theme_override_fonts/font = ExtResource("7_7uv6k")
-theme_override_font_sizes/font_size = 24
-text = "Algorithm Name"
-horizontal_alignment = 1
-
-[node name="TopButtons" type="HBoxContainer" parent="MainPanel/MainVBox" unique_id=765940620]
-custom_minimum_size = Vector2(0, 49.72)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 3
-size_flags_stretch_ratio = 1.73
-theme_override_constants/separation = 47
-alignment = 1
-
-[node name="Back" type="TextureButton" parent="MainPanel/MainVBox/TopButtons" unique_id=920975986]
-modulate = Color(0.25, 0.25, 0.28, 1)
-texture_filter = 6
-custom_minimum_size = Vector2(64, 0)
+[node name="SpacerL" type="Control" parent="Panel/VBox/RowMargin/Row" unique_id=453583086]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="CenterGroup" type="HBoxContainer" parent="Panel/VBox/RowMargin/Row" unique_id=2053428188]
+layout_mode = 2
+theme_override_constants/separation = 7
+alignment = 1
+
+[node name="BackBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup" unique_id=554299384]
+modulate = Color(0.25, 0.25, 0.28, 1)
+texture_filter = 6
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
 tooltip_text = "Step backward"
 texture_normal = ExtResource("4_fh3io")
 texture_pressed = ExtResource("5_afb50")
@@ -84,28 +138,40 @@ ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("8_afb50")
 
-[node name="Stop" type="TextureButton" parent="MainPanel/MainVBox/TopButtons" unique_id=2067944935]
+[node name="PlayBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup" unique_id=1277637430]
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
-custom_minimum_size = Vector2(64, 0)
+custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
-size_flags_horizontal = 3
-tooltip_text = "Stop execution"
-texture_normal = ExtResource("8_mahcd")
-texture_pressed = ExtResource("9_y27ya")
-texture_hover = ExtResource("10_piqyh")
-texture_disabled = ExtResource("11_yme0v")
+tooltip_text = "Play"
+texture_normal = ExtResource("12_pld")
+texture_pressed = ExtResource("14_plp")
+texture_hover = ExtResource("13_plh")
+texture_disabled = ExtResource("15_plx")
 ignore_texture_size = true
 stretch_mode = 5
-flip_h = true
 script = ExtResource("8_afb50")
 
-[node name="Forward" type="TextureButton" parent="MainPanel/MainVBox/TopButtons" unique_id=49606324]
+[node name="PauseBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup" unique_id=337541809]
+visible = false
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
-custom_minimum_size = Vector2(64, 0)
+custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
-size_flags_horizontal = 3
+tooltip_text = "Pause"
+texture_normal = ExtResource("16_pad")
+texture_pressed = ExtResource("18_pap")
+texture_hover = ExtResource("17_pah")
+texture_disabled = ExtResource("19_pax")
+ignore_texture_size = true
+stretch_mode = 5
+script = ExtResource("8_afb50")
+
+[node name="ForwardBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup" unique_id=1953309857]
+modulate = Color(0.25, 0.25, 0.28, 1)
+texture_filter = 6
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
 tooltip_text = "Step forward"
 texture_normal = ExtResource("4_fh3io")
 texture_pressed = ExtResource("5_afb50")
@@ -116,78 +182,70 @@ stretch_mode = 5
 flip_h = true
 script = ExtResource("8_afb50")
 
-[node name="DataSeparator" type="HSeparator" parent="MainPanel/MainVBox" unique_id=551651140]
+[node name="SpacerR" type="Control" parent="Panel/VBox/RowMargin/Row" unique_id=1065691435]
 layout_mode = 2
-mouse_filter = 2
-theme_override_styles/separator = ExtResource("2_q7e6r")
+size_flags_horizontal = 3
 
-[node name="AlgorithmDataPreset" parent="MainPanel/MainVBox" unique_id=1486674643 instance=ExtResource("11_ty3q8")]
+[node name="SpeedWrap" type="MarginContainer" parent="Panel/VBox/RowMargin/Row" unique_id=684668034]
 layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/margin_left = 9
 
-[node name="ProgressSeparator" type="HSeparator" parent="MainPanel/MainVBox" unique_id=1194602682]
+[node name="SpeedBtn" type="Button" parent="Panel/VBox/RowMargin/Row/SpeedWrap" unique_id=1814429139]
+custom_minimum_size = Vector2(46, 24)
 layout_mode = 2
-mouse_filter = 2
-theme_override_styles/separator = ExtResource("2_q7e6r")
+size_flags_vertical = 4
+tooltip_text = "Cycle speed: ×0.5 → ×1 → ×2 → ×4"
+theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
+theme_override_colors/font_focus_color = Color(0.263, 0.38, 0.933, 1)
+theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
+theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_speed_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_speed_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_speed_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_speed_normal")
+theme_override_styles/focus = SubResource("StyleBoxFlat_speed_hover")
+text = "1x"
 
-[node name="ProgressBar" type="HSlider" parent="MainPanel/MainVBox" unique_id=451392875]
-clip_contents = true
-custom_minimum_size = Vector2(0, 27.67)
-layout_mode = 2
-value = 8.0
-
-[node name="Label" type="Label" parent="MainPanel/MainVBox/ProgressBar" unique_id=1780651247]
-modulate = Color(0.118, 0.118, 0.18, 0.27)
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -68.5
-offset_top = -11.5
-offset_right = 68.5
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("1_jtqyn")
-theme_override_font_sizes/font_size = 16
-text = "Algorithm Progress"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Padding" type="Control" parent="MainPanel/MainVBox" unique_id=1457330588]
-custom_minimum_size = Vector2(0, 20.36)
+[node name="UIOverlay" type="Control" parent="Panel" unique_id=529460953]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="DragIndicator" type="Control" parent="MainPanel" unique_id=727121513]
-layout_mode = 2
-size_flags_horizontal = 8
-size_flags_vertical = 8
+[node name="ProgressFill" type="ProgressBar" parent="Panel/UIOverlay" unique_id=1420688072]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 0
+offset_left = -8.0
+offset_top = 54.0
+offset_right = 190.0
+offset_bottom = 59.0
+size_flags_horizontal = 3
 mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_prog_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_prog_fill")
+show_percentage = false
 
-[node name="DragLines" type="TextureButton" parent="MainPanel/DragIndicator" unique_id=206925501]
-modulate = Color(0.6, 0.6, 0.62, 1)
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -20.0
-offset_top = -20.0
-grow_horizontal = 0
-grow_vertical = 0
-mouse_filter = 1
-mouse_default_cursor_shape = 10
-keep_pressed_outside = true
-texture_normal = ExtResource("2_euqy7")
+[node name="XBtn" type="TextureButton" parent="Panel/UIOverlay" unique_id=1789620420]
+modulate = Color(0.25, 0.25, 0.28, 1)
+texture_filter = 6
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 0
+offset_left = -6.0
+offset_top = -3.0
+offset_right = 14.0
+offset_bottom = 21.0
+size_flags_vertical = 4
+tooltip_text = "Stop algorithm"
+texture_normal = ExtResource("20_cld")
+texture_pressed = ExtResource("22_clp")
+texture_hover = ExtResource("21_clh")
+texture_disabled = ExtResource("20_cld")
 ignore_texture_size = true
-stretch_mode = 0
+stretch_mode = 5
 
-[connection signal="pressed" from="MainPanel/MainVBox/TopButtons/Back" to="." method="_on_back_pressed"]
-[connection signal="pressed" from="MainPanel/MainVBox/TopButtons/Stop" to="." method="_on_stop_pressed"]
-[connection signal="pressed" from="MainPanel/MainVBox/TopButtons/Forward" to="." method="_on_forward_pressed"]
-[connection signal="drag_ended" from="MainPanel/MainVBox/ProgressBar" to="." method="_on_progress_bar_drag_ended"]
-[connection signal="drag_started" from="MainPanel/MainVBox/ProgressBar" to="." method="_on_progress_bar_drag_started"]
-[connection signal="value_changed" from="MainPanel/MainVBox/ProgressBar" to="." method="_on_progress_bar_value_changed"]
+[connection signal="pressed" from="Panel/VBox/RowMargin/Row/CenterGroup/BackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="Panel/VBox/RowMargin/Row/CenterGroup/PlayBtn" to="." method="_on_play_pressed"]
+[connection signal="pressed" from="Panel/VBox/RowMargin/Row/CenterGroup/PauseBtn" to="." method="_on_pause_pressed"]
+[connection signal="pressed" from="Panel/VBox/RowMargin/Row/CenterGroup/ForwardBtn" to="." method="_on_forward_pressed"]
+[connection signal="pressed" from="Panel/VBox/RowMargin/Row/SpeedWrap/SpeedBtn" to="." method="_on_speed_btn_pressed"]
+[connection signal="pressed" from="Panel/UIOverlay/XBtn" to="." method="_on_stop_pressed"]

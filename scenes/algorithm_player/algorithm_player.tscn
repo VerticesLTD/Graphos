@@ -10,10 +10,12 @@ script = ExtResource("1_polfl")
 [node name="PseudoVisualizer" parent="." unique_id=1374754234 instance=ExtResource("2_6sljs")]
 visible = false
 
-[node name="AlgorithmControls" parent="." unique_id=1698095556 instance=ExtResource("3_6sljs")]
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=1698095557]
+
+[node name="AlgorithmControls" parent="UILayer" unique_id=1698095556 instance=ExtResource("3_6sljs")]
 visible = false
 
-[connection signal="step_back" from="AlgorithmControls" to="." method="step_backward"]
-[connection signal="step_forward" from="AlgorithmControls" to="." method="step_forward"]
-[connection signal="stop" from="AlgorithmControls" to="." method="cancel_algorithm_execution"]
-[connection signal="user_changed_execution_progress" from="AlgorithmControls" to="." method="_on_user_changed_progress"]
+[connection signal="play_requested" from="UILayer/AlgorithmControls" to="." method="request_play"]
+[connection signal="step_back" from="UILayer/AlgorithmControls" to="." method="step_backward"]
+[connection signal="step_forward" from="UILayer/AlgorithmControls" to="." method="step_forward"]
+[connection signal="stop" from="UILayer/AlgorithmControls" to="." method="cancel_algorithm_execution"]

@@ -1,9 +1,9 @@
 class_name AlgorithmPlayer
-extends Node2D 
+extends Node2D
 
 const LOG_TAG = "ALG_PLAYER"
 
-@onready var algorithm_controls: AlgorithmControls = $AlgorithmControls
+@onready var algorithm_controls: AlgorithmControls = $UILayer/AlgorithmControls
 @onready var pseudo_visualizer: PanelContainer = $PseudoVisualizer
 var pseudo_steps: Array
 
@@ -39,20 +39,46 @@ func _ready() -> void:
 	pseudo_visualizer.visible = false
 	algorithm_controls.visible = false
 
+
+func is_algorithm_running() -> bool:
+	return _is_algorithm_running
+
+
+# Toggles auto playing on/off
+func toggle_auto_playing() -> void:
+	if not _is_algorithm_running:
+		return
+	if algorithm_controls.is_auto_playing():
+		algorithm_controls.set_auto_playing(false)
+		return
+	# If we finished, restart from scratch before playing again.
+	if current_step_index >= timeline.size():
+		reset_to_start()
+	algorithm_controls.set_auto_playing(true)
+
+
+func request_play() -> void:
+	if not _is_algorithm_running:
+		return
+	if current_step_index >= timeline.size():
+		reset_to_start()
+	algorithm_controls.set_auto_playing(true)
+
 func start_algorithm(
 	algorithm_type: ALGORITHMS,
 	starting_node: Vertex,
 	selection_buffer: Array[Vertex],
 	graph: Graph
 	) -> void:
-	
+
 	if _is_algorithm_running:
 		cancel_algorithm_execution()
 		if visualizer_tween:
 			await visualizer_tween.finished
 
 	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
-	
+
+	# Check if the graph is correpted
 	if not imposter_graph.get_graph_dominant_strategy():
 		Notify.show_error("Mixed Strategy Error: Directed and Undirected edges cannot coexist during an algorithm.")
 		return
@@ -60,11 +86,11 @@ func start_algorithm(
 	if not imposter_graph.get_graph_weight_state():
 		Notify.show_error("Mixed Weight Error: All edges must be either Weighted or Unweighted in order to run an algorithm.")
 		return
-	
+
 	if not imposter_graph:
 		Notify.show_error("Algorithm Error: Selection contains mixed graph types.")
 		return # ABORT
-	
+
 	var algorithm_instance: GraphAlgorithm = _algorithm_map[algorithm_type].get(0)
 	var pseudo_resource: PseudoCodeData = _algorithm_map[algorithm_type].get(1)
 
@@ -75,7 +101,7 @@ func start_algorithm(
 
 	var imposter_start_node = imposter_graph.get_vertex(starting_node.id)
 
-	# Extracting timeline and Pseudo steps from alg run 
+	# Extracting timeline and Pseudo steps from alg run
 	var algorithm_result = algorithm_instance.run(imposter_start_node)
 	timeline = algorithm_result.get(0)
 
@@ -83,25 +109,19 @@ func start_algorithm(
 	max_step = timeline.size()
 
 	pseudo_steps = algorithm_result.get(1)
-	
+
 	data_updates = algorithm_result.get(2)
 	assert(timeline != null and pseudo_steps != null and data_updates != null)
 
-
 	# Setting visualizer
 	pseudo_visualizer.data = pseudo_resource
-	# Show initialization block immediately before first playback step.
 	if pseudo_resource and pseudo_resource.steps.size() > 1:
 		pseudo_visualizer.render_step(1)
 	else:
 		pseudo_visualizer.render_step(0)
 	_expose_visualizer()
 
-	algorithm_controls.set_data_layout(algorithm_type)
-
-	# Set initial data display
-	if data_updates.get(0) != null:
-		algorithm_controls.update_execution_data(data_updates[0])
+	algorithm_controls.set_step_info(0, max_step)
 	_update_progress_bar()
 	_expose_controls()
 
@@ -125,10 +145,15 @@ func _expose_visualizer() -> void:
 
 # Animation to show player controls.
 func _expose_controls() -> void:
-	algorithm_controls.position = Vector2.ZERO
-	
 	algorithm_controls.visible = true
 	algorithm_controls.scale = Vector2.ZERO
+
+	# Wait one frame so layout settles and size is known, then set pivot to bottom-center
+	await get_tree().process_frame
+	algorithm_controls.pivot_offset = Vector2(
+		algorithm_controls.size.x / 2.0,
+		algorithm_controls.size.y
+	)
 
 	if controls_tween: controls_tween.kill()
 
@@ -137,7 +162,7 @@ func _expose_controls() -> void:
 	controls_tween.set_trans(controls_tween.TRANS_BOUNCE)
 	controls_tween.tween_property(algorithm_controls,"scale",Vector2.ONE,0.5)
 
-# Animation to collapse visualizer. Will be used when controls are implemented
+# Animation to collapse visualizer.
 func _collapse_visualizer() -> void:
 	if visualizer_tween: visualizer_tween.kill()
 
@@ -147,7 +172,7 @@ func _collapse_visualizer() -> void:
 	visualizer_tween.chain().tween_callback(func(): pseudo_visualizer.visible = false)
 
 
-# Animation to collapse player controls. Will be used when controls are implemented
+# Animation to collapse player controls.
 func _collapse_controls() -> void:
 	if controls_tween: controls_tween.kill()
 
@@ -160,7 +185,8 @@ func _collapse_controls() -> void:
 func step_forward(update_progress_bar = true) -> void:
 	# Check if we are already at the end
 	if current_step_index >= timeline.size():
-		return 
+		algorithm_controls.set_auto_playing(false)
+		return
 
 	# event at the new pointer
 	var event = timeline[current_step_index]
@@ -175,10 +201,6 @@ func step_forward(update_progress_bar = true) -> void:
 	if current_pseudo_step != null:
 		GLogger.debug("Pseudo step rendered",LOG_TAG)
 		pseudo_visualizer.render_step(current_pseudo_step)
-	
-	var data_update = data_updates[current_step_index]
-	if data_update != null:
-		algorithm_controls.update_execution_data(data_update)
 
 	# Move pointer forward
 	current_step_index += 1
@@ -197,48 +219,36 @@ func step_backward(update_progress_bar = true) -> void:
 	var event = timeline[current_step_index]
 
 	var current_pseudo_step = pseudo_steps[current_step_index]
-	
+
 	if event != null:
 		GLogger.debug("Event executed",LOG_TAG)
 		event.undo()
-	
+
 	if current_pseudo_step != null:
 		GLogger.debug("Pseudo step rendered",LOG_TAG)
 		pseudo_visualizer.render_step(current_pseudo_step)
-	
-	var data_update = data_updates[current_step_index]
-	if data_update != null:
-		algorithm_controls.update_execution_data(data_update)
-	
+
 	if update_progress_bar: _update_progress_bar()
 
 ## Go to a specific step
 func go_to_step(target_index: int, update_progress_bar = true) -> void:
 	target_index = clampi(target_index, 0, timeline.size() - 1)
-	
+
 	# If we need to go forward
 	while current_step_index < target_index:
 		step_forward(update_progress_bar)
-		
+
 	# If we need to go backward
 	while current_step_index > target_index:
 		step_backward(update_progress_bar)
 
 func _update_progress_bar() -> void:
-	var current = float(current_step_index)
-	var maximum = float(max_step)
-	var progress = int(current/maximum * 100)
+	var current := float(current_step_index)
+	var maximum := maxf(float(max_step), 1.0)
+	var progress := int(roundf(current / maximum * 100.0))
 
 	algorithm_controls.set_algorithm_progress(progress)
-
-func _on_user_changed_progress(new_value: float) -> void:
-	# Transforming a float in [1,100] into a valid step number
-	var step_from_val = int((max_step * new_value)/100)
-	step_from_val = clampi(step_from_val,0,max_step)
-
-	# We give 'false' to stop the progress bar from being updated.
-	# Otherwise we'd have a circular update - User drags -> Player changes step -> Player updates (bad)
-	go_to_step(step_from_val,false)
+	algorithm_controls.set_step_info(current_step_index, max_step)
 
 func reset_to_start() -> void:
 	go_to_step(0)
@@ -247,7 +257,7 @@ func reset_to_start() -> void:
 func cancel_algorithm_execution() -> void:
 	# First, reset visuals to go back to the original graph
 	reset_to_start()
-	
+
 	# Then clear the data
 	timeline.clear()
 	pseudo_steps.clear()
@@ -255,7 +265,6 @@ func cancel_algorithm_execution() -> void:
 	_collapse_controls()
 	pseudo_visualizer.data = null
 	current_step_index = 0
-	algorithm_controls.set_no_algorithm_data()
-	algorithm_controls.set_no_algorithm_progress()
-	
+	algorithm_controls.reset()
+
 	_is_algorithm_running = false

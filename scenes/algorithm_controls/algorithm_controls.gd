@@ -1,12 +1,3 @@
-# TODO list:
-# 1. Create svgs for the buttons - DONE
-# 2. Implement the data section - DONE
-# 3. Expose a controlled API to set the data section:
-#    API takes an algorithm ENUM and data, then sets the data section according to 
-#	 the relevant scene blueprint + data provided.
-#	 Also add update_data function.
-# 4. Make components grow when menu is resized - DONE
-
 extends MarginContainer
 class_name AlgorithmControls
 
@@ -14,136 +5,137 @@ class_name AlgorithmControls
 signal step_back
 ## User clicked step forward
 signal step_forward
-## User clicked stop
+## Algorithm session stopped entirely
 signal stop
-## User dragged progress bar
-signal user_changed_execution_progress(progress: float)
+## User clicked play (or requested resume)
+signal play_requested
 
-var _is_user_dragging_progress := false
+const _BASE_INTERVAL := 1.2  # seconds between auto-play steps at ×1.0 speed
+const SPEEDS: Array[float] = [0.5, 1.0, 2.0, 4.0]
 
-# The main area
-@onready var main_v_box: VBoxContainer = $MainPanel/MainVBox
-# The algorithm data scene - This is replace when we set new data
-@onready var data_separator: HSeparator = $MainPanel/MainVBox/DataSeparator
-@onready var algorithm_data: AlgorithmBaseDataLayout = $MainPanel/MainVBox/AlgorithmDataPreset
-@onready var progress_separator: HSeparator = $MainPanel/MainVBox/ProgressSeparator
-@onready var progress_bar: HSlider = $MainPanel/MainVBox/ProgressBar
-@onready var progress_padding: Control = $MainPanel/MainVBox/Padding
+var _playing := false
+var _auto_play_timer: Timer
+var _speed_index: int = 1  # Default ×1.0
 
-# Text components
-@onready var main_title: Label = $MainPanel/MainVBox/TitleSpace/Title
-
-# Dragging button
-@onready var drag_button: TextureButton = $MainPanel/DragIndicator/DragLines
-
-# Available algorithm data layouts
-var alg_to_layout: Dictionary = {
-		AlgorithmPlayer.ALGORITHMS.BFS : [preload("uid://jgjoys0wtvpl"),"BFS"], # Graph Stats 
-		AlgorithmPlayer.ALGORITHMS.DFS : [preload("uid://jgjoys0wtvpl"), "DFS"], # Graph Stats 
-	}
-
-# Dragging logic
-var _dragging: bool = false
-var _drag_offset: Vector2 = Vector2.ZERO
-var _drag_start_pos: Vector2 = Vector2.ZERO
-var _drag_start_size: Vector2 = Vector2.ZERO
+@onready var play_btn: TextureButton = $Panel/VBox/RowMargin/Row/CenterGroup/PlayBtn
+@onready var pause_btn: TextureButton = $Panel/VBox/RowMargin/Row/CenterGroup/PauseBtn
+@onready var speed_btn: Button = $Panel/VBox/RowMargin/Row/SpeedWrap/SpeedBtn
+@onready var progress_fill: ProgressBar = _resolve_progress_fill()
 
 
-func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				_dragging = true
-				_drag_offset = get_global_mouse_position() - global_position
-				_drag_start_pos = get_global_mouse_position()
-				_drag_start_size = size
-				
-			else:
-				_dragging = false
+func _ready() -> void:
+	_auto_play_timer = Timer.new()
+	_auto_play_timer.wait_time = _BASE_INTERVAL
+	_auto_play_timer.timeout.connect(_on_auto_play_tick)
+	add_child(_auto_play_timer)
 
-	elif event is InputEventMouseMotion and _dragging and not drag_button.button_pressed:
-		global_position = get_global_mouse_position() - _drag_offset
-	
-	elif event is InputEventMouseMotion and _dragging and drag_button.button_pressed:
-		var curr_mouse_pos = get_global_mouse_position()
-		var diff = curr_mouse_pos - _drag_start_pos
-		size = _drag_start_size + diff
-		size = size.clamp(custom_minimum_size, custom_minimum_size + Vector2(300,400))
+	get_viewport().size_changed.connect(func(): call_deferred("_snap_to_bottom_center"))
+	call_deferred("_snap_to_bottom_center")
 
-func _on_back_pressed() -> void:
-	step_back.emit()
+
+func _resolve_progress_fill() -> ProgressBar:
+	var progress_node := get_node_or_null("Panel/UIOverlay/ProgressFill") as ProgressBar
+	if progress_node == null:
+		# Backward compatibility with older scene layout.
+		progress_node = get_node_or_null("Panel/VBox/ProgressFill") as ProgressBar
+	return progress_node
+
+
+func _snap_to_bottom_center() -> void:
+	await get_tree().process_frame
+	var vp := get_viewport().get_visible_rect().size
+	position = Vector2(
+		roundf(vp.x / 2.0 - size.x / 2.0),
+		vp.y - size.y - 24.0
+	)
+
+
+# ──────────────────────────────────────────────────────────
+#  Button handlers
+# ──────────────────────────────────────────────────────────
 
 func _on_stop_pressed() -> void:
+	set_auto_playing(false)
 	stop.emit()
 
+
+func _on_back_pressed() -> void:
+	set_auto_playing(false)
+	step_back.emit()
+
+
+func _on_play_pressed() -> void:
+	play_requested.emit()
+
+
+func _on_pause_pressed() -> void:
+	set_auto_playing(false)
+
+
 func _on_forward_pressed() -> void:
+	set_auto_playing(false)
 	step_forward.emit()
 
-## The controls will only display the title and buttons
-func set_no_algorithm_data() -> void:
-	algorithm_data.visible = false
-	data_separator.visible = false
 
-## The controls will not show a progress bar
-func set_no_algorithm_progress() -> void:
-	progress_bar.visible = false
-	progress_padding.visible = false
-	progress_separator.visible = false
+func _on_auto_play_tick() -> void:
+	step_forward.emit()
 
-## Show progress bar in controls.
-func set_algorithm_progress_visible() -> void:
-	progress_bar.visible = true
-	progress_padding.visible = true
-	progress_separator.visible = true
-	
-## Set the progress of the bar to a value between 1-100
+
+func _on_speed_btn_pressed() -> void:
+	_speed_index = (_speed_index + 1) % SPEEDS.size()
+	_apply_speed()
+
+
+# ──────────────────────────────────────────────────────────
+#  Public API
+# ──────────────────────────────────────────────────────────
+
+## Toggle auto-play on or off. Called externally when algorithm end is reached.
+func set_auto_playing(playing: bool) -> void:
+	_playing = playing
+	play_btn.visible = not playing
+	pause_btn.visible = playing
+	if playing:
+		_auto_play_timer.start()
+	else:
+		_auto_play_timer.stop()
+
+
+func is_auto_playing() -> bool:
+	return _playing
+
+
+## Update the thin fill bar. progress is 0–100.
 func set_algorithm_progress(progress: int) -> void:
-	set_algorithm_progress_visible()
-	
-	# We set progress to at least 8 since less then that messes with borders
-	progress = clampi(progress, 8, 100)
-	var tween = create_tween()
+	if progress_fill == null:
+		return
+	progress = clampi(progress, 0, 100)
+	var tween := create_tween()
 	tween.set_ease(Tween.EASE_OUT)
-	tween.set_trans(Tween.TRANS_CUBIC)
-	tween.tween_property(progress_bar,"value",progress,0.2)
-
-func set_data_layout(algorithm: AlgorithmPlayer.ALGORITHMS) -> void:
-	algorithm_data.queue_free()
-
-	var result = alg_to_layout.get(algorithm)
-	if result == null:
-		push_warning("Algorithm provided doesn't have a defined data layout. Consider creating one.")
-		return
-
-	var layout = result[0].instantiate()
-	var alg_name = result[1]
-	
-	data_separator.visible = true
-	main_v_box.add_child(layout)
-	main_v_box.move_child(layout,data_separator.get_index()+1)
-	algorithm_data = layout 
-	
-	main_title.text = alg_name
-
-## API to update the data section in the controls.
-## Passes the given data to the data section which handles the update.
-## Data should come from the algorithm execution result for this to work.
-func update_execution_data(data) -> void:
-	algorithm_data.update_data(data)
+	tween.set_trans(Tween.TRANS_SINE)
+	tween.tween_property(progress_fill, "value", progress, 0.14)
 
 
-func _on_progress_bar_drag_started() -> void:
-	_is_user_dragging_progress = true
+func set_step_info(_current: int, _max_steps: int) -> void:
+	pass
 
 
-func _on_progress_bar_drag_ended(_value_changed: bool) -> void:
-	_is_user_dragging_progress = false
+## Reset all display state (called when algorithm is cancelled).
+func reset() -> void:
+	set_auto_playing(false)
+	progress_fill.value = 0
+	_speed_index = 1
+	_apply_speed()
 
 
-func _on_progress_bar_value_changed(value: float) -> void:
-	# Only signal change to algorithm player if its made by the user, and not if its made by 
-	# the algorithm player itself.
-	if not _is_user_dragging_progress:
-		return
-	
-	user_changed_execution_progress.emit(value)
+# ──────────────────────────────────────────────────────────
+#  Helpers
+# ──────────────────────────────────────────────────────────
+
+func _apply_speed() -> void:
+	var spd: float = SPEEDS[_speed_index]
+	_auto_play_timer.wait_time = _BASE_INTERVAL / spd
+	if is_equal_approx(spd, roundf(spd)):
+		speed_btn.text = "%dx" % int(roundf(spd))
+	else:
+		speed_btn.text = "%.1fx" % spd

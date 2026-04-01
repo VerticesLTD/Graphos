@@ -45,7 +45,13 @@ var action_map: Dictionary = {
 var action_map_algorithm_player: Dictionary = {
 	&"ui_right" : [func(_event): player.step_forward(), null],
 	&"ui_left" : [func(_event): player.step_backward(), null],
+	&"ui_accept" : [func(_event): player.toggle_auto_playing(), null],
 }
+
+const HOLD_REPEAT_INITIAL_DELAY := 0.28
+const HOLD_REPEAT_INTERVAL := 0.07
+var _held_algorithm_action: StringName = &""
+var _held_algorithm_timer := 0.0
 
 ## Vars to handle dragging
 ## Stores { Vertex: Vector2_Initial_Pos } for whatever is being dragged
@@ -68,11 +74,12 @@ func _ready() -> void:
 		push_warning("GraphController: popup manager not assigned in Inspector.")
 	
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	# If we are currently dragging nodes, we do not want to touch
 	# the selection buffer.
 	if Globals.is_mass_select and not is_dragging:
 		_populate_selection_buffer()
+	_process_algorithm_key_hold(delta)
 
 ## ------------------------------------------------------------------------------
 ## INPUT HANDLING
@@ -96,6 +103,31 @@ func _unhandled_input(event: InputEvent) -> void:
 			return	
 	
 	if player:
+		if not player.is_algorithm_running():
+			_held_algorithm_action = &""
+			return
+		if event is InputEventKey:
+			# Left/right support hold-to-repeat:
+			# first press steps once, then repeats while key is held.
+			if event.is_action_pressed("ui_left") and not event.echo:
+				player.step_backward()
+				_held_algorithm_action = &"ui_left"
+				_held_algorithm_timer = HOLD_REPEAT_INITIAL_DELAY
+				return
+			if event.is_action_pressed("ui_right") and not event.echo:
+				player.step_forward()
+				_held_algorithm_action = &"ui_right"
+				_held_algorithm_timer = HOLD_REPEAT_INITIAL_DELAY
+				return
+			if event.is_action_released("ui_left") and _held_algorithm_action == &"ui_left":
+				_held_algorithm_action = &""
+				return
+			if event.is_action_released("ui_right") and _held_algorithm_action == &"ui_right":
+				_held_algorithm_action = &""
+				return
+			# Ignore key-repeat events for non-hold actions like ui_accept.
+			if event.echo:
+				return
 		for action: StringName in action_map_algorithm_player.keys():
 			# Callables from action map
 			var pressed_handler = action_map_algorithm_player[action].get(0)
@@ -108,6 +140,25 @@ func _unhandled_input(event: InputEvent) -> void:
 			if event.is_action_released(action) and release_handler:
 				release_handler.call(event)
 				return	
+
+
+func _process_algorithm_key_hold(delta: float) -> void:
+	if not player or not player.is_algorithm_running():
+		_held_algorithm_action = &""
+		return
+	if _held_algorithm_action == &"":
+		return
+	if not Input.is_action_pressed(_held_algorithm_action):
+		_held_algorithm_action = &""
+		return
+
+	_held_algorithm_timer -= delta
+	while _held_algorithm_timer <= 0.0:
+		if _held_algorithm_action == &"ui_left":
+			player.step_backward()
+		elif _held_algorithm_action == &"ui_right":
+			player.step_forward()
+		_held_algorithm_timer += HOLD_REPEAT_INTERVAL
 
 ## Starts dragging a node
 func start_dragging(id: int = Globals.NOT_FOUND) -> void:
