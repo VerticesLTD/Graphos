@@ -209,6 +209,7 @@ text = "×1"
 
 [node name="UIOverlay" type="Control" parent="Panel" unique_id=529460953]
 layout_mode = 2
+mouse_filter = 2
 
 [node name="ProgressFill" type="ProgressBar" parent="Panel/UIOverlay" unique_id=1420688072]
 custom_minimum_size = Vector2(0, 4)
@@ -218,6 +219,7 @@ offset_top = 54.0
 offset_right = 190.0
 offset_bottom = 59.0
 size_flags_horizontal = 3
+mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_prog_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_prog_fill")
 show_percentage = false

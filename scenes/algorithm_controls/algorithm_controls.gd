@@ -18,7 +18,7 @@ var _speed_index: int = 1  # Default ×1.0
 @onready var play_btn: TextureButton = $Panel/VBox/RowMargin/Row/CenterGroup/PlayBtn
 @onready var pause_btn: TextureButton = $Panel/VBox/RowMargin/Row/CenterGroup/PauseBtn
 @onready var speed_btn: Button = $Panel/VBox/RowMargin/Row/SpeedWrap/SpeedBtn
-@onready var progress_fill: ProgressBar = $Panel/VBox/ProgressFill
+@onready var progress_fill: ProgressBar = _resolve_progress_fill()
 
 
 func _ready() -> void:
@@ -29,6 +29,14 @@ func _ready() -> void:
 
 	get_viewport().size_changed.connect(func(): call_deferred("_snap_to_bottom_center"))
 	call_deferred("_snap_to_bottom_center")
+
+
+func _resolve_progress_fill() -> ProgressBar:
+	var progress_node := get_node_or_null("Panel/UIOverlay/ProgressFill") as ProgressBar
+	if progress_node == null:
+		# Backward compatibility with older scene layout.
+		progress_node = get_node_or_null("Panel/VBox/ProgressFill") as ProgressBar
+	return progress_node
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -111,6 +119,8 @@ func set_auto_playing(playing: bool) -> void:
 
 ## Update the thin fill bar. progress is 0–100.
 func set_algorithm_progress(progress: int) -> void:
+	if progress_fill == null:
+		return
 	progress = clampi(progress, 0, 100)
 	var tween := create_tween()
 	tween.set_ease(Tween.EASE_OUT)
