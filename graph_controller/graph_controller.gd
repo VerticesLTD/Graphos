@@ -9,7 +9,7 @@ const VERTEX_BELOW = 1
 @export var graph: Graph
 
 ## UI overlay that draws/opens context menus
-@onready var popup_menu: GraphContextMenuManager = $PopupMenu
+@onready var popup_menu: GraphContextMenuManager = $"../CanvasLayer/PopupMenuLayer"
 
 ## The selection buffer to link multiple nodes with an edge
 var link_buffer: Array[int] = []

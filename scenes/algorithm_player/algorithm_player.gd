@@ -2,9 +2,10 @@ class_name AlgorithmPlayer
 extends Node2D
 
 const LOG_TAG = "ALG_PLAYER"
+const PSEUDO_MARGIN := 24.0
 
 @onready var algorithm_controls: AlgorithmControls = $UILayer/AlgorithmControls
-@onready var pseudo_visualizer: PanelContainer = $PseudoVisualizer
+@onready var pseudo_visualizer: PanelContainer = $UILayer/PseudoVisualizer
 var pseudo_steps: Array
 
 enum ALGORITHMS {
@@ -131,9 +132,9 @@ func start_algorithm(
 
 # Animation to show visualizer
 func _expose_visualizer() -> void:
-	pseudo_visualizer.position = Vector2.ZERO
-
 	pseudo_visualizer.visible = true
+	await get_tree().process_frame
+	_place_visualizer_bottom_left()
 	pseudo_visualizer.scale = Vector2.ZERO
 
 	if visualizer_tween: visualizer_tween.kill()
@@ -142,6 +143,14 @@ func _expose_visualizer() -> void:
 	visualizer_tween.set_ease(visualizer_tween.EASE_OUT)
 	visualizer_tween.set_trans(visualizer_tween.TRANS_BOUNCE)
 	visualizer_tween.tween_property(pseudo_visualizer,"scale",Vector2.ONE,0.5)
+
+func _place_visualizer_bottom_left() -> void:
+	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+	var panel_size: Vector2 = pseudo_visualizer.size
+	pseudo_visualizer.position = Vector2(
+		PSEUDO_MARGIN,
+		viewport_size.y - panel_size.y - PSEUDO_MARGIN
+	)
 
 # Animation to show player controls.
 func _expose_controls() -> void:

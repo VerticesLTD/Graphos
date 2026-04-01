@@ -7,10 +7,10 @@
 [node name="AlgorithmPlayer" type="Node2D" unique_id=539023221]
 script = ExtResource("1_polfl")
 
-[node name="PseudoVisualizer" parent="." unique_id=1374754234 instance=ExtResource("2_6sljs")]
-visible = false
-
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=1698095557]
+
+[node name="PseudoVisualizer" parent="UILayer" unique_id=1374754234 instance=ExtResource("2_6sljs")]
+visible = false
 
 [node name="AlgorithmControls" parent="UILayer" unique_id=1698095556 instance=ExtResource("3_6sljs")]
 visible = false

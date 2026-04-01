@@ -1,6 +1,8 @@
 extends Node
 
 var controller: GraphController
+var _last_mouse_world_pos: Vector2 = Vector2.ZERO
+var _has_last_mouse_world_pos := false
 
 var action_map: Dictionary = {
 	&"left_click" : [_handle_left_click, _handle_left_release],
@@ -56,7 +58,9 @@ func _handle_left_click(event: InputEventMouseButton):
 	var graph = controller.graph
 	var selection_buffer = controller.selection_buffer
 
-	var mouse_global_pos = event.global_position
+	var mouse_global_pos = graph.get_global_mouse_position()
+	_last_mouse_world_pos = mouse_global_pos
+	_has_last_mouse_world_pos = true
 
 	# Get the vertex in the position of the mouse(or not found)
 	var id = graph.get_vertex_id_at(mouse_global_pos)
@@ -96,6 +100,7 @@ func _handle_left_click(event: InputEventMouseButton):
 func _handle_left_release(_event: InputEventMouseButton):
 	# Stop dragging
 	controller.stop_dragging()
+	_has_last_mouse_world_pos = false
 	
 	# Stop the hover animations
 	if controller.animation_manager:
@@ -141,26 +146,27 @@ func _handle_path_connection(pos: Vector2) -> void:
 func _handle_right_click(event: InputEventMouseButton):
 	var graph = controller.graph
 	var popup_menu = controller.popup_menu
-	var mouse_global_pos = event.global_position
+	var mouse_global_pos = graph.get_global_mouse_position()
+	var mouse_screen_pos = event.position
 
 	## 1. Check vertex at mouse
 	var v_id = graph.get_vertex_id_at(mouse_global_pos)
 	if v_id != Globals.NOT_FOUND:
 		var v: Vertex = graph.get_vertex(v_id)
 		if v and popup_menu:
-			popup_menu.open_for_vertex(v, mouse_global_pos)
+			popup_menu.open_for_vertex(v, mouse_global_pos, mouse_screen_pos)
 		return
 
 	## 2. Check edge at mouse
 	var edge = graph.get_edge_at(mouse_global_pos)
 	if edge != null:
 		if popup_menu:
-			popup_menu.open_for_edge(edge, mouse_global_pos)
+			popup_menu.open_for_edge(edge, mouse_global_pos, mouse_screen_pos)
 		return
 
 	## 3. Empty space
 	if popup_menu:
-		popup_menu.open_for_canvas(mouse_global_pos)
+		popup_menu.open_for_canvas(mouse_global_pos, mouse_screen_pos)
 	pass
 	
 func _handle_right_release(_event: InputEventMouseButton):
@@ -168,19 +174,24 @@ func _handle_right_release(_event: InputEventMouseButton):
 
 ## Handle mouse movement
 func _handle_mouse_movement(event: InputEventMouseMotion):
+	var mouse_world_pos := controller.graph.get_global_mouse_position()
+
 	# LANE 1: PASSIVE (Hovering)
 	# This runs every time the mouse moves, regardless of dragging.
-	_handle_hover(event.global_position)
+	_handle_hover(mouse_world_pos)
 
 	# LANE 2: ACTIVE (Dragging)
 	# We only proceed here if a drag is actually in progress.
-	if controller.is_dragging:
-		_handle_dragging(event)
+	if controller.is_dragging and _has_last_mouse_world_pos:
+		_handle_dragging(mouse_world_pos - _last_mouse_world_pos)
 
-func _handle_dragging(event: InputEventMouseMotion):
-	# We move everything in the snapshot by the mouse delta (relative)
+	_last_mouse_world_pos = mouse_world_pos
+	_has_last_mouse_world_pos = true
+
+func _handle_dragging(world_delta: Vector2):
+	# Move by world-space delta so dragging remains correct with camera zoom/pan.
 	for v in controller.drag_snapshot.keys():
-		v.pos += event.relative
+		v.pos += world_delta
 		v.z_idx = controller.VERTEX_ON_TOP
 	
 	controller.update_selection_bounds()
