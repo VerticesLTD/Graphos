@@ -6,17 +6,17 @@
 [ext_resource type="Texture2D" uid="uid://788ul33sa73c" path="res://assets/algorithm_player/Arrow Hover.svg" id="6_21ssy"]
 [ext_resource type="Texture2D" uid="uid://db7l8qoopkapv" path="res://assets/algorithm_player/Arrow Disabled.svg" id="7_cqdmf"]
 [ext_resource type="Script" uid="uid://dbl0hfamnto5t" path="res://scenes/algorithm_controls/texture_button_script.gd" id="8_afb50"]
-[ext_resource type="Texture2D" path="res://assets/algorithm_player/Play Default.svg" id="12_pld"]
-[ext_resource type="Texture2D" path="res://assets/algorithm_player/Play Hover.svg" id="13_plh"]
-[ext_resource type="Texture2D" path="res://assets/algorithm_player/Play Pressed.svg" id="14_plp"]
-[ext_resource type="Texture2D" path="res://assets/algorithm_player/Play Disabled.svg" id="15_plx"]
-[ext_resource type="Texture2D" path="res://assets/algorithm_player/Pause Default.svg" id="16_pad"]
-[ext_resource type="Texture2D" path="res://assets/algorithm_player/Pause Hover.svg" id="17_pah"]
-[ext_resource type="Texture2D" path="res://assets/algorithm_player/Pause Pressed.svg" id="18_pap"]
-[ext_resource type="Texture2D" path="res://assets/algorithm_player/Pause Disabled.svg" id="19_pax"]
-[ext_resource type="Texture2D" path="res://assets/algorithm_player/Close Default.svg" id="20_cld"]
-[ext_resource type="Texture2D" path="res://assets/algorithm_player/Close Hover.svg" id="21_clh"]
-[ext_resource type="Texture2D" path="res://assets/algorithm_player/Close Pressed.svg" id="22_clp"]
+[ext_resource type="Texture2D" uid="uid://diwqdyjikmwpu" path="res://assets/algorithm_player/Play Default.svg" id="12_pld"]
+[ext_resource type="Texture2D" uid="uid://dkax76jupqrdr" path="res://assets/algorithm_player/Play Hover.svg" id="13_plh"]
+[ext_resource type="Texture2D" uid="uid://dt808kp2nugpg" path="res://assets/algorithm_player/Play Pressed.svg" id="14_plp"]
+[ext_resource type="Texture2D" uid="uid://dqnwwkq32nha5" path="res://assets/algorithm_player/Play Disabled.svg" id="15_plx"]
+[ext_resource type="Texture2D" uid="uid://c463l4wu7ontc" path="res://assets/algorithm_player/Pause Default.svg" id="16_pad"]
+[ext_resource type="Texture2D" uid="uid://djp14od5ywg44" path="res://assets/algorithm_player/Pause Hover.svg" id="17_pah"]
+[ext_resource type="Texture2D" uid="uid://ci42vqgfrsuca" path="res://assets/algorithm_player/Pause Pressed.svg" id="18_pap"]
+[ext_resource type="Texture2D" uid="uid://c6aolq5r0n8ag" path="res://assets/algorithm_player/Pause Disabled.svg" id="19_pax"]
+[ext_resource type="Texture2D" uid="uid://s4lij4m4ysfs" path="res://assets/algorithm_player/Close Default.svg" id="20_cld"]
+[ext_resource type="Texture2D" uid="uid://m3os05ws685o" path="res://assets/algorithm_player/Close Hover.svg" id="21_clh"]
+[ext_resource type="Texture2D" uid="uid://bkfs50jn275fe" path="res://assets/algorithm_player/Close Pressed.svg" id="22_clp"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 content_margin_left = 0.0
@@ -33,25 +33,10 @@ corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-expand_margin_left = 10.0
-expand_margin_top = 10.0
-expand_margin_right = 10.0
-expand_margin_bottom = 10.0
+expand_margin_left = 8.0
 shadow_color = Color(0, 0, 0, 0.12)
 shadow_size = 8
 shadow_offset = Vector2(0, 2)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_bg"]
-bg_color = Color(0.263, 0.38, 0.933, 0.12)
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_fill"]
-bg_color = Color(0.263, 0.38, 0.933, 1.0)
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_spd"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_speed_normal"]
 content_margin_left = 8.0
@@ -64,17 +49,6 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.118, 0.118, 0.18, 0.14)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_speed_hover"]
-content_margin_left = 8.0
-content_margin_top = 3.0
-content_margin_right = 8.0
-content_margin_bottom = 3.0
-bg_color = Color(0.906, 0.922, 0.988, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
@@ -96,53 +70,60 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_speed_hover"]
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 3.0
+bg_color = Color(0.906, 0.922, 0.988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_bg"]
+bg_color = Color(0.263, 0.38, 0.933, 0.12)
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_fill"]
+bg_color = Color(0.263, 0.38, 0.933, 1)
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
 [node name="AlgorithmControls" type="MarginContainer" unique_id=1698095556]
 z_index = 22
 script = ExtResource("1_o0rq8")
 
-[node name="Panel" type="PanelContainer" parent="."]
+[node name="Panel" type="PanelContainer" parent="." unique_id=783858207]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="VBox" type="VBoxContainer" parent="Panel"]
+[node name="VBox" type="VBoxContainer" parent="Panel" unique_id=1753582557]
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="RowMargin" type="MarginContainer" parent="Panel/VBox"]
+[node name="RowMargin" type="MarginContainer" parent="Panel/VBox" unique_id=926313704]
 layout_mode = 2
 theme_override_constants/margin_left = 14
-theme_override_constants/margin_right = 14
 theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 8
 
-[node name="Row" type="HBoxContainer" parent="Panel/VBox/RowMargin"]
+[node name="Row" type="HBoxContainer" parent="Panel/VBox/RowMargin" unique_id=2086760242]
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="XBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row"]
-modulate = Color(0.25, 0.25, 0.28, 1)
-texture_filter = 6
-custom_minimum_size = Vector2(22, 22)
-layout_mode = 2
-size_flags_vertical = 4
-tooltip_text = "Stop algorithm"
-texture_normal = ExtResource("20_cld")
-texture_pressed = ExtResource("22_clp")
-texture_hover = ExtResource("21_clh")
-texture_disabled = ExtResource("20_cld")
-ignore_texture_size = true
-stretch_mode = 5
-
-[node name="SpacerL" type="Control" parent="Panel/VBox/RowMargin/Row"]
+[node name="SpacerL" type="Control" parent="Panel/VBox/RowMargin/Row" unique_id=453583086]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CenterGroup" type="HBoxContainer" parent="Panel/VBox/RowMargin/Row"]
+[node name="CenterGroup" type="HBoxContainer" parent="Panel/VBox/RowMargin/Row" unique_id=2053428188]
 layout_mode = 2
 theme_override_constants/separation = 7
 alignment = 1
 
-[node name="BackBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup"]
+[node name="BackBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup" unique_id=554299384]
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
 custom_minimum_size = Vector2(26, 26)
@@ -156,7 +137,7 @@ ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("8_afb50")
 
-[node name="PlayBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup"]
+[node name="PlayBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup" unique_id=1277637430]
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
 custom_minimum_size = Vector2(44, 44)
@@ -170,7 +151,7 @@ ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("8_afb50")
 
-[node name="PauseBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup"]
+[node name="PauseBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup" unique_id=337541809]
 visible = false
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
@@ -185,7 +166,7 @@ ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("8_afb50")
 
-[node name="ForwardBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup"]
+[node name="ForwardBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup" unique_id=1953309857]
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
 custom_minimum_size = Vector2(26, 26)
@@ -200,45 +181,67 @@ stretch_mode = 5
 flip_h = true
 script = ExtResource("8_afb50")
 
-[node name="SpacerR" type="Control" parent="Panel/VBox/RowMargin/Row"]
+[node name="SpacerR" type="Control" parent="Panel/VBox/RowMargin/Row" unique_id=1065691435]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="SpeedWrap" type="MarginContainer" parent="Panel/VBox/RowMargin/Row"]
+[node name="SpeedWrap" type="MarginContainer" parent="Panel/VBox/RowMargin/Row" unique_id=684668034]
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/margin_left = 9
 
-[node name="SpeedBtn" type="Button" parent="Panel/VBox/RowMargin/Row/SpeedWrap"]
+[node name="SpeedBtn" type="Button" parent="Panel/VBox/RowMargin/Row/SpeedWrap" unique_id=1814429139]
+custom_minimum_size = Vector2(46, 24)
 layout_mode = 2
 size_flags_vertical = 4
-custom_minimum_size = Vector2(46, 24)
+tooltip_text = "Cycle speed: ×0.5 → ×1 → ×2 → ×4"
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
-theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
-theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1.0)
 theme_override_colors/font_focus_color = Color(0.263, 0.38, 0.933, 1)
+theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
+theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_font_sizes/font_size = 13
 theme_override_styles/normal = SubResource("StyleBoxFlat_speed_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_speed_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_speed_pressed")
-theme_override_styles/focus = SubResource("StyleBoxFlat_speed_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_speed_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_speed_normal")
+theme_override_styles/focus = SubResource("StyleBoxFlat_speed_hover")
 text = "×1"
-tooltip_text = "Cycle speed: ×0.5 → ×1 → ×2 → ×4"
 
-[node name="ProgressFill" type="ProgressBar" parent="Panel/VBox"]
+[node name="UIOverlay" type="Control" parent="Panel" unique_id=529460953]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 5)
+
+[node name="ProgressFill" type="ProgressBar" parent="Panel/UIOverlay" unique_id=1420688072]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 0
+offset_left = -5.0
+offset_top = 54.0
+offset_right = 190.0
+offset_bottom = 59.0
 size_flags_horizontal = 3
-show_percentage = false
-value = 0
-max_value = 100
 theme_override_styles/background = SubResource("StyleBoxFlat_prog_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_prog_fill")
+show_percentage = false
 
-[connection signal="pressed" from="Panel/VBox/RowMargin/Row/XBtn" to="." method="_on_stop_pressed"]
+[node name="XBtn" type="TextureButton" parent="Panel/UIOverlay" unique_id=1789620420]
+modulate = Color(0.25, 0.25, 0.28, 1)
+texture_filter = 6
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 0
+offset_left = -5.0
+offset_right = 15.0
+offset_bottom = 24.0
+size_flags_vertical = 4
+tooltip_text = "Stop algorithm"
+texture_normal = ExtResource("20_cld")
+texture_pressed = ExtResource("22_clp")
+texture_hover = ExtResource("21_clh")
+texture_disabled = ExtResource("20_cld")
+ignore_texture_size = true
+stretch_mode = 5
+
 [connection signal="pressed" from="Panel/VBox/RowMargin/Row/CenterGroup/BackBtn" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="Panel/VBox/RowMargin/Row/CenterGroup/PlayBtn" to="." method="_on_play_pressed"]
 [connection signal="pressed" from="Panel/VBox/RowMargin/Row/CenterGroup/PauseBtn" to="." method="_on_pause_pressed"]
 [connection signal="pressed" from="Panel/VBox/RowMargin/Row/CenterGroup/ForwardBtn" to="." method="_on_forward_pressed"]
 [connection signal="pressed" from="Panel/VBox/RowMargin/Row/SpeedWrap/SpeedBtn" to="." method="_on_speed_btn_pressed"]
+[connection signal="pressed" from="Panel/UIOverlay/XBtn" to="." method="_on_stop_pressed"]
