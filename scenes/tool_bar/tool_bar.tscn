@@ -7,7 +7,7 @@
 [ext_resource type="StyleBox" uid="uid://edc2pra87k3x" path="res://scenes/tool_bar/button_hover.tres" id="4_u1pd4"]
 [ext_resource type="Texture2D" uid="uid://v5eliv4lx04j" path="res://assets/icons/cursor-alt-svgrepo-com.svg" id="4_vgevf"]
 [ext_resource type="Texture2D" uid="uid://cmgktymkkl21e" path="res://assets/icons/create_tool_icon.svg" id="5_2j54p"]
-[ext_resource type="Texture2D" path="res://assets/icons/hand.svg" id="6_pan"]
+[ext_resource type="Texture2D" path="res://assets/icons/hand_toolbar.svg" id="6_pan"]
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_lpcgc"]
 color = Color(0.5058824, 0.5058824, 0.5058824, 0.5411765)
