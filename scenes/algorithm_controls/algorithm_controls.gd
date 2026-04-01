@@ -17,7 +17,7 @@ var _speed_index: int = 1  # Default ×1.0
 
 @onready var play_btn: TextureButton = $Panel/VBox/RowMargin/Row/CenterGroup/PlayBtn
 @onready var pause_btn: TextureButton = $Panel/VBox/RowMargin/Row/CenterGroup/PauseBtn
-@onready var speed_btn: Button = $Panel/VBox/RowMargin/Row/SpeedBtn
+@onready var speed_btn: Button = $Panel/VBox/RowMargin/Row/SpeedWrap/SpeedBtn
 @onready var progress_fill: ProgressBar = $Panel/VBox/ProgressFill
 
 
@@ -137,7 +137,7 @@ func reset() -> void:
 func _apply_speed() -> void:
 	var spd: float = SPEEDS[_speed_index]
 	_auto_play_timer.wait_time = _BASE_INTERVAL / spd
-	if spd == floorf(spd):
-		speed_btn.text = "×%d" % int(spd)
+	if is_equal_approx(spd, roundf(spd)):
+		speed_btn.text = "×%d" % int(roundf(spd))
 	else:
-		speed_btn.text = "×%.1g" % spd
+		speed_btn.text = "×%.1f" % spd

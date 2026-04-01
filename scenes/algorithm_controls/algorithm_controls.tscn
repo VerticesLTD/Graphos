@@ -5,7 +5,6 @@
 [ext_resource type="Texture2D" uid="uid://n30msroo4q83" path="res://assets/algorithm_player/Arrow Pressed.svg" id="5_afb50"]
 [ext_resource type="Texture2D" uid="uid://788ul33sa73c" path="res://assets/algorithm_player/Arrow Hover.svg" id="6_21ssy"]
 [ext_resource type="Texture2D" uid="uid://db7l8qoopkapv" path="res://assets/algorithm_player/Arrow Disabled.svg" id="7_cqdmf"]
-[ext_resource type="FontFile" uid="uid://d4hyiamuhdsom" path="res://assets/fonts/latinmodern-math.otf" id="7_7uv6k"]
 [ext_resource type="Script" uid="uid://dbl0hfamnto5t" path="res://scenes/algorithm_controls/texture_button_script.gd" id="8_afb50"]
 [ext_resource type="Texture2D" path="res://assets/algorithm_player/Play Default.svg" id="12_pld"]
 [ext_resource type="Texture2D" path="res://assets/algorithm_player/Play Hover.svg" id="13_plh"]
@@ -50,6 +49,49 @@ corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_spd"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_speed_normal"]
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 3.0
+bg_color = Color(1, 1, 1, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.118, 0.118, 0.18, 0.14)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_speed_hover"]
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 3.0
+bg_color = Color(0.906, 0.922, 0.988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_speed_pressed"]
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 3.0
+bg_color = Color(0.83, 0.882, 0.98, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.263, 0.38, 0.933, 0.55)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [node name="AlgorithmControls" type="MarginContainer" unique_id=1698095556]
 z_index = 22
 script = ExtResource("1_o0rq8")
@@ -64,10 +106,10 @@ theme_override_constants/separation = 0
 
 [node name="RowMargin" type="MarginContainer" parent="Panel/VBox"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_bottom = 8
 
 [node name="Row" type="HBoxContainer" parent="Panel/VBox/RowMargin"]
 layout_mode = 2
@@ -76,7 +118,7 @@ theme_override_constants/separation = 0
 [node name="XBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row"]
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
-custom_minimum_size = Vector2(24, 24)
+custom_minimum_size = Vector2(22, 22)
 layout_mode = 2
 size_flags_vertical = 4
 tooltip_text = "Stop algorithm"
@@ -93,13 +135,13 @@ size_flags_horizontal = 3
 
 [node name="CenterGroup" type="HBoxContainer" parent="Panel/VBox/RowMargin/Row"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 7
 alignment = 1
 
 [node name="BackBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup"]
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
-custom_minimum_size = Vector2(28, 28)
+custom_minimum_size = Vector2(26, 26)
 layout_mode = 2
 tooltip_text = "Step backward"
 texture_normal = ExtResource("4_fh3io")
@@ -113,7 +155,7 @@ script = ExtResource("8_afb50")
 [node name="PlayBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup"]
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
-custom_minimum_size = Vector2(48, 48)
+custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
 tooltip_text = "Play"
 texture_normal = ExtResource("12_pld")
@@ -128,7 +170,7 @@ script = ExtResource("8_afb50")
 visible = false
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
-custom_minimum_size = Vector2(48, 48)
+custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
 tooltip_text = "Pause"
 texture_normal = ExtResource("16_pad")
@@ -142,7 +184,7 @@ script = ExtResource("8_afb50")
 [node name="ForwardBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup"]
 modulate = Color(0.25, 0.25, 0.28, 1)
 texture_filter = 6
-custom_minimum_size = Vector2(28, 28)
+custom_minimum_size = Vector2(26, 26)
 layout_mode = 2
 tooltip_text = "Step forward"
 texture_normal = ExtResource("4_fh3io")
@@ -158,21 +200,25 @@ script = ExtResource("8_afb50")
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="SpeedBtn" type="Button" parent="Panel/VBox/RowMargin/Row"]
+[node name="SpeedWrap" type="MarginContainer" parent="Panel/VBox/RowMargin/Row"]
 layout_mode = 2
 size_flags_vertical = 4
-custom_minimum_size = Vector2(24, 0)
-theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 0.55)
-theme_override_colors/font_hover_color = Color(0.118, 0.118, 0.18, 0.85)
+theme_override_constants/margin_left = 9
+
+[node name="SpeedBtn" type="Button" parent="Panel/VBox/RowMargin/Row/SpeedWrap"]
+layout_mode = 2
+size_flags_vertical = 4
+custom_minimum_size = Vector2(46, 24)
+theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
+theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1.0)
-theme_override_colors/font_focus_color = Color(0.118, 0.118, 0.18, 0.55)
-theme_override_fonts/font = ExtResource("7_7uv6k")
-theme_override_font_sizes/font_size = 11
-theme_override_styles/normal = SubResource("StyleBoxEmpty_spd")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_spd")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_spd")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_spd")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_spd")
+theme_override_colors/font_focus_color = Color(0.263, 0.38, 0.933, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_speed_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_speed_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_speed_pressed")
+theme_override_styles/focus = SubResource("StyleBoxFlat_speed_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_speed_normal")
 text = "×1"
 tooltip_text = "Cycle speed: ×0.5 → ×1 → ×2 → ×4"
 
@@ -191,4 +237,4 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_prog_fill")
 [connection signal="pressed" from="Panel/VBox/RowMargin/Row/CenterGroup/PlayBtn" to="." method="_on_play_pressed"]
 [connection signal="pressed" from="Panel/VBox/RowMargin/Row/CenterGroup/PauseBtn" to="." method="_on_pause_pressed"]
 [connection signal="pressed" from="Panel/VBox/RowMargin/Row/CenterGroup/ForwardBtn" to="." method="_on_forward_pressed"]
-[connection signal="pressed" from="Panel/VBox/RowMargin/Row/SpeedBtn" to="." method="_on_speed_btn_pressed"]
+[connection signal="pressed" from="Panel/VBox/RowMargin/Row/SpeedWrap/SpeedBtn" to="." method="_on_speed_btn_pressed"]
