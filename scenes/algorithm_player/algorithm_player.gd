@@ -47,7 +47,21 @@ func is_algorithm_running() -> bool:
 func toggle_auto_playing() -> void:
 	if not _is_algorithm_running:
 		return
-	algorithm_controls.set_auto_playing(not algorithm_controls.is_auto_playing())
+	if algorithm_controls.is_auto_playing():
+		algorithm_controls.set_auto_playing(false)
+		return
+	# If we finished, restart from scratch before playing again.
+	if current_step_index >= timeline.size():
+		reset_to_start()
+	algorithm_controls.set_auto_playing(true)
+
+
+func request_play() -> void:
+	if not _is_algorithm_running:
+		return
+	if current_step_index >= timeline.size():
+		reset_to_start()
+	algorithm_controls.set_auto_playing(true)
 
 func start_algorithm(
 	algorithm_type: ALGORITHMS,

@@ -33,8 +33,8 @@ corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-expand_margin_left = 9.0
-expand_margin_top = 4.0
+expand_margin_left = 11.0
+expand_margin_top = 5.0
 shadow_color = Color(0, 0, 0, 0.12)
 shadow_size = 8
 shadow_offset = Vector2(0, 2)
@@ -206,7 +206,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_speed_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_speed_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_speed_normal")
 theme_override_styles/focus = SubResource("StyleBoxFlat_speed_hover")
-text = "×1"
+text = "1x"
 
 [node name="UIOverlay" type="Control" parent="Panel" unique_id=529460953]
 layout_mode = 2
@@ -215,7 +215,7 @@ mouse_filter = 2
 [node name="ProgressFill" type="ProgressBar" parent="Panel/UIOverlay" unique_id=1420688072]
 custom_minimum_size = Vector2(0, 4)
 layout_mode = 0
-offset_left = -5.0
+offset_left = -8.0
 offset_top = 54.0
 offset_right = 190.0
 offset_bottom = 59.0

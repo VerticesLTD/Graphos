@@ -7,6 +7,8 @@ signal step_back
 signal step_forward
 ## Algorithm session stopped entirely
 signal stop
+## User clicked play (or requested resume)
+signal play_requested
 
 const _BASE_INTERVAL := 1.2  # seconds between auto-play steps at ×1.0 speed
 const SPEEDS: Array[float] = [0.5, 1.0, 2.0, 4.0]
@@ -63,7 +65,7 @@ func _on_back_pressed() -> void:
 
 
 func _on_play_pressed() -> void:
-	set_auto_playing(true)
+	play_requested.emit()
 
 
 func _on_pause_pressed() -> void:
@@ -134,6 +136,6 @@ func _apply_speed() -> void:
 	var spd: float = SPEEDS[_speed_index]
 	_auto_play_timer.wait_time = _BASE_INTERVAL / spd
 	if is_equal_approx(spd, roundf(spd)):
-		speed_btn.text = "×%d" % int(roundf(spd))
+		speed_btn.text = "%dx" % int(roundf(spd))
 	else:
-		speed_btn.text = "×%.1f" % spd
+		speed_btn.text = "%.1fx" % spd

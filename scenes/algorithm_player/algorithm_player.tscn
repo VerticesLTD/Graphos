@@ -18,3 +18,4 @@ visible = false
 [connection signal="step_back" from="UILayer/AlgorithmControls" to="." method="step_backward"]
 [connection signal="step_forward" from="UILayer/AlgorithmControls" to="." method="step_forward"]
 [connection signal="stop" from="UILayer/AlgorithmControls" to="." method="cancel_algorithm_execution"]
+[connection signal="play_requested" from="UILayer/AlgorithmControls" to="." method="request_play"]
