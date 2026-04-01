@@ -84,6 +84,8 @@ func refresh() -> void:
 
 ## Routes animation commands received from the Edge Data.
 func _on_animation_requested(anim_name: String) -> void:
+	if Globals.current_state == Globals.State.PAN and anim_name == "hover_start":
+		return
 	match anim_name:
 		"hover_start":
 			is_hovered = true
@@ -94,6 +96,8 @@ func _on_animation_requested(anim_name: String) -> void:
 
 ## Triggers the start of the hover state on mouse enter.
 func _on_mouse_entered() -> void:
+	if Globals.current_state == Globals.State.PAN:
+		return
 	if is_hovered: return
 	is_hovered = true
 	_start_hover_animation()

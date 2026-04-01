@@ -2,8 +2,13 @@ extends MarginContainer
 
 @onready var directed_btn: Button = $PanelContainer/HBoxContainer/Modifiers/DirectedBtn
 @onready var weighted_btn: Button = $PanelContainer/HBoxContainer/Modifiers/WeightedBtn
+@onready var tool_row: HBoxContainer = $PanelContainer/HBoxContainer
+@onready var pan_btn: Button = $PanelContainer/HBoxContainer/Pan
 
 func _ready() -> void:
+	# Keep Pan as the left-most tool.
+	tool_row.move_child(pan_btn, 0)
+
 	# Sync the UI to whatever the Globals are on startup
 	directed_btn.button_pressed = Globals.active_strategy is DirectedStrategy
 	weighted_btn.button_pressed = Globals.is_weighted_mode
@@ -36,6 +41,9 @@ func _on_weighted_toggled(is_on: bool) -> void:
 	
 func _on_selection_pressed() -> void:
 	Globals.current_state = Globals.State.SELECTION
+
+func _on_pan_pressed() -> void:
+	Globals.current_state = Globals.State.PAN
 
 
 func _on_create_pressed() -> void:

@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://c232xbf42jyrl" path="res://scenes/popup_menu/pop_up_menu_layer.tscn" id="8_raeie"]
 [ext_resource type="Script" uid="uid://xj2wpodslblo" path="res://scenes/selection_bounds/selection_bounds_view.gd" id="9_selection_bounds"]
 [ext_resource type="PackedScene" uid="uid://d3us80b4t04od" path="res://scenes/algorithm_player/algorithm_player.tscn" id="10_algorithm_player"]
+[ext_resource type="PackedScene" uid="uid://cjtn7ni7fjvft" path="res://scenes/camera/camera.tscn" id="11_camera"]
 
 [node name="Main" type="Node2D" unique_id=446252932]
 script = ExtResource("1_yyfjg")
@@ -28,6 +29,8 @@ mouse_filter = 1
 [node name="UndirectedGraph" type="Node2D" parent="." unique_id=1415093803]
 script = ExtResource("1_yyfjg")
 metadata/_custom_type_script = "uid://c2yhxp7188k8k"
+
+[node name="Camera" parent="." unique_id=603822564 instance=ExtResource("11_camera")]
 
 [node name="GraphController" type="Node" parent="." unique_id=1509094021 node_paths=PackedStringArray("graph")]
 script = ExtResource("2_b1x3f")

@@ -49,6 +49,15 @@ func refresh() -> void:
 	global_position = vertex_data.pos.round()
 	label.text = str(vertex_data.id)
 	self.z_index = vertex_data.z_idx
+
+	# Pan mode should not show hover visuals.
+	if Globals.current_state == Globals.State.PAN and is_hovered:
+		if _tween: _tween.kill()
+		is_hovered = false
+		is_manual_hover = false
+		draw_radius_hovered = Globals.VERTEX_RADIUS
+		draw_color_hovered = vertex_data.color
+
 	if is_hovered:
 		_update_vertex_visual(draw_radius_hovered, draw_color_hovered)
 	else:
@@ -77,6 +86,8 @@ func _on_vanished(_v: Vertex) -> void:
 
 
 func _on_mouse_entered() -> void:
+	if Globals.current_state == Globals.State.PAN:
+		return
 	if is_hovered:
 		return
 
@@ -91,6 +102,8 @@ func manual_hover_start() -> void:
 
 ## Routes animation commands received from the Vertex data.
 func _on_animation_requested(anim_name: String) -> void:
+	if Globals.current_state == Globals.State.PAN and anim_name == "hover_start":
+		return
 	match anim_name:
 		"hover_start":
 			is_hovered = true

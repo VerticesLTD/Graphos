@@ -9,7 +9,7 @@ const VERTEX_BELOW = 1
 @export var graph: Graph
 
 ## UI overlay that draws/opens context menus
-@onready var popup_menu: GraphContextMenuManager = $PopupMenu
+@onready var popup_menu: GraphContextMenuManager = $"../CanvasLayer/PopupMenuLayer"
 
 ## The selection buffer to link multiple nodes with an edge
 var link_buffer: Array[int] = []
@@ -52,6 +52,7 @@ const HOLD_REPEAT_INITIAL_DELAY := 0.28
 const HOLD_REPEAT_INTERVAL := 0.07
 var _held_algorithm_action: StringName = &""
 var _held_algorithm_timer := 0.0
+var _last_tool_state: int = -1
 
 ## Vars to handle dragging
 ## Stores { Vertex: Vector2_Initial_Pos } for whatever is being dragged
@@ -75,6 +76,11 @@ func _ready() -> void:
 	
 
 func _process(delta: float) -> void:
+	if Globals.current_state != _last_tool_state:
+		if Globals.current_state == Globals.State.PAN and animation_manager:
+			animation_manager.clear_all_selection_hovers()
+		_last_tool_state = Globals.current_state
+
 	# If we are currently dragging nodes, we do not want to touch
 	# the selection buffer.
 	if Globals.is_mass_select and not is_dragging:
@@ -86,6 +92,9 @@ func _process(delta: float) -> void:
 ## ------------------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Globals.current_state == Globals.State.PAN:
+		return
+
 	# Close text editor if needed
 	if event is InputEventMouseButton and event.pressed:
 		close_active_editor()
@@ -321,7 +330,7 @@ func close_active_editor() -> void:
 func execute_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, start_node: Vertex) -> void:
 	player.start_algorithm(algorithm,start_node,selection_buffer,graph)
 
-func update_selection_bounds() -> void:
+func update_selection_bounds(radius_scale: float = Globals.VERTEX_HOVER_SCALE) -> void:
 	if selection_buffer.is_empty():
 		selection_bounds = Rect2()
 		return
@@ -330,7 +339,8 @@ func update_selection_bounds() -> void:
 		var new_bounds = Rect2(selection_buffer[0].pos, Vector2.ZERO)
 		for v in selection_buffer:
 			new_bounds = new_bounds.expand(v.pos)
-		selection_bounds = new_bounds.grow(Globals.VERTEX_RADIUS + 5.0)
+		var selected_visual_radius = Globals.VERTEX_RADIUS * radius_scale
+		selection_bounds = new_bounds.grow(selected_visual_radius + Globals.SELECTION_BOUNDS_PADDING)
 
 	if has_node("UISelectionBounds"):
 		get_node("UISelectionBounds").queue_redraw()

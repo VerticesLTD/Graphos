@@ -12,7 +12,10 @@ func _draw() -> void:
 		
 	var rect = controller.selection_bounds
 	var color = Globals.SELECTION_BORDER_COLOR
-	var dash_gap = 6.0
+	var zoom_factor = _get_camera_zoom_factor()
+	var ui_scale = 1.0 / zoom_factor
+	var dash_gap = 6.0 * ui_scale
+	var line_width = 1.5 * ui_scale
 	
 	# Corners
 	var tl = rect.position
@@ -21,17 +24,23 @@ func _draw() -> void:
 	var br = rect.end
 	
 	# Draw Dashed Border
-	draw_dashed_line(tl, _tr, color, 1.5, dash_gap)
-	draw_dashed_line(_tr, br, color, 1.5, dash_gap)
-	draw_dashed_line(br, bl, color, 1.5, dash_gap)
-	draw_dashed_line(bl, tl, color, 1.5, dash_gap)
+	draw_dashed_line(tl, _tr, color, line_width, dash_gap)
+	draw_dashed_line(_tr, br, color, line_width, dash_gap)
+	draw_dashed_line(br, bl, color, line_width, dash_gap)
+	draw_dashed_line(bl, tl, color, line_width, dash_gap)
 	
 	# Draw Excalidraw-style Handles
 	for pos in [tl, _tr, bl, br]:
-		_draw_handle(pos)
+		_draw_handle(pos, ui_scale)
 
-func _draw_handle(pos: Vector2) -> void:
-	var size = 8.0
+func _draw_handle(pos: Vector2, ui_scale: float) -> void:
+	var size = 8.0 * ui_scale
 	var handle_rect = Rect2(pos - Vector2(size/2, size/2), Vector2(size, size))
 	draw_rect(handle_rect, Color.WHITE, true) # Fill
-	draw_rect(handle_rect, Globals.SELECTION_BORDER_COLOR, false, 1.0) # Outline
+	draw_rect(handle_rect, Globals.SELECTION_BORDER_COLOR, false, ui_scale) # Outline
+
+func _get_camera_zoom_factor() -> float:
+	var camera := get_viewport().get_camera_2d()
+	if camera == null:
+		return 1.0
+	return maxf(camera.zoom.x, 0.001)

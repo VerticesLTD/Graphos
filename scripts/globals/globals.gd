@@ -14,6 +14,7 @@ signal app_state_changed
 enum State {
 	SELECTION,
 	CREATE,
+	PAN,
 	ALG,
 	ERASER,
 }
@@ -45,6 +46,7 @@ const VERTEX_COLOR_CHAIN_HEAD = Color("f72585")
 const VERTEX_HOVER_SCALE = 1.2
 const VERTEX_HOVER_COLOR = Color("4361ee")
 const VERTEX_TWEEN_TIME = 0.2
+const SELECTION_BOUNDS_PADDING = 0.0
 # Edges
 const EDGE_COLOR = Color("495057")
 const EDGE_WIDTH = 5.0

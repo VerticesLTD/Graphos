@@ -49,6 +49,9 @@ func _has_point(point: Vector2) -> bool:
 	return expanded_rect.has_point(point)
 
 func _gui_input(event: InputEvent) -> void:
+	if Globals.current_state == Globals.State.PAN:
+		return
+
 	if event is InputEventMouseButton:
 		var mouse_event = event as InputEventMouseButton
 

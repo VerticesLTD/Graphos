@@ -107,20 +107,20 @@ func _apply_excalidraw_style(menu: PopupMenu) -> void:
 # PUBLIC API: GraphController calls exactly ONE of these
 # -----------------------------------------------------------------------------
 
-func open_for_vertex(v: Vertex, mouse_pos: Vector2) -> void:
+func open_for_vertex(v: Vertex, mouse_pos_world: Vector2, mouse_pos_screen: Vector2 = get_viewport().get_mouse_position()) -> void:
 	active = v
 	mode = "vertex"
-	_open_at(mouse_pos, _make_vertex_menu(v, mouse_pos))
+	_open_at(mouse_pos_screen, _make_vertex_menu(v, mouse_pos_world))
 
-func open_for_edge(e: Edge, mouse_pos: Vector2) -> void:
+func open_for_edge(e: Edge, _mouse_pos_world: Vector2, mouse_pos_screen: Vector2 = get_viewport().get_mouse_position()) -> void:
 	active = e
 	mode = "edge"
-	_open_at(mouse_pos, _make_edge_menu(e))
+	_open_at(mouse_pos_screen, _make_edge_menu(e))
 
-func open_for_canvas(mouse_pos: Vector2) -> void:
+func open_for_canvas(mouse_pos_world: Vector2, mouse_pos_screen: Vector2 = get_viewport().get_mouse_position()) -> void:
 	active = null
 	mode = "general"
-	_open_at(mouse_pos, _make_canvas_menu(mouse_pos))
+	_open_at(mouse_pos_screen, _make_canvas_menu(mouse_pos_world))
 
 
 # -----------------------------------------------------------------------------
@@ -266,6 +266,8 @@ func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
 	# You can put placeholders (null) while implementing commands.
 	# This lets you test menu opening immediately.
 	var buffer_snapshot = controller.selection_buffer.duplicate() if controller else []
+	if buffer_snapshot.is_empty() and v:
+		buffer_snapshot = [v]
 
 	# Create the algorithm sub-menu
 	var algo_submenu = [] 

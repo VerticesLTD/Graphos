@@ -24,14 +24,26 @@ func _process(delta: float) -> void:
 			_on_hold_start()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Globals.current_state == Globals.State.PAN:
+		if selection_rect != null:
+			remove_child(selection_rect)
+			selection_rect.queue_free()
+			selection_rect = null
+		_monitoring_input = false
+		_is_holding = false
+		Globals.selection_rectangle = Rect2(Vector2.ZERO, Vector2.ZERO)
+		Globals.is_mass_select = false
+		return
+
 	if event is InputEventMouseButton and \
 		event.button_index == MOUSE_BUTTON_LEFT \
 		and Globals.current_state == Globals.State.SELECTION:
+		var mouse_world_pos := graph_controller.graph.get_global_mouse_position()
 		if event.is_pressed():
 			
 			# Check if we're inside the bounds rect
 			if graph_controller.selection_buffer.size() > 1 and \
-				graph_controller.selection_bounds.has_point(event.global_position):
+				graph_controller.selection_bounds.has_point(mouse_world_pos):
 					return 
 			
 			# Mouse down, start timer
@@ -40,7 +52,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_is_holding = false
 
 			# To provide snappy feedback, we assume the user is mass-selecting. Even if it's just a click.
-			if not graph_controller.is_vertex_collision(event.global_position):
+			if not graph_controller.is_vertex_collision(mouse_world_pos):
 				_start_drag()
 
 		elif not event.is_pressed():
@@ -60,6 +72,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _start_drag():
 	# The selection rectangle updates Globals.selection_rectangle independently
 	selection_rect = SELECTION_RECT_BLUEPRINT.instantiate()
+	selection_rect.graph = graph_controller.graph
 	add_child(selection_rect)
 
 func _on_click():
@@ -102,6 +115,8 @@ func _handle_keyboard(event: InputEventKey) -> void:
 	match event.keycode:
 		KEY_C:
 			Globals.current_state = Globals.State.CREATE
+		KEY_H:
+			Globals.current_state = Globals.State.PAN
 		KEY_A:
 			Globals.current_state = Globals.State.ALG
 		KEY_S:
