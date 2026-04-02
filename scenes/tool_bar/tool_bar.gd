@@ -6,10 +6,6 @@ extends MarginContainer
 @onready var pan_btn: Button = $PanelContainer/HBoxContainer/Pan
 
 func _ready() -> void:
-	if OS.get_name() == "Web":
-		# Match scenes/web_header/web_header.tscn offset_bottom (40) below default toolbar top margin (40).
-		add_theme_constant_override("margin_top", 80)
-
 	# Keep Pan as the left-most tool.
 	tool_row.move_child(pan_btn, 0)
 

@@ -3,7 +3,6 @@ extends CanvasLayer
 @onready var graph_controller: GraphController = $"../GraphController"
 
 const SELECTION_RECT_BLUEPRINT = preload("uid://c2dvxkd1y2wbs")
-const WEB_HEADER_SCENE := preload("res://scenes/web_header/web_header.tscn")
 
 const LOG_TAG = "GLOBAL_UI"
 
@@ -11,14 +10,6 @@ var _is_holding = false
 var _press_timer = 0.0
 var _monitoring_input = false # To prevent checking timer when not clicking
 var selection_rect: UISelectionRect
-
-
-func _ready() -> void:
-	# Web-only chrome: editor remote run (tmp_js_export.html) does not apply Export HTML shell presets.
-	if OS.get_name() == "Web":
-		var web_header: Control = WEB_HEADER_SCENE.instantiate()
-		add_child(web_header)
-		move_child(web_header, 0)
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

@@ -2,6 +2,10 @@ extends Node2D
 
 @onready var animation_components: Node2D = $CanvasLayer/AnimationComponents
 
+## Decorative intro only (not asset loading). Disabled: go straight to main; keep scene for re-enabling.
+const CREDITS_INTRO_ENABLED := false
+const MAIN_SCENE := "res://scenes/main/main.tscn"
+
 const ANIMATION_TIME = 20.0
 var animation_sprites: Array[Sprite2D] = []
 var only_circles: Array[Sprite2D]
@@ -9,6 +13,10 @@ var only_vecs: Array[Sprite2D]
 var tween_forward: Tween
 var tween_backward: Tween
 func _ready() -> void:
+	if not CREDITS_INTRO_ENABLED:
+		get_tree().change_scene_to_file.call_deferred(MAIN_SCENE)
+		return
+
 	for child in animation_components.get_children():
 		animation_sprites.append(child)
 		if child.name.contains("Vector"):
@@ -84,4 +92,4 @@ func _set_animation_backward() -> void:
 # Any click will start the main app
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton or event is InputEventKey:
-		get_tree().change_scene_to_file.call_deferred("res://main.tscn")
+		get_tree().change_scene_to_file.call_deferred(MAIN_SCENE)
