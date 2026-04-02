@@ -14,7 +14,12 @@ var free_ids: Array[int] = []
 var num_edges: int = 0
 var num_vertices: int:
 	get: return vertices.size()
-		
+
+
+## True when the active create-tool strategy is directed (matches toolbar / new edges).
+func is_directed() -> bool:
+	return Globals.active_strategy is DirectedStrategy
+
 
 func _ready() -> void:
 	## Initialize the ID pool.

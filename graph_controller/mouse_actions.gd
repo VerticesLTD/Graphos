@@ -1,6 +1,7 @@
 extends Node
 
 var controller: GraphController
+var _ghost_preview: GhostEdgePreview
 var _last_mouse_world_pos: Vector2 = Vector2.ZERO
 var _has_last_mouse_world_pos := false
 var _bounds_scale_tween: Tween
@@ -21,6 +22,8 @@ func _ready() -> void:
 		queue_free()
 	
 	controller = par_node
+	if controller.graph:
+		_ghost_preview = controller.graph.get_node_or_null("GhostEdgePreview") as GhostEdgePreview
 
 func _unhandled_input(event: InputEvent) -> void:
 	if Globals.current_state == Globals.State.PAN:
@@ -45,6 +48,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if pk == KEY_CTRL or pk == KEY_META or pk == _PHYS_CTRL_R:
 			if not controller.link_session.is_empty():
 				controller.clear_link_context(event)
+			_hide_ghost_edge_preview()
 
 	# If the menu closed less than 200ms ago, ignore ALL clicks.
 	# This prevents "Accidental Vertices" (Left Click)
@@ -62,10 +66,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	# MacOs ctrl+left_click is right click. Needs to be handled.
 	if event.is_action_pressed("right_click_ctrl") and OS.get_name() == "macOS":
 		_handle_left_click(event)
+		_sync_ghost_edge_preview()
 		return
 
 	if event.is_action_released("right_click_ctrl") and OS.get_name() == "macOS":
 		_handle_left_release(event)
+		_sync_ghost_edge_preview()
 		return
 
 	for action: StringName in action_map.keys():
@@ -75,11 +81,30 @@ func _unhandled_input(event: InputEvent) -> void:
 
 		if event.is_action_pressed(action) and pressed_handler:
 			pressed_handler.call(event)
+			if action == &"left_click" or action == &"left_click_ctrl":
+				_sync_ghost_edge_preview()
 			return
 
 		if event.is_action_released(action) and release_handler:
 			release_handler.call(event)
-			return	
+			if action == &"left_click" or action == &"left_click_ctrl" or action == &"right_click":
+				_sync_ghost_edge_preview()
+			return
+
+
+func _sync_ghost_edge_preview() -> void:
+	if _ghost_preview == null or controller == null or controller.graph == null:
+		return
+	if controller.is_dragging:
+		_ghost_preview.hide_preview()
+		return
+	_ghost_preview.sync_preview(controller.graph, controller, controller.graph.get_global_mouse_position())
+
+
+func _hide_ghost_edge_preview() -> void:
+	if _ghost_preview:
+		_ghost_preview.hide_preview()
+
 
 func _handle_left_click(event: InputEventMouseButton):
 	var graph = controller.graph
@@ -267,6 +292,8 @@ func _handle_mouse_movement(_event: InputEventMouseMotion):
 
 	_last_mouse_world_pos = mouse_world_pos
 	_has_last_mouse_world_pos = true
+
+	_sync_ghost_edge_preview()
 
 func _handle_dragging(world_delta: Vector2):
 	# Move by world-space delta so dragging remains correct with camera zoom/pan.

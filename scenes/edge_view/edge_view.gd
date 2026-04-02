@@ -174,26 +174,8 @@ func _update_arrowhead(arrow_tip: Vector2, direction: Vector2, current_line_widt
 	arrowhead.visible = true
 	arrowhead.position = arrow_tip.round()
 	arrowhead.rotation = direction.angle()
-	var arrow_dimensions = _get_arrow_dimensions(edge_distance, current_line_width)
-	var arrow_length = arrow_dimensions.x
-	var arrow_width = arrow_dimensions.y
-	
-	# 4-point design: Tip, Top Wing, Back Indent, Bottom Wing
-	var points = PackedVector2Array([
-		Vector2.ZERO,                               # Tip (Sharp!)
-		Vector2(-arrow_length, -arrow_width),       # Top wing
-		Vector2(-arrow_length * 0.75, 0),           # The "Stealth" indent
-		Vector2(-arrow_length, arrow_width)         # Bottom wing
-	])
-	
-	arrowhead.polygon = points
-
-func _get_arrow_dimensions(edge_distance: float, current_line_width: float) -> Vector2:
-	var available_span = max(edge_distance - (Globals.VERTEX_RADIUS * 2.0), 0.0)
-	var preferred_length = current_line_width * 5.0
-	var arrow_length = clamp(preferred_length, 8.0, max(8.0, available_span * 0.45))
-	var arrow_width = clamp(current_line_width * 2.2, 4.0, max(4.0, arrow_length * 0.5))
-	return Vector2(arrow_length, arrow_width)
+	var arrow_dimensions := EdgeArrowGeometry.get_arrow_dimensions(edge_distance, current_line_width)
+	arrowhead.polygon = EdgeArrowGeometry.build_arrow_polygon(arrow_dimensions.x, arrow_dimensions.y)
 		
 ## Recalculates line points to leave a gap for the weight label.
 func _setup_lines_and_weight() -> void:
@@ -222,7 +204,7 @@ func _draw_linear_edge(src_pos: Vector2, dst_pos: Vector2, actual_dist: float) -
 		line_1.end_cap_mode = Line2D.LINE_CAP_NONE
 		line_2.end_cap_mode = Line2D.LINE_CAP_NONE
 		arrow_tip = (dst_pos - (direction * (Globals.VERTEX_RADIUS + 4.0))).round()
-		var arrow_length = _get_arrow_dimensions(actual_dist, line_1.width).x
+		var arrow_length = EdgeArrowGeometry.get_arrow_dimensions(actual_dist, line_1.width).x
 		visual_dst = (arrow_tip - (direction * (arrow_length * 0.55))).round()
 	else:
 		line_1.end_cap_mode = Line2D.LINE_CAP_ROUND
@@ -259,7 +241,7 @@ func _draw_bidirectional_curved_edge(src_pos: Vector2, dst_pos: Vector2, actual_
 	var tangent_end = EdgeGeometry.quadratic_tangent(src_pos, control, dst_pos, 1.0).normalized()
 	var visual_start = (src_pos + (tangent_start * Globals.VERTEX_RADIUS)).round()
 	var arrow_tip = (dst_pos - (tangent_end * (Globals.VERTEX_RADIUS + 4.0))).round()
-	var arrow_length = _get_arrow_dimensions(actual_dist, line_1.width).x
+	var arrow_length = EdgeArrowGeometry.get_arrow_dimensions(actual_dist, line_1.width).x
 	var visual_end = (arrow_tip - (tangent_end * (arrow_length * 0.55))).round()
 
 	if edge_data.is_weighted and _can_draw_inline_weight(actual_dist):
