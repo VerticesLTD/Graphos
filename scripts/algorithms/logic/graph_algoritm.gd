@@ -157,6 +157,9 @@ func change_and_log_edge_color(target_edge: Edge, target_color: Color, pseudo_st
 	
 	if real_edge:
 		timeline.append(ChangeEdgeColorCommand.new(real_edge, target_color))
+	else:
+		# Keep timeline length aligned with pseudo_steps when the real edge is missing.
+		timeline.append(null)
 	
 	# Update the imposter for algorithm logic
 	target_edge.color = target_color

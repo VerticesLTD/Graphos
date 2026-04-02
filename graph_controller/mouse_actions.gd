@@ -37,6 +37,16 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 		return
 
+	# End connect-chain when any Ctrl/Meta key is released. The Input Map action "ctrl"
+	# often binds only one physical key, so the other Ctrl side never ran clear_link_context.
+	if event is InputEventKey and not event.pressed:
+		var pk: int = event.physical_keycode
+		# KEY_CTRL + typical Right-Control physical code (not always == KEY_CTRL across backends).
+		const _PHYS_CTRL_R := 4194328
+		if pk == KEY_CTRL or pk == KEY_META or pk == _PHYS_CTRL_R:
+			if not controller.link_buffer.is_empty():
+				controller.clear_link_context(event)
+
 	# If the menu closed less than 200ms ago, ignore ALL clicks.
 	# This prevents "Accidental Vertices" (Left Click)
 	if controller.popup_menu and controller.popup_menu.MainMenu.visible:
@@ -89,6 +99,10 @@ func _handle_left_click(event: InputEventMouseButton):
 	if not is_ctrl:
 		is_ctrl = Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
 
+	# Normal (non-modifier) clicks are not part of the Ctrl path tool — drop stale chain state.
+	if not is_ctrl and not controller.link_buffer.is_empty():
+		controller.clear_link_context(event)
+
 	# Check if we select something now
 	if selection_buffer.size() > 1:
 		if controller.selection_bounds.has_point(mouse_global_pos):
@@ -123,7 +137,17 @@ func _handle_left_click(event: InputEventMouseButton):
 	# Clearing node selection on an empty click
 	controller.clear_selection_buffer()
 	
-func _handle_left_release(_event: InputEventMouseButton):
+func _handle_left_release(event: InputEventMouseButton):
+	# Only clear the connect-chain on mouse-up if the modifier is actually released *on this event*.
+	# Input.is_key_pressed(KEY_CTRL) can read false for a frame on mouse-up while Ctrl is still held,
+	# which cleared link_buffer between chained Ctrl+clicks (edge needed two attempts to appear).
+	var mod_still_held := false
+	if event is InputEventMouseButton:
+		mod_still_held = event.ctrl_pressed or event.meta_pressed
+	if not mod_still_held:
+		mod_still_held = Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
+	if not mod_still_held and not controller.link_buffer.is_empty():
+		controller.clear_link_context(event)
 	_cleanup_after_release()
 
 func _handle_right_release(_event: InputEventMouseButton):
@@ -172,18 +196,19 @@ func _handle_path_connection(pos: Vector2) -> void:
 		CommandManager.execute(step)
 		link_buffer.append(step.v_cmd.vertex.id)
 
-	# 2. LAST VERTEX: Undo
+	# 2. CLICKED SAME VERTEX AS CHAIN HEAD
 	elif not link_buffer.is_empty() and link_buffer.back() == id:
+		# With a single vertex in the chain, repeat-click means "reset" — not undo (avoids blocking
+		# a fresh two-vertex connect after a failed clear_link_context).
+		if link_buffer.size() < 2:
+			controller.clear_link_context(null)
+			return
 		var v_to_undo = graph.get_vertex(id)
 		if v_to_undo:
-			# Find the previous ID in the buffer for the connection
-			var prev_id = link_buffer[link_buffer.size() - 2] if link_buffer.size() >= 2 else Globals.NOT_FOUND
-			
-			# Execute the Macro
+			var prev_id = link_buffer[link_buffer.size() - 2]
 			var macro = PathUndoCommand.new(graph, v_to_undo, prev_id)
 			CommandManager.execute(macro)
-			
-			link_buffer.pop_back() # Update buffer
+			link_buffer.pop_back()
 
 	# 3. EXISTING VERTEX: connect
 	else:

@@ -49,10 +49,6 @@ func run(_start_vertex: Vertex) -> Array:
 		&"mst_weight": mst_weight,
 	})
 
-	timeline.append(null)
-	log_pseudo_step(2)
-	data_updates.append({&"mst_weight": mst_weight})
-
 	var edge_list: Array[Dictionary] = []
 	for u: Vertex in imposter_graph.vertices.values():
 		for e: Edge in u.get_outgoing_edges():
@@ -71,14 +67,30 @@ func run(_start_vertex: Vertex) -> Array:
 			return a["v"].id < b["v"].id
 	)
 
-	for item: Dictionary in edge_list:
+	if edge_list.is_empty():
+		timeline.append(null)
+		log_pseudo_step(2)
+		data_updates.append({&"mst_weight": mst_weight})
+	else:
+		# Sort (pseudo 2): always a visible edge recolor (lightest edge), not a no-op timeline slot.
+		var e0: Edge = edge_list[0]["edge"]
+		change_and_log_edge_color(e0, COLOR_VISITING, 2)
+		data_updates.append({&"mst_weight": mst_weight})
+
+	for ei: int in range(edge_list.size()):
+		var item: Dictionary = edge_list[ei]
 		var u: Vertex = item["u"]
 		var v: Vertex = item["v"]
 		var e: Edge = item["edge"]
 		var w: float = item["w"]
 
-		change_and_log_edge_color(e, COLOR_VISITING, 3)
-		data_updates.append({&"mst_weight": mst_weight})
+		if ei > 0:
+			change_and_log_edge_color(e, COLOR_VISITING, 3)
+			data_updates.append({&"mst_weight": mst_weight})
+		else:
+			# First edge: already VISITING from the sort step; re-apply as pseudo 3 ("for") so this step still runs a Command.
+			change_and_log_edge_color(e, COLOR_VISITING, 3)
+			data_updates.append({&"mst_weight": mst_weight})
 
 		var ru := _find(parent, u.id)
 		var rv_root := _find(parent, v.id)
@@ -88,7 +100,8 @@ func run(_start_vertex: Vertex) -> Array:
 			data_updates.append({&"mst_weight": mst_weight})
 			continue
 
-		log_pseudo_step(5, true)
+		# "if find(u) != find(v)" — dim edge before union+MST so this step always changes pixels (not log_pseudo_step(5,true) alone).
+		change_and_log_edge_color(e, Globals.EDGE_COLOR, 5)
 		data_updates.append({&"mst_weight": mst_weight})
 
 		var lo: int = mini(ru, rv_root)
