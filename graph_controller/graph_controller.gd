@@ -325,7 +325,10 @@ func should_add_connection(from_id: int, to_id: int) -> bool:
 ## Close the weight editor
 func close_active_editor() -> void:
 	if Globals.active_weight_editor:
-		Globals.active_weight_editor.queue_free()
+		if Globals.active_weight_editor.has_meta("inline_weight_editor"):
+			Globals.active_weight_editor.release_focus()
+		else:
+			Globals.active_weight_editor.queue_free()
 		Globals.active_weight_editor = null
 		
 ## ------------------------------------------------------------------------------

@@ -13,6 +13,7 @@ var edge_data: Edge
 @onready var line_2: Line2D = $Line2
 @onready var arrowhead: Polygon2D = $Arrowhead
 @onready var weight_label: Label = $Weight
+@onready var weight_edit: LineEdit = $WeightEdit
 
 var draw_width_hovered: float = Globals.EDGE_WIDTH
 var draw_color_hovered: Color = Globals.EDGE_COLOR
@@ -20,6 +21,7 @@ var draw_color_hovered: Color = Globals.EDGE_COLOR
 var is_hovered: bool = false
 var is_manual_hover: bool = false
 var _tween: Tween
+var _weight_mid_local: Vector2 = Vector2.ZERO
 
 # --- Setup & Core ---
 
@@ -49,6 +51,13 @@ func _ready() -> void:
 		# Input handling
 		if not mouse_detection_area.input_event.is_connected(_on_mouse_detection_area_input_event):
 			mouse_detection_area.input_event.connect(_on_mouse_detection_area_input_event)
+
+		if not weight_edit.text_submitted.is_connected(_on_inline_weight_submitted):
+			weight_edit.text_submitted.connect(_on_inline_weight_submitted)
+		if not weight_edit.focus_exited.is_connected(_on_inline_weight_focus_exited):
+			weight_edit.focus_exited.connect(_on_inline_weight_focus_exited)
+		weight_edit.set_meta("inline_weight_editor", true)
+		weight_edit.visible = false
 		
 		refresh()
 	else:
@@ -248,7 +257,9 @@ func _can_draw_inline_weight(actual_dist: float) -> bool:
 
 ## Helper: Line segments stop at visual_dst, but gap is centered at true_mid
 func _draw_weighted_edge(start: Vector2, end: Vector2, mid: Vector2, offset: Vector2) -> void:
-	weight_label.visible = true
+	_weight_mid_local = mid
+	if not _is_inline_editor_active():
+		weight_label.visible = true
 	# Force the label to the chosen midpoint anchor.
 	weight_label.position = (mid - (weight_label.size / 2.0)).round()
 	_update_weight_label_transform(mid) # Handles rotation
@@ -260,7 +271,8 @@ func _draw_weighted_edge(start: Vector2, end: Vector2, mid: Vector2, offset: Vec
 	line_2.add_point(end)
 
 func _draw_simple_edge(start: Vector2, end: Vector2) -> void:
-	weight_label.visible = false
+	if not _is_inline_editor_active():
+		weight_label.visible = false
 	line_1.add_point(start)
 	line_1.add_point(end)
 		
@@ -316,38 +328,53 @@ func _get_visual_start_end(pos1: Vector2, pos2: Vector2) -> Array[Vector2]:
 func _on_mouse_detection_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.double_click and edge_data.is_weighted:
-			_spawn_weight_editor()
+			_start_inline_weight_edit()
 
-## Spawns a floating LineEdit node for the user to type a new weight.
-func _spawn_weight_editor() -> void:
-	if Globals.active_weight_editor:
-		Globals.active_weight_editor.queue_free()
-	
-	var edit = LineEdit.new()
-	edit.text = _format_weight(edge_data.weight)
-	edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	edit.custom_minimum_size = Vector2(50, 30)
-	
-	var mid_point = (edge_data.src.pos + edge_data.dst.pos) / 2.0
-	edit.global_position = mid_point - (Vector2(50, 30) / 2.0)
+func _start_inline_weight_edit() -> void:
+	if Globals.active_weight_editor and Globals.active_weight_editor != weight_edit:
+		Globals.active_weight_editor.release_focus()
 
-	get_tree().root.add_child(edit)
-	Globals.active_weight_editor = edit
-	
-	edit.grab_focus()
-	edit.select_all()
-	edit.text_submitted.connect(_on_weight_submitted.bind(edit))
+	weight_edit.text = _format_weight(edge_data.weight)
+	weight_edit.custom_minimum_size = Vector2(max(22.0, weight_label.size.x + 8.0), max(22.0, weight_label.size.y + 4.0))
+	_position_inline_weight_editor()
+	weight_edit.visible = true
+	weight_label.visible = false
+	Globals.active_weight_editor = weight_edit
+	weight_edit.grab_focus()
+	weight_edit.select_all()
+
+func _position_inline_weight_editor() -> void:
+	var center = to_global(_weight_mid_local)
+	var edit_size = weight_edit.get_combined_minimum_size()
+	weight_edit.global_position = (center - (edit_size / 2.0)).round()
+	weight_edit.rotation = 0.0
+
+func _on_inline_weight_submitted(new_text: String) -> void:
+	_commit_inline_weight_edit(new_text)
+
+func _on_inline_weight_focus_exited() -> void:
+	_commit_inline_weight_edit(weight_edit.text)
 
 ## Submits the new weight to the CommandManager and cleans up the UI.
-func _on_weight_submitted(new_text: String, _edit_node: LineEdit) -> void:
+func _commit_inline_weight_edit(new_text: String) -> void:
+	if Globals.active_weight_editor != weight_edit:
+		return
+
 	var parsed := new_text.strip_edges().replace(",", ".")
 	if parsed.is_valid_int() or parsed.is_valid_float():
 		var cmd = ChangeEdgeWeightCommand.new(edge_data, parsed.to_float())
 		CommandManager.execute(cmd)
-	
-	if Globals.active_weight_editor:
-		Globals.active_weight_editor.queue_free()
-		Globals.active_weight_editor = null
+
+	_finish_inline_weight_edit()
+
+func _finish_inline_weight_edit() -> void:
+	weight_edit.release_focus()
+	weight_edit.visible = false
+	Globals.active_weight_editor = null
+	refresh()
+
+func _is_inline_editor_active() -> bool:
+	return is_instance_valid(weight_edit) and weight_edit.visible
 
 func _format_weight(value: float) -> String:
 	if is_equal_approx(value, roundf(value)):
