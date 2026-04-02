@@ -49,6 +49,11 @@ func _reset_alg_variables() -> void:
 func get_requirements() -> Dictionary:
 	return {}
 
+## Whether this algorithm should render per-vertex key badges.
+## Override in algorithms such as Dijkstra/Prim that rely on keys.
+func requires_vertex_keys_display() -> bool:
+	return false
+
 ## Validates graph against the base integrity rules and this algorithm's requirements.
 ## Shows a Notify error and returns false on the first violation.
 func check_requirements(graph: Graph) -> bool:
@@ -149,6 +154,34 @@ func change_and_log_edge_color(target_edge: Edge, target_color: Color, pseudo_st
 	# Update the imposter for algorithm logic
 	target_edge.color = target_color
 	log_pseudo_step(pseudo_step)
+
+## Discovers a vertex through an edge as ONE visual/timeline step.
+## Applies edge flow animation first (via command), then edge+vertex colors together.
+func discover_vertex_via_edge_and_log(
+	target_edge: Edge,
+	target_vertex: Vertex,
+	target_edge_color: Color,
+	target_vertex_color: Color,
+	pseudo_step = null
+) -> void:
+	var real_src = real_graph.get_vertex(target_edge.src.id)
+	var real_dst = real_graph.get_vertex(target_edge.dst.id)
+	var real_vertex = real_graph.get_vertex(target_vertex.id)
+	var real_edge = real_graph.get_edge(real_src, real_dst)
+
+	if real_edge and real_vertex:
+		timeline.append(
+			DiscoverVertexViaEdgeCommand.new(
+				real_edge,
+				real_vertex,
+				target_edge_color,
+				target_vertex_color
+			)
+		)
+
+	target_edge.color = target_edge_color
+	target_vertex.color = target_vertex_color
+	log_pseudo_step(pseudo_step)
 	
 ## Changes a vertex key and records the Command in the timeline.
 func change_and_log_vertex_key(target_vertex: Vertex, target_key: float, pseudo_step = null) -> void:
@@ -161,9 +194,15 @@ func change_and_log_vertex_key(target_vertex: Vertex, target_key: float, pseudo_
 
 	log_pseudo_step(pseudo_step)
 
-## Changes a vertex color on both real and imposter graphs, without logging a step.
-func set_vertex_color_silent(target_vertex: Vertex, target_color: Color) -> void:
-	target_vertex.color = target_color
-	var real_v = real_graph.get_vertex(target_vertex.id)
-	if real_v:
-		real_v.color = target_color
+## Colors ALL vertices in the algorithm graph as ONE logged timeline step.
+## Use for initialization so undo naturally restores original colors.
+func log_initialize_vertices(color: Color, pseudo_step = null) -> void:
+	var real_vertices: Array[Vertex] = []
+	for v: Vertex in imposter_graph.vertices.values():
+		v.color = color
+		v.parent = null
+		var real_v := real_graph.get_vertex(v.id)
+		if real_v:
+			real_vertices.append(real_v)
+	timeline.append(ChangeSelectionVertexColorCommand.new(real_vertices, color))
+	log_pseudo_step(pseudo_step)

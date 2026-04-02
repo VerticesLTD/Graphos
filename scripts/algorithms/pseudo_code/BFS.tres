@@ -4,34 +4,34 @@
 
 [resource]
 script = ExtResource("1_5kq1g")
-algorithm_name = "BFS Pseudo"
-source_text = "BFS(G, s)--1
-for each vertex v in G--2
-    color v as Undiscovered--2
-Q ← new Queue()--3
-color s as Discovered--4
-Q.enqueue(s)--4
-while Q ≠ ∅ do--5,6,7,8,9,10,11
-    u ← Q.dequeue()--6
-    for each v ∈ Adj[u]--7,8,9,10
-        if v is not discovered--8,9,10
-            color (u, v) as Path--9
-            color v as Discovered--10
-            Q.enqueue(v)--10
-    color u as Finished--11"
-raw_code = "BFS(G, s)
-for each vertex v in G
-	color v as Undiscovered
-Q ← new Queue()
-color s as Discovered
-Q.enqueue(s)
-while Q ≠ ∅ do
-	u ← Q.dequeue()
-	for each v ∈ Adj[u]
-		if v is not discovered
-			color (u, v) as Path
-			color v as Discovered
-			Q.enqueue(v)
-	color u as Finished"
-steps = [[0], [1, 2, 3], [], [], [5, 4], [], [], [], [], [10], [12, 11], [13]]
+algorithm_name = "BFS"
+source_text = "BFS(G, s):
+  for v in V: color[v] = UND--1
+  Q = empty
+  color[s] = DISC--4
+  Q.enqueue(s)
+  while Q not empty:
+    u = Q.dequeue()
+    for v in Adj[u]:
+      if color[v] == UND:
+        color[(u, v)] = PATH--10
+        color[v] = DISC--10
+        parent[v] = u
+        Q.enqueue(v)
+    color[u] = FIN--11"
+raw_code = "BFS(G, s):
+  for v in V: color[v] = UND
+  Q = empty
+  color[s] = DISC
+  Q.enqueue(s)
+  while Q not empty:
+    u = Q.dequeue()
+    for v in Adj[u]:
+      if color[v] == UND:
+        color[(u, v)] = PATH
+        color[v] = DISC
+        parent[v] = u
+        Q.enqueue(v)
+    color[u] = FIN"
+steps = [[], [1], [], [], [3], [], [], [], [], [], [9, 10], [13]]
 metadata/_custom_type_script = "uid://c8h8cvjik2tcu"

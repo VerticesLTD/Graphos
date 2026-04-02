@@ -357,7 +357,7 @@ func _resolve_start_vertex_for_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, 
 
 func _algorithm_requires_start_vertex(algorithm: AlgorithmPlayer.ALGORITHMS) -> bool:
 	match algorithm:
-		AlgorithmPlayer.ALGORITHMS.BFS, AlgorithmPlayer.ALGORITHMS.DFS:
+		AlgorithmPlayer.ALGORITHMS.BFS, AlgorithmPlayer.ALGORITHMS.DFS, AlgorithmPlayer.ALGORITHMS.DIJKSTRA:
 			return true
 		_:
 			return false

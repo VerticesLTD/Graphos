@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="PseudoCodeData" format=3]
+
+[ext_resource type="Script" uid="uid://c8h8cvjik2tcu" path="res://scripts/algorithms/pseudo_code/pseudo_code_resource.gd" id="1_dijkstra"]
+
+[resource]
+script = ExtResource("1_dijkstra")
+algorithm_name = "Dijkstra"
+source_text = "Dijkstra(G, s):
+  for v in V: color[v] = UND, key[v] = ∞--1
+  key[s] = 0--3
+  Q = {s}
+  while Q not empty:
+    u = extract-min(Q)--7
+    for (u, v, w) in Adj[u]:
+      if key[u] + w < key[v]:
+        color[(u, v)] = PATH--10
+        key[v] = key[u] + w--11
+        parent[v] = u
+        Q.insert(v)
+    color[u] = FIN--7"
+raw_code = "Dijkstra(G, s):
+  for v in V: color[v] = UND, key[v] = ∞
+  key[s] = 0
+  Q = {s}
+  while Q not empty:
+    u = extract-min(Q)
+    for (u, v, w) in Adj[u]:
+      if key[u] + w < key[v]:
+        color[(u, v)] = PATH
+        key[v] = key[u] + w
+        parent[v] = u
+        Q.insert(v)
+    color[u] = FIN"
+steps = [[], [1], [], [2], [], [], [], [5, 11], [], [], [8], [9]]
+metadata/_custom_type_script = "uid://c8h8cvjik2tcu"

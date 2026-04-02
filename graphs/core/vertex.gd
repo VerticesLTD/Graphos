@@ -81,7 +81,7 @@ var z_idx: int = 0:
 # --- Graph Operations ---
 
 ## Creates and prepends a new Edge to the destination, returning it.
-func connect_to(dest: Vertex, is_weighted: bool, weight: int, strategy: ConnectionStrategy) -> Edge:
+func connect_to(dest: Vertex, is_weighted: bool, weight: float, strategy: ConnectionStrategy) -> Edge:
 	var curr: Edge = edges
 	while curr:
 		if curr.dst == dest:

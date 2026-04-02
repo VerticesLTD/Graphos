@@ -27,6 +27,22 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
+[node name="KeyBadge" type="Node2D" parent="."]
+position = Vector2(16, -16)
+
+[node name="Bubble" type="Polygon2D" parent="KeyBadge"]
+color = Color(0.263, 0.38, 0.933, 1)
+
+[node name="KeyLabel" type="Label" parent="KeyBadge"]
+offset_left = -15.0
+offset_top = -10.0
+offset_right = 15.0
+offset_bottom = 10.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="MouseDetectionArea" type="Area2D" parent="." unique_id=364111936]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MouseDetectionArea" unique_id=552407604]

@@ -3,7 +3,7 @@ class_name ConnectionStrategy extends RefCounted
 ## Defines the blueprint for how vertices connect and disconnect.
 
 ## Virtual function to handle edge creation, data encoding, and UI spawning.
-func add_edge(_graph: Graph, _src: Vertex, _dst: Vertex, _weight: int, _is_weighted: bool, _shout: bool) -> void:
+func add_edge(_graph: Graph, _src: Vertex, _dst: Vertex, _weight: float, _is_weighted: bool, _shout: bool) -> void:
 	pass
 
 ## Virtual function to handle edge deletion and UI cleanup.

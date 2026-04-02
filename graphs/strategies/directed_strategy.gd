@@ -3,7 +3,7 @@ class_name DirectedStrategy extends ConnectionStrategy
 ## Connects the source to the destination, but not vice versa.
 
 ## Adds a directed edge and encodes it with its specific sandbox properties.
-func add_edge(graph: Graph, src: Vertex, dst: Vertex, weight: int, is_weighted: bool, shout: bool) -> void:
+func add_edge(graph: Graph, src: Vertex, dst: Vertex, weight: float, is_weighted: bool, shout: bool) -> void:
 	# Create the logical link (pass 'self' for the strategy)
 	var edge = src.connect_to(dst, is_weighted, weight, self) 
 

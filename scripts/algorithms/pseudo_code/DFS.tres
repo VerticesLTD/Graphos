@@ -4,34 +4,34 @@
 
 [resource]
 script = ExtResource("1_g18le")
-algorithm_name = "DFS Pseudo"
-source_text = "DFS(G, s)--1
-for each vertex v in G--2
-    color v as Undiscovered--2
-S ← new Stack()--3
-color s as Discovered--4
-S.push(s)--4
-while S ≠ ∅ do--5,6,7,8,9,10,11
-    u ← S.pop()--6
-    for each v ∈ Adj[u]--7,8,9,10
-        if v is not discovered--8,9,10
-            color (u, v) as Path--9
-            color v as Discovered--10
-            S.push(v)--10
-    color u as Finished--11"
-raw_code = "DFS(G, s)
-for each vertex v in G
-	color v as Undiscovered
-S ← new Stack()
-color s as Discovered
-S.push(s)
-while S ≠ ∅ do
-	u ← S.pop()
-	for each v ∈ Adj[u]
-		if v is not discovered
-			color (u, v) as Path
-			color v as Discovered
-			S.push(v)
-	color u as Finished"
-steps = [[0], [1, 2, 3], [], [], [5, 4], [], [], [], [], [10], [12, 11], [13]]
+algorithm_name = "DFS"
+source_text = "DFS(G, s):
+  for v in V: color[v] = UND--1
+  S = empty
+  color[s] = DISC--4
+  S.push(s)
+  while S not empty:
+    u = S.pop()
+    for v in Adj[u]:
+      if color[v] == UND:
+        color[(u, v)] = PATH--10
+        color[v] = DISC--10
+        parent[v] = u
+        S.push(v)
+    color[u] = FIN--11"
+raw_code = "DFS(G, s):
+  for v in V: color[v] = UND
+  S = empty
+  color[s] = DISC
+  S.push(s)
+  while S not empty:
+    u = S.pop()
+    for v in Adj[u]:
+      if color[v] == UND:
+        color[(u, v)] = PATH
+        color[v] = DISC
+        parent[v] = u
+        S.push(v)
+    color[u] = FIN"
+steps = [[], [1], [], [], [3], [], [], [], [], [], [9, 10], [13]]
 metadata/_custom_type_script = "uid://c8h8cvjik2tcu"

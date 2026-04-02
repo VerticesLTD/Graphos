@@ -3,6 +3,8 @@ class_name UIEdgeView
 
 var weight_gap: float = 30.0
 const MOUSE_DETECT_SENSITIVITY = 9.0
+const MIN_INLINE_WEIGHT_DISTANCE := 120.0
+const DETACHED_WEIGHT_OFFSET := 24.0
 var edge_data: Edge 
 
 @onready var mouse_detection_area: Area2D = $MouseDetectionArea
@@ -24,7 +26,7 @@ var _tween: Tween
 ## Connects data signals to the view and initializes the edge.
 func _ready() -> void:
 	if edge_data:
-		weight_label.text = str(edge_data.weight)
+		weight_label.text = _format_weight(edge_data.weight)
 		_setup_detection_area()
 
 		# Make sure to NOT create double connections(two vertices but one edge)
@@ -59,7 +61,7 @@ func _ready() -> void:
 func refresh() -> void:
 	if not is_instance_valid(edge_data): return
 
-	weight_label.text = str(edge_data.weight)
+	weight_label.text = _format_weight(edge_data.weight)
 	weight_gap = 43.0 if weight_label.text.length() >= 3 else 30.0
 	
 	var fixed_width = Globals.EDGE_WIDTH
@@ -165,9 +167,10 @@ func _update_arrowhead(pos1: Vector2, pos2: Vector2, current_line_width: float) 
 	arrowhead.position = visual_end
 	arrowhead.rotation = direction.angle()
 	
-	# Proportions: 5x line width for length, 2x for width
-	var arrow_length = current_line_width * 5.0
-	var arrow_width = current_line_width * 2.2
+	var edge_distance = pos1.distance_to(pos2)
+	var arrow_dimensions = _get_arrow_dimensions(edge_distance, current_line_width)
+	var arrow_length = arrow_dimensions.x
+	var arrow_width = arrow_dimensions.y
 	
 	# 4-point design: Tip, Top Wing, Back Indent, Bottom Wing
 	var points = PackedVector2Array([
@@ -178,6 +181,13 @@ func _update_arrowhead(pos1: Vector2, pos2: Vector2, current_line_width: float) 
 	])
 	
 	arrowhead.polygon = points
+
+func _get_arrow_dimensions(edge_distance: float, current_line_width: float) -> Vector2:
+	var available_span = max(edge_distance - (Globals.VERTEX_RADIUS * 2.0), 0.0)
+	var preferred_length = current_line_width * 5.0
+	var arrow_length = clamp(preferred_length, 8.0, max(8.0, available_span * 0.45))
+	var arrow_width = clamp(current_line_width * 2.2, 4.0, max(4.0, arrow_length * 0.5))
+	return Vector2(arrow_length, arrow_width)
 		
 ## Recalculates line points to leave a gap for the weight label.
 func _setup_lines_and_weight() -> void:
@@ -191,8 +201,9 @@ func _setup_lines_and_weight() -> void:
 	if edge_data.strategy is DirectedStrategy:
 		line_1.end_cap_mode = Line2D.LINE_CAP_NONE  # Flat end where it hits the arrow
 		line_2.end_cap_mode = Line2D.LINE_CAP_NONE
-		# Stop the line 10px early to make room for the arrow
-		visual_dst = (visual_dst - (direction * 10.0)).round()
+		# Stop the line slightly before the adaptive arrowhead.
+		var arrow_length = _get_arrow_dimensions(src_pos.distance_to(dst_pos), line_1.width).x
+		visual_dst = (visual_dst - (direction * (arrow_length * 0.55))).round()
 	else:
 		line_1.end_cap_mode = Line2D.LINE_CAP_ROUND # Round end for undirected
 		line_2.end_cap_mode = Line2D.LINE_CAP_ROUND
@@ -207,12 +218,27 @@ func _setup_lines_and_weight() -> void:
 	line_2.clear_points()
 
 	# 3. Draw logic
-	if edge_data.is_weighted and actual_dist > (weight_gap * 2.2):
+	if edge_data.is_weighted and _should_use_detached_weight_label(actual_dist):
+		_draw_simple_edge(src_pos, visual_dst)
+		_place_detached_weight_label(true_mid, direction)
+	elif edge_data.is_weighted and actual_dist > (weight_gap * 2.2):
 		_draw_weighted_edge(src_pos, visual_dst, true_mid, offset)
 	else:
 		_draw_simple_edge(src_pos, visual_dst)
 	
 	_update_arrowhead(src_pos, dst_pos, line_1.width)
+
+func _should_use_detached_weight_label(actual_dist: float) -> bool:
+	return edge_data.is_weighted and actual_dist < MIN_INLINE_WEIGHT_DISTANCE
+
+func _place_detached_weight_label(mid: Vector2, direction: Vector2) -> void:
+	weight_label.visible = true
+	var normal = Vector2(-direction.y, direction.x)
+	# Keep the detached label on the visually "upper" side for consistency.
+	if normal.y > 0.0:
+		normal = -normal
+	weight_label.rotation = 0.0
+	weight_label.position = (mid + (normal * DETACHED_WEIGHT_OFFSET) - (weight_label.size / 2.0)).round()
 
 ## Helper: Line segments stop at visual_dst, but gap is centered at true_mid
 func _draw_weighted_edge(start: Vector2, end: Vector2, mid: Vector2, offset: Vector2) -> void:
@@ -293,7 +319,7 @@ func _spawn_weight_editor() -> void:
 		Globals.active_weight_editor.queue_free()
 	
 	var edit = LineEdit.new()
-	edit.text = str(edge_data.weight)
+	edit.text = _format_weight(edge_data.weight)
 	edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	edit.custom_minimum_size = Vector2(50, 30)
 	
@@ -309,13 +335,19 @@ func _spawn_weight_editor() -> void:
 
 ## Submits the new weight to the CommandManager and cleans up the UI.
 func _on_weight_submitted(new_text: String, _edit_node: LineEdit) -> void:
-	if new_text.is_valid_int() or new_text.is_valid_float():
-		var cmd = ChangeEdgeWeightCommand.new(edge_data, new_text.to_int())
+	var parsed := new_text.strip_edges().replace(",", ".")
+	if parsed.is_valid_int() or parsed.is_valid_float():
+		var cmd = ChangeEdgeWeightCommand.new(edge_data, parsed.to_float())
 		CommandManager.execute(cmd)
 	
 	if Globals.active_weight_editor:
 		Globals.active_weight_editor.queue_free()
 		Globals.active_weight_editor = null
+
+func _format_weight(value: float) -> String:
+	if is_equal_approx(value, roundf(value)):
+		return str(int(roundf(value)))
+	return str(snappedf(value, 0.001))
 
 ## Handles the vanished signal from the data layer.
 func _on_edge_vanished(_killer: Vertex) -> void:

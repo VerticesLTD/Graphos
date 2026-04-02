@@ -7,6 +7,9 @@ class_name UIVertexView
 var vertex_data: Vertex
 
 @onready var label: Label = $Label
+@onready var key_badge: Node2D = $KeyBadge
+@onready var key_bubble: Polygon2D = $KeyBadge/Bubble
+@onready var key_label: Label = $KeyBadge/KeyLabel
 @onready var collision_circle: CollisionShape2D = $MouseDetectionArea/CollisionShape2D
 @onready var circle_visual: Polygon2D = $CircleVisual
 
@@ -14,6 +17,7 @@ var vertex_data: Vertex
 var draw_radius_hovered = Globals.VERTEX_RADIUS
 var draw_color_hovered = Globals.VERTEX_COLOR
 const VERTEX_POLYGON_POINTS := 96
+const KEY_BADGE_RADIUS := 10.0
 
 # Animations
 var is_hovered: bool = false
@@ -32,6 +36,7 @@ func _ready() -> void:
 	# Connect listeners: Data changes now push updates to the View
 	vertex_data.state_changed.connect(refresh)
 	vertex_data.vanished.connect(_on_vanished)
+	Globals.algorithm_key_visuals_changed.connect(refresh)
 	
 	# This allows algorithms to trigger animations via the Data
 	vertex_data.animation_requested.connect(_on_animation_requested)
@@ -62,6 +67,8 @@ func refresh() -> void:
 		_update_vertex_visual(draw_radius_hovered, draw_color_hovered)
 	else:
 		_update_vertex_visual(Globals.VERTEX_RADIUS, vertex_data.color)
+
+	_update_key_badge()
 	
 ## This function handles the actual pixel drawing on screen.
 func _draw() -> void:
@@ -71,6 +78,27 @@ func _draw() -> void:
 func _update_vertex_visual(radius: float, color: Color) -> void:
 	circle_visual.polygon = _build_circle_polygon(radius, VERTEX_POLYGON_POINTS)
 	circle_visual.color = color
+
+func _update_key_badge() -> void:
+	if not _should_show_key():
+		key_badge.visible = false
+		return
+
+	key_badge.visible = true
+	key_bubble.polygon = _build_circle_polygon(KEY_BADGE_RADIUS, 56)
+	key_label.text = _format_key(vertex_data.key)
+
+func _should_show_key() -> bool:
+	if not Globals.algorithm_show_vertex_keys:
+		return false
+	return Globals.algorithm_key_vertex_ids.has(vertex_data.id)
+
+func _format_key(value: float) -> String:
+	if value >= Globals.INF * 0.5:
+		return "∞"
+	if is_equal_approx(value, roundf(value)):
+		return str(int(roundf(value)))
+	return str(snappedf(value, 0.01))
 
 func _build_circle_polygon(radius: float, point_count: int) -> PackedVector2Array:
 	var points := PackedVector2Array()
