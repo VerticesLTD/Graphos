@@ -3,90 +3,18 @@
 import json
 import math
 import os
-import random
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "presets", "data")
 
 VC = [0.118, 0.118, 0.18, 1.0]
-# Match Globals.EDGE_COLOR Color("495057")
 EC = [73 / 255, 80 / 255, 87 / 255, 1.0]
-# Brand logo vertices (#F39237 #EE9675 #1D97A8 #8BA28F); edges use EC above.
 GRAPHOS_V = [
     [243 / 255, 146 / 255, 55 / 255, 1.0],
     [238 / 255, 150 / 255, 117 / 255, 1.0],
     [29 / 255, 151 / 255, 168 / 255, 1.0],
     [139 / 255, 162 / 255, 143 / 255, 1.0],
 ]
-V_BLUE = [0.263, 0.38, 0.933, 1.0]
-V_TEAL = [0.024, 0.714, 0.627, 1.0]
-
-
-def _fruchterman_reingold_layout(
-    n: int,
-    undirected_edges: list[tuple[int, int]],
-    *,
-    iterations: int = 260,
-    seed: int = 7,
-    target_radius: float = 120.0,
-) -> list[tuple[int, int]]:
-    """Deterministic spring-like layout (Fruchterman–Reingold style) for dense small graphs."""
-    rng = random.Random(seed)
-    pos: list = []
-    for i in range(n):
-        ang = -math.pi / 2 + 2 * math.pi * i / max(n, 1)
-        r0 = 0.14 + rng.uniform(-0.03, 0.03)
-        pos.append([r0 * math.cos(ang), r0 * math.sin(ang)])
-    nbr = [set() for _ in range(n)]
-    for a, b in undirected_edges:
-        nbr[a].add(b)
-        nbr[b].add(a)
-    w = 2.5
-    area = w * w
-    k = math.sqrt(area / max(n, 1))
-    for it in range(iterations):
-        disp = [[0.0, 0.0] for _ in range(n)]
-        for i in range(n):
-            for j in range(i + 1, n):
-                dx = pos[j][0] - pos[i][0]
-                dy = pos[j][1] - pos[i][1]
-                d = math.hypot(dx, dy) + 1e-9
-                fr = (k * k) / d
-                fx = (fr * dx) / d
-                fy = (fr * dy) / d
-                disp[i][0] -= fx
-                disp[i][1] -= fy
-                disp[j][0] += fx
-                disp[j][1] += fy
-        for i in range(n):
-            for j in nbr[i]:
-                if j < i:
-                    continue
-                dx = pos[j][0] - pos[i][0]
-                dy = pos[j][1] - pos[i][1]
-                d = math.hypot(dx, dy) + 1e-9
-                fa = (d * d) / k
-                fx = (fa * dx) / d
-                fy = (fa * dy) / d
-                disp[i][0] += fx
-                disp[i][1] += fy
-                disp[j][0] -= fx
-                disp[j][1] -= fy
-        temp = w * 0.065 * ((1.0 - it / max(iterations - 1, 1)) ** 1.15)
-        for i in range(n):
-            dx, dy = disp[i][0], disp[i][1]
-            mag = math.hypot(dx, dy) + 1e-12
-            step = min(mag, temp)
-            pos[i][0] += (dx / mag) * step
-            pos[i][1] += (dy / mag) * step
-    cx = sum(p[0] for p in pos) / n
-    cy = sum(p[1] for p in pos) / n
-    for p in pos:
-        p[0] -= cx
-        p[1] -= cy
-    m = max(max(abs(p[0]), abs(p[1])) for p in pos) or 1.0
-    s = target_radius / m
-    return [(round(p[0] * s), round(p[1] * s)) for p in pos]
 
 
 def dump(name: str, vertices: list, edges: list) -> None:
@@ -98,7 +26,7 @@ def dump(name: str, vertices: list, edges: list) -> None:
 
 
 def graphos() -> None:
-    """Logo path: 4 vertices, 3 edges (top-left → bottom-mid → mid-right → inner). Brand palette on vertices."""
+    """Graphos logo path (4 vertices, 3 edges)."""
     verts = [
         {"id": 0, "pos": [-63, -54], "color": GRAPHOS_V[0]},
         {"id": 1, "pos": [-9, 54], "color": GRAPHOS_V[1]},
@@ -352,37 +280,49 @@ def flower_petal() -> None:
     dump("flower_snark", verts, out_e)
 
 
-def kneser_62() -> None:
-    """KG(6,2): 15 vertices (2-subsets of {0..5}), edges when disjoint.
-
-    Fruchterman–Reingold–style layout (deterministic) to spread high-degree nodes and untangle edges.
-    """
-    pairs: list = []
-    for i in range(6):
-        for j in range(i + 1, 6):
-            pairs.append((i, j))
-    assert len(pairs) == 15
-    edge_pairs: list = []
+def kneser_52() -> None:
+    """KG(5,2) = Petersen graph: 10 vertices, 15 edges. Outer pentagon + inner pentagram + spokes."""
+    r_out = 105.0
+    r_in = 52.0
+    twist = math.pi / 5
+    verts = []
+    for i in range(5):
+        ang = -math.pi / 2 + i * 2 * math.pi / 5
+        x, y = round(r_out * math.cos(ang)), round(r_out * math.sin(ang))
+        verts.append({"id": i, "pos": [x, y], "color": VC})
+    for i in range(5):
+        ang = -math.pi / 2 + i * 2 * math.pi / 5 + twist
+        x, y = round(r_in * math.cos(ang)), round(r_in * math.sin(ang))
+        verts.append({"id": 5 + i, "pos": [x, y], "color": VC})
     edges: list = []
-    for ia in range(15):
-        for ib in range(ia + 1, 15):
-            a, b = pairs[ia], pairs[ib]
-            if set(a).isdisjoint(set(b)):
-                edge_pairs.append((ia, ib))
-                edges.append(
-                    {
-                        "from": ia,
-                        "to": ib,
-                        "strategy": "undirected",
-                        "weighted": False,
-                        "weight": 1.0,
-                        "color": EC,
-                    }
-                )
-    assert len(edges) == 45
-    xy = _fruchterman_reingold_layout(15, edge_pairs, iterations=280, seed=11, target_radius=122.0)
-    verts = [{"id": i, "pos": [xy[i][0], xy[i][1]], "color": VC} for i in range(15)]
-    dump("kneser_62", verts, edges)
+    seen: set = set()
+
+    def add_edge(a: int, b: int) -> None:
+        if a > b:
+            a, b = b, a
+        key = (a, b)
+        if key in seen:
+            return
+        seen.add(key)
+        edges.append(
+            {
+                "from": a,
+                "to": b,
+                "strategy": "undirected",
+                "weighted": False,
+                "weight": 1.0,
+                "color": EC,
+            }
+        )
+
+    for i in range(5):
+        add_edge(i, (i + 1) % 5)
+    for i in range(5):
+        add_edge(5 + i, 5 + (i + 2) % 5)
+    for i in range(5):
+        add_edge(i, 5 + i)
+    assert len(edges) == 15
+    dump("kneser_52", verts, edges)
 
 
 def cycle_12() -> None:
@@ -421,7 +361,7 @@ def main() -> None:
     heawood()
     k33()
     flower_petal()
-    kneser_62()
+    kneser_52()
     cycle_12()
 
 

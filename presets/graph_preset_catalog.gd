@@ -15,15 +15,9 @@ static func built_in_entries() -> Array[Dictionary]:
 		"thumbnail_path": "res://assets/logo/SplashLogo.png",
 	})
 	list.append({
-		"id": "petersen",
-		"display_name": "Petersen",
-		"data_path": "res://presets/data/petersen.json",
-		"thumbnail_kind": "live",
-	})
-	list.append({
-		"id": "kneser_62",
-		"display_name": "Kneser KG(6,2)",
-		"data_path": "res://presets/data/kneser_62.json",
+		"id": "kneser_52",
+		"display_name": "Kneser KG(5,2)",
+		"data_path": "res://presets/data/kneser_52.json",
 		"thumbnail_kind": "live",
 	})
 	list.append({
