@@ -6,7 +6,7 @@ extends Command
 
 var from_id: int
 var to_id: int
-var previous_weight: int
+var previous_weight: float
 
 # Properties required to restore the edge's identity
 var strategy: ConnectionStrategy

@@ -39,6 +39,7 @@ var controller: GraphController
 const ALGORITHM_MENU_ITEMS := [
 	{"label": "Breadth First Search", "id": AlgorithmPlayer.ALGORITHMS.BFS},
 	{"label": "Depth First Search", "id": AlgorithmPlayer.ALGORITHMS.DFS},
+	{"label": "Dijkstra Shortest Paths", "id": AlgorithmPlayer.ALGORITHMS.DIJKSTRA},
 ]
 
 # Helper to generate the color square icon

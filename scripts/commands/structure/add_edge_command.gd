@@ -5,12 +5,12 @@ extends Command
 
 var from_id: int
 var to_id: int
-var weight: int
+var weight: float
 var strategy: ConnectionStrategy
 var is_weighted: bool
 
 ## Initializes the command. If s or w_mode are null, it snapshots Globals.
-func _init(g: Graph, src_id: int, dst_id: int, w: int = 1, s: ConnectionStrategy = null, w_mode = null):
+func _init(g: Graph, src_id: int, dst_id: int, w: float = 1.0, s: ConnectionStrategy = null, w_mode = null):
 	super(g)
 	from_id = src_id
 	to_id = dst_id

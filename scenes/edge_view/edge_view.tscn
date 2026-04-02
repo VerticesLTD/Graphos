@@ -6,6 +6,8 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ufv8l"]
 resource_local_to_scene = true
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_weight_edit"]
+
 [node name="EdgeView" type="Node2D" unique_id=1272233447]
 script = ExtResource("1_cct54")
 
@@ -41,6 +43,20 @@ theme_override_font_sizes/font_size = 22
 text = "12"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="WeightEdit" type="LineEdit" parent="." unique_id=918274631]
+visible = false
+offset_right = 56.0
+offset_bottom = 30.0
+theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
+theme_override_fonts/font = ExtResource("2_ewg0c")
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxEmpty_weight_edit")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_weight_edit")
+theme_override_styles/read_only = SubResource("StyleBoxEmpty_weight_edit")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_weight_edit")
+alignment = 1
+flat = true
 
 [connection signal="mouse_entered" from="MouseDetectionArea" to="." method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MouseDetectionArea" to="." method="_on_mouse_exited"]

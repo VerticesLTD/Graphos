@@ -3,7 +3,7 @@ class_name UndirectedStrategy extends ConnectionStrategy
 ## Logically creates two identical edges pointing at each other.
 
 ## Adds two edges (A->B and B->A) but only spawns one visual representation.
-func add_edge(_graph: Graph, src: Vertex, dst: Vertex, weight: int, is_weighted: bool, shout: bool) -> void:
+func add_edge(_graph: Graph, src: Vertex, dst: Vertex, weight: float, is_weighted: bool, shout: bool) -> void:
 	# Create the links (pass and 'self' for the strategy)
 	var edge_a = src.connect_to(dst, is_weighted, weight, self) 
 	var edge_b = dst.connect_to(src, is_weighted, weight, self) 

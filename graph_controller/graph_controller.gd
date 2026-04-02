@@ -325,7 +325,10 @@ func should_add_connection(from_id: int, to_id: int) -> bool:
 ## Close the weight editor
 func close_active_editor() -> void:
 	if Globals.active_weight_editor:
-		Globals.active_weight_editor.queue_free()
+		if Globals.active_weight_editor.has_meta("inline_weight_editor"):
+			Globals.active_weight_editor.release_focus()
+		else:
+			Globals.active_weight_editor.queue_free()
 		Globals.active_weight_editor = null
 		
 ## ------------------------------------------------------------------------------
@@ -357,7 +360,7 @@ func _resolve_start_vertex_for_algorithm(algorithm: AlgorithmPlayer.ALGORITHMS, 
 
 func _algorithm_requires_start_vertex(algorithm: AlgorithmPlayer.ALGORITHMS) -> bool:
 	match algorithm:
-		AlgorithmPlayer.ALGORITHMS.BFS, AlgorithmPlayer.ALGORITHMS.DFS:
+		AlgorithmPlayer.ALGORITHMS.BFS, AlgorithmPlayer.ALGORITHMS.DFS, AlgorithmPlayer.ALGORITHMS.DIJKSTRA:
 			return true
 		_:
 			return false

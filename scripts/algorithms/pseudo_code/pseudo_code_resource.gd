@@ -18,7 +18,7 @@ const LOG_TAG = "PSEUDO_TOOL"
 ## The clean code with suffixes removed.
 @export_multiline var raw_code: String
 
-## Array of Arrays. steps[0] contains line indices for Step 1.
+## Array of Arrays. steps[N] contains line indices for pseudo step N.
 @export var steps: Array = [] 
 
 func _generate_data() -> void:
@@ -45,9 +45,9 @@ func _generate_data() -> void:
 			# Add this line index to the appropriate steps
 			for num_str in raw_step_nums:
 				if num_str.is_valid_int():
-					var step_idx = num_str.to_int() - 1 
+					var step_idx = num_str.to_int()
 					
-					if step_idx < 0: continue # Ignore 0 or negative inputs
+					if step_idx < 0: continue # Ignore negative inputs
 					
 					if not step_map.has(step_idx):
 						step_map[step_idx] = []

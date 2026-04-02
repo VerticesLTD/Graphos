@@ -85,7 +85,7 @@ func delete_vertex(v: Vertex) -> void:
 ## Adds an edge between two existing vertices via the current strategy.
 ## @param target_strategy: The tool/strategy attempting to make this connection.
 ## @param shout: If false, creates data-only edges for imposters.
-func add_edge(src_id: int, dst_id: int, weight: int, target_strategy: ConnectionStrategy, is_weighted: bool, shout: bool = true) -> void:
+func add_edge(src_id: int, dst_id: int, weight: float, target_strategy: ConnectionStrategy, is_weighted: bool, shout: bool = true) -> void:
 	# Optional: Allow self loops
 	if src_id == dst_id: 
 		if shout: Notify.show_error("Self-loops are not allowed.")

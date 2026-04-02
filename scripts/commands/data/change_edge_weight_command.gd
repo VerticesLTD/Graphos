@@ -3,10 +3,10 @@ class_name ChangeEdgeWeightCommand
 extends Command
 
 var target_edge: Edge
-var new_weight: int
-var old_weight: int
+var new_weight: float
+var old_weight: float
 
-func _init(edge: Edge, target_weight: int):
+func _init(edge: Edge, target_weight: float):
 	target_edge = edge
 	new_weight = target_weight
 	old_weight = edge.weight

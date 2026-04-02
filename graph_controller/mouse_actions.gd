@@ -39,6 +39,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	# If the menu closed less than 200ms ago, ignore ALL clicks.
 	# This prevents "Accidental Vertices" (Left Click)
 	if controller.popup_menu and controller.popup_menu.MainMenu.visible:
+			# Still handle right-release cleanup while menu is open.
+			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and not event.pressed:
+				_handle_right_release(event)
+				return
 			# If it's a mouse click, we consume it so it doesn't create vertices or re-open menus
 			if event is InputEventMouseButton and event.pressed:
 				get_viewport().set_input_as_handled()
@@ -116,6 +120,12 @@ func _handle_left_click(event: InputEventMouseButton):
 	controller.clear_selection_buffer()
 	
 func _handle_left_release(_event: InputEventMouseButton):
+	_cleanup_after_release()
+
+func _handle_right_release(_event: InputEventMouseButton):
+	_cleanup_after_release()
+
+func _cleanup_after_release() -> void:
 	# Stop dragging
 	controller.stop_dragging()
 	_has_last_mouse_world_pos = false
@@ -140,7 +150,7 @@ func _handle_left_release(_event: InputEventMouseButton):
 		)
 	else:
 		controller.update_selection_bounds(1.0)
-	
+
 
 ## Handles connecting a few vertices in a row.
 ## If user clicked on a vertex, it's ID is remembered.
@@ -218,9 +228,6 @@ func _handle_right_click(event: InputEventMouseButton):
 		popup_menu.open_for_canvas(mouse_global_pos, mouse_screen_pos)
 	pass
 	
-func _handle_right_release(_event: InputEventMouseButton):
-	pass
-
 ## Handle mouse movement
 func _handle_mouse_movement(event: InputEventMouseMotion):
 	var mouse_world_pos := controller.graph.get_global_mouse_position()

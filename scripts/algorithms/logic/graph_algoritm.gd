@@ -40,6 +40,73 @@ func _reset_alg_variables() -> void:
 	timeline.clear()
 	pseudo_steps.clear()
 
+## Returns a dictionary declaring what this algorithm requires from the graph.
+## Supported keys:
+##   "directed"            : bool — true = must be directed, false = must be undirected
+##   "weighted"            : bool — true = must be weighted,  false = must be unweighted
+##   "no_negative_weights" : bool — true = no edge may have a negative weight
+##   "warn_if_weighted"    : bool — if true, show an info notification when the graph is weighted (e.g. BFS/DFS ignore weights)
+## Omitting a key means the algorithm has no requirement for that property.
+func get_requirements() -> Dictionary:
+	return {}
+
+## Whether this algorithm should render per-vertex key badges.
+## Override in algorithms such as Dijkstra/Prim that rely on keys.
+func requires_vertex_keys_display() -> bool:
+	return false
+
+## Validates graph against the base integrity rules and this algorithm's requirements.
+## Shows a Notify error and returns false on the first violation. May show an informational notification (e.g. traversal on weighted graphs).
+func check_requirements(graph: Graph) -> bool:
+	# --- Always: mixed directed/undirected guard ---
+	var dominant_strategy := graph.get_graph_dominant_strategy()
+	if graph.num_edges > 0 and dominant_strategy == null:
+		Notify.show_error("Mixed Strategy Error: Directed and Undirected edges cannot coexist during an algorithm.")
+		return false
+
+	# --- Always: mixed weighted/unweighted guard ---
+	var weight_state = graph.get_graph_weight_state()
+	if weight_state == null:
+		Notify.show_error("Mixed Weight Error: All edges must be either Weighted or Unweighted in order to run an algorithm.")
+		return false
+
+	var reqs := get_requirements()
+
+	# --- Per-algorithm: directed / undirected ---
+	if reqs.has("directed") and dominant_strategy != null:
+		var needs_directed: bool = reqs["directed"]
+		if needs_directed and not (dominant_strategy is DirectedStrategy):
+			Notify.show_error("%s requires a directed graph." % get_script().resource_path.get_file().get_basename())
+			return false
+		if not needs_directed and not (dominant_strategy is UndirectedStrategy):
+			Notify.show_error("%s requires an undirected graph." % get_script().resource_path.get_file().get_basename())
+			return false
+
+	# --- Per-algorithm: weighted / unweighted ---
+	if reqs.has("weighted"):
+		var needs_weighted: bool = reqs["weighted"]
+		if needs_weighted and weight_state != "weighted":
+			Notify.show_error("%s requires a weighted graph." % get_script().resource_path.get_file().get_basename())
+			return false
+		if not needs_weighted and weight_state != "unweighted":
+			Notify.show_error("%s requires an unweighted graph." % get_script().resource_path.get_file().get_basename())
+			return false
+
+	# --- Per-algorithm: info when graph is weighted but algorithm ignores weights (e.g. BFS/DFS) ---
+	if reqs.get("warn_if_weighted", false) and weight_state == "weighted":
+		var alg_name: String = get_script().resource_path.get_file().get_basename()
+		Notify.show_notification("%s ignores edge weights; only adjacency affects the traversal." % alg_name)
+
+	# --- Per-algorithm: no negative weights ---
+	if reqs.get("no_negative_weights", false):
+		for v: Vertex in graph.vertices.values():
+			for edge: Edge in v.get_outgoing_edges():
+				if edge.is_weighted and edge.weight < 0:
+					Notify.show_error("%s does not support negative edge weights." % get_script().resource_path.get_file().get_basename())
+					return false
+
+	return true
+
 ## Every graph algorithm must have a run function.
 ## Every graph algorithm has a start node, and needs to return an array.
 ## The array MUST be strctures as so:
@@ -93,6 +160,34 @@ func change_and_log_edge_color(target_edge: Edge, target_color: Color, pseudo_st
 	# Update the imposter for algorithm logic
 	target_edge.color = target_color
 	log_pseudo_step(pseudo_step)
+
+## Discovers a vertex through an edge as ONE visual/timeline step.
+## Applies edge flow animation first (via command), then edge+vertex colors together.
+func discover_vertex_via_edge_and_log(
+	target_edge: Edge,
+	target_vertex: Vertex,
+	target_edge_color: Color,
+	target_vertex_color: Color,
+	pseudo_step = null
+) -> void:
+	var real_src = real_graph.get_vertex(target_edge.src.id)
+	var real_dst = real_graph.get_vertex(target_edge.dst.id)
+	var real_vertex = real_graph.get_vertex(target_vertex.id)
+	var real_edge = real_graph.get_edge(real_src, real_dst)
+
+	if real_edge and real_vertex:
+		timeline.append(
+			DiscoverVertexViaEdgeCommand.new(
+				real_edge,
+				real_vertex,
+				target_edge_color,
+				target_vertex_color
+			)
+		)
+
+	target_edge.color = target_edge_color
+	target_vertex.color = target_vertex_color
+	log_pseudo_step(pseudo_step)
 	
 ## Changes a vertex key and records the Command in the timeline.
 func change_and_log_vertex_key(target_vertex: Vertex, target_key: float, pseudo_step = null) -> void:
@@ -105,9 +200,15 @@ func change_and_log_vertex_key(target_vertex: Vertex, target_key: float, pseudo_
 
 	log_pseudo_step(pseudo_step)
 
-## Changes a vertex color on both real and imposter graphs, without logging a step.
-func set_vertex_color_silent(target_vertex: Vertex, target_color: Color) -> void:
-	target_vertex.color = target_color
-	var real_v = real_graph.get_vertex(target_vertex.id)
-	if real_v:
-		real_v.color = target_color
+## Colors ALL vertices in the algorithm graph as ONE logged timeline step.
+## Use for initialization so undo naturally restores original colors.
+func log_initialize_vertices(color: Color, pseudo_step = null) -> void:
+	var real_vertices: Array[Vertex] = []
+	for v: Vertex in imposter_graph.vertices.values():
+		v.color = color
+		v.parent = null
+		var real_v := real_graph.get_vertex(v.id)
+		if real_v:
+			real_vertices.append(real_v)
+	timeline.append(ChangeSelectionVertexColorCommand.new(real_vertices, color))
+	log_pseudo_step(pseudo_step)

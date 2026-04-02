@@ -11,6 +11,7 @@ const EVNT_TAG = "EVENT"
 # App states
 # ------------
 signal app_state_changed
+signal algorithm_key_visuals_changed
 enum State {
 	SELECTION,
 	CREATE,
@@ -22,6 +23,19 @@ var current_state: State:
 	set(value):
 		current_state = value
 		app_state_changed.emit()
+
+var algorithm_show_vertex_keys: bool = false:
+	set(value):
+		if algorithm_show_vertex_keys == value:
+			return
+		algorithm_show_vertex_keys = value
+		algorithm_key_visuals_changed.emit()
+
+## Set of vertex IDs participating in the currently running algorithm.
+var algorithm_key_vertex_ids: Dictionary = {}:
+	set(value):
+		algorithm_key_vertex_ids = value
+		algorithm_key_visuals_changed.emit()
 # ------------
 # Tool Modifiers (For CREATE state)
 # ------------

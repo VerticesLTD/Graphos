@@ -10,7 +10,8 @@ var pseudo_steps: Array
 
 enum ALGORITHMS {
 	BFS,
-	DFS
+	DFS,
+	DIJKSTRA
 }
 
 # Animations
@@ -20,7 +21,8 @@ var controls_tween: Tween
 ## <ALG> : [<ALG_SCRIPT>, <PSEUDO_RES>]
 var _algorithm_map: Dictionary = {
 	ALGORITHMS.BFS : [BFS.new(),preload("uid://b6pr3p6u5gqym")],
-	ALGORITHMS.DFS : [DFS.new(), preload("uid://chwkrpy8dpkfk")]
+	ALGORITHMS.DFS : [DFS.new(), preload("uid://chwkrpy8dpkfk")],
+	ALGORITHMS.DIJKSTRA : [Dijkstra.new(), preload("res://scripts/algorithms/pseudo_code/Dijkstra.tres")]
 }
 
 ## Stores the events by order of the algorithm's execution.
@@ -38,7 +40,9 @@ var _is_algorithm_running := false
 
 func _ready() -> void:
 	pseudo_visualizer.visible = false
+	pseudo_visualizer.pseudo_layout_updated.connect(_place_visualizer_bottom_left)
 	algorithm_controls.visible = false
+	_set_vertex_key_visuals(false, [])
 
 
 func is_algorithm_running() -> bool:
@@ -83,28 +87,20 @@ func start_algorithm(
 
 	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
 
-	# Check if the graph is corrupted.
-	# Empty-edge selections are valid and should not be treated as "mixed".
-	var dominant_strategy = imposter_graph.get_graph_dominant_strategy()
-	if imposter_graph.num_edges > 0 and not dominant_strategy:
-		Notify.show_error("Mixed Strategy Error: Directed and Undirected edges cannot coexist during an algorithm.")
-		return
-
-	if not imposter_graph.get_graph_weight_state():
-		Notify.show_error("Mixed Weight Error: All edges must be either Weighted or Unweighted in order to run an algorithm.")
-		return
-
-	if not imposter_graph:
-		Notify.show_error("Algorithm Error: Selection contains mixed graph types.")
-		return # ABORT
-
 	var algorithm_instance: GraphAlgorithm = _algorithm_map[algorithm_type].get(0)
 	var pseudo_resource: PseudoCodeData = _algorithm_map[algorithm_type].get(1)
 
 	assert(algorithm_instance != null)
 	assert(pseudo_resource != null)
 
+	if not algorithm_instance.check_requirements(imposter_graph):
+		return
+
 	algorithm_instance.set_alg_variables(imposter_graph,graph)
+	_set_vertex_key_visuals(
+		algorithm_instance.requires_vertex_keys_display(),
+		selection_buffer
+	)
 
 	var imposter_start_node = imposter_graph.get_vertex(starting_node.id)
 
@@ -139,6 +135,7 @@ func start_algorithm(
 # Animation to show visualizer
 func _expose_visualizer() -> void:
 	pseudo_visualizer.visible = true
+	await get_tree().process_frame
 	await get_tree().process_frame
 	_place_visualizer_bottom_left()
 	pseudo_visualizer.scale = Vector2.ZERO
@@ -200,15 +197,23 @@ func _collapse_controls() -> void:
 func step_forward(update_progress_bar = true) -> void:
 	if Globals.current_state == Globals.State.PAN:
 		return
+	if timeline.is_empty() or pseudo_steps.is_empty():
+		algorithm_controls.set_auto_playing(false)
+		return
 	# Check if we are already at the end
 	if current_step_index >= timeline.size():
 		algorithm_controls.set_auto_playing(false)
 		return
 
-	# event at the new pointer
-	var event = timeline[current_step_index]
+	var step_idx := current_step_index
+	if step_idx < 0 or step_idx >= timeline.size() or step_idx >= pseudo_steps.size():
+		algorithm_controls.set_auto_playing(false)
+		return
 
-	var current_pseudo_step = pseudo_steps[current_step_index]
+	# event at the new pointer
+	var event = timeline[step_idx]
+
+	var current_pseudo_step = pseudo_steps[step_idx]
 
 	# event Is null if we only change pseudo
 	if event != null:
@@ -228,12 +233,20 @@ func step_forward(update_progress_bar = true) -> void:
 func step_backward(update_progress_bar = true) -> void:
 	if Globals.current_state == Globals.State.PAN:
 		return
+	if timeline.is_empty() or pseudo_steps.is_empty():
+		return
 	# Check if we are already at the start (Initial State)
 	if current_step_index <= 0:
 		return
 
 	# Move pointer backward
 	current_step_index -= 1
+	if current_step_index < 0:
+		current_step_index = 0
+		return
+	if current_step_index >= timeline.size() or current_step_index >= pseudo_steps.size():
+		current_step_index = mini(mini(current_step_index, timeline.size()), pseudo_steps.size())
+		return
 
 	var event = timeline[current_step_index]
 
@@ -251,7 +264,13 @@ func step_backward(update_progress_bar = true) -> void:
 
 ## Go to a specific step
 func go_to_step(target_index: int, update_progress_bar = true) -> void:
-	target_index = clampi(target_index, 0, timeline.size() - 1)
+	if timeline.is_empty() or pseudo_steps.is_empty():
+		current_step_index = 0
+		if update_progress_bar:
+			_update_progress_bar()
+		return
+
+	target_index = clampi(target_index, 0, timeline.size())
 
 	# If we need to go forward
 	while current_step_index < target_index:
@@ -270,6 +289,9 @@ func _update_progress_bar() -> void:
 	algorithm_controls.set_step_info(current_step_index, max_step)
 
 func reset_to_start() -> void:
+	if timeline.is_empty() or pseudo_steps.is_empty():
+		current_step_index = 0
+		return
 	go_to_step(0)
 
 ## Clear all data and collapse pseudo visualizer/controls
@@ -287,3 +309,12 @@ func cancel_algorithm_execution() -> void:
 	algorithm_controls.reset()
 
 	_is_algorithm_running = false
+	_set_vertex_key_visuals(false, [])
+
+func _set_vertex_key_visuals(show_keys: bool, vertices: Array[Vertex]) -> void:
+	var id_set := {}
+	for v in vertices:
+		if v:
+			id_set[v.id] = true
+	Globals.algorithm_key_vertex_ids = id_set
+	Globals.algorithm_show_vertex_keys = show_keys

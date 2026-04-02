@@ -48,7 +48,7 @@ func _init(
 	_dst: Vertex,
 	_strategy: ConnectionStrategy,
 	_is_weighted: bool = false,
-	_weight: int = 1,
+	_weight: float = 1.0,
 	_next: Edge = null,
 	_color: Color = Globals.EDGE_COLOR
 	) -> void:
@@ -56,7 +56,7 @@ func _init(
 	self.dst = _dst
 	self.strategy = _strategy
 	self.is_weighted = _is_weighted
-	self.weight = clampi(_weight, -999, 999)
+	self.weight = clampf(_weight, -999.0, 999.0)
 	self.next = _next
 	self.color = _color
 
@@ -74,9 +74,9 @@ func _notify_change() -> void:
 	if not is_imposter:
 		state_changed.emit()
 
-var weight: int = 1:
+var weight: float = 1.0:
 	set(value):
-		var clamped = clampi(value, -999, 999)
+		var clamped = clampf(value, -999.0, 999.0)
 		if weight == clamped: return # Early exit
 		weight = clamped
 		_notify_change()

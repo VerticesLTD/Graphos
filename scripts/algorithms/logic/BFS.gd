@@ -2,6 +2,9 @@
 class_name BFS
 extends GraphAlgorithm
 
+func get_requirements() -> Dictionary:
+	return {"warn_if_weighted": true}
+
 ## run function for the algorithm
 ## @param _start_vertex    The vertex the algorithm starts from
 func run(_start_vertex: Vertex) -> Array:
@@ -11,17 +14,16 @@ func run(_start_vertex: Vertex) -> Array:
 	verify_initialization()
 	assert(_start_vertex.is_imposter, "Algorithm instructed to run on a REAL graph (not imposter)")
 
-	# Silent pre-run state setup (visible in graph, not part of timeline playback).
-	for v in imposter_graph.vertices.values():
-		set_vertex_color_silent(v, COLOR_NOT_DISCOVERED)
-		v.parent = null
-
-	change_and_log_vertex_color(_start_vertex, COLOR_VISITING, 4)
+	# Step 1: initialize all vertices as undiscovered (one press, fully undoable).
+	log_initialize_vertices(COLOR_NOT_DISCOVERED, 1)
 	data_updates.append({
 		&"E": imposter_graph.num_edges,
 		&"V": imposter_graph.num_vertices,
 		&"vertices_processed": current_v_processed
 	})
+
+	change_and_log_vertex_color(_start_vertex, COLOR_VISITING, 4)
+	data_updates.append(null)
 
 	var queue = []
 	queue.push_back(_start_vertex)
@@ -31,10 +33,7 @@ func run(_start_vertex: Vertex) -> Array:
 		for edge in u.get_outgoing_edges():
 			var v = edge.get_other_vertex(u)
 			if v.color == COLOR_NOT_DISCOVERED:
-				change_and_log_edge_color(edge, COLOR_EDGE_PATH, 9)
-				data_updates.append(null)
-
-				change_and_log_vertex_color(v, COLOR_VISITING, 10)
+				discover_vertex_via_edge_and_log(edge, v, COLOR_EDGE_PATH, COLOR_VISITING, 10)
 				data_updates.append(null)
 
 				v.parent = u

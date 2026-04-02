@@ -24,6 +24,8 @@ var _speed_index: int = 1  # Default ×1.0
 
 
 func _ready() -> void:
+	_disable_button_keyboard_focus()
+
 	_auto_play_timer = Timer.new()
 	_auto_play_timer.wait_time = _BASE_INTERVAL
 	_auto_play_timer.timeout.connect(_on_auto_play_tick)
@@ -139,3 +141,11 @@ func _apply_speed() -> void:
 		speed_btn.text = "%dx" % int(roundf(spd))
 	else:
 		speed_btn.text = "%.1fx" % spd
+
+## Prevent algorithm UI buttons from stealing keyboard arrows/space focus.
+func _disable_button_keyboard_focus() -> void:
+	var buttons: Array[Node] = find_children("", "BaseButton", true, false)
+	for node in buttons:
+		var btn := node as BaseButton
+		if btn:
+			btn.focus_mode = Control.FOCUS_NONE

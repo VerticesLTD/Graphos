@@ -9,7 +9,7 @@ func get_connection_error(_graph: Graph, _src: Vertex, _dst: Vertex) -> String:
 	return "Graph Error: This vertex has mixed edge types. Please delete its edges to reset it."
 
 # --- Dummy Methods ---
-func add_edge(_g: Graph, _s: Vertex, _d: Vertex, _w: int, _iw: bool, _sh: bool) -> void:
+func add_edge(_g: Graph, _s: Vertex, _d: Vertex, _w: float, _iw: bool, _sh: bool) -> void:
 	push_error("ErrorStrategy cannot add edges!")
 
 func delete_edge(_g: Graph, _s: Vertex, _d: Vertex) -> void:
