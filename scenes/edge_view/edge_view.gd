@@ -205,7 +205,8 @@ func _setup_lines_and_weight() -> void:
 	line_1.clear_points()
 	line_2.clear_points()
 
-	var draw_curved := _should_draw_bidirectional_curve()
+	var graph := get_parent() as Graph
+	var draw_curved := EdgeGeometry.should_draw_bidirectional_curve(edge_data, graph)
 	if draw_curved:
 		_draw_bidirectional_curved_edge(src_pos, dst_pos, actual_dist)
 	else:
@@ -246,9 +247,16 @@ func _draw_bidirectional_curved_edge(src_pos: Vector2, dst_pos: Vector2, actual_
 	line_1.end_cap_mode = Line2D.LINE_CAP_NONE
 	line_2.end_cap_mode = Line2D.LINE_CAP_NONE
 
-	var control = _get_bidirectional_control_point(src_pos, dst_pos)
-	var tangent_start = _quadratic_tangent(src_pos, control, dst_pos, 0.0).normalized()
-	var tangent_end = _quadratic_tangent(src_pos, control, dst_pos, 1.0).normalized()
+	var control = EdgeGeometry.get_bidirectional_control_point(
+		edge_data,
+		src_pos,
+		dst_pos,
+		BIDIRECTIONAL_CURVE_FACTOR,
+		BIDIRECTIONAL_CURVE_MIN,
+		BIDIRECTIONAL_CURVE_MAX
+	)
+	var tangent_start = EdgeGeometry.quadratic_tangent(src_pos, control, dst_pos, 0.0).normalized()
+	var tangent_end = EdgeGeometry.quadratic_tangent(src_pos, control, dst_pos, 1.0).normalized()
 	var visual_start = (src_pos + (tangent_start * Globals.VERTEX_RADIUS)).round()
 	var arrow_tip = (dst_pos - (tangent_end * (Globals.VERTEX_RADIUS + 4.0))).round()
 	var arrow_length = _get_arrow_dimensions(actual_dist, line_1.width).x
@@ -264,24 +272,24 @@ func _draw_bidirectional_curved_edge(src_pos: Vector2, dst_pos: Vector2, actual_
 func _draw_simple_curved_edge(start: Vector2, control: Vector2, finish: Vector2) -> void:
 	if not _is_inline_editor_active():
 		weight_label.visible = false
-	var points = _sample_quadratic(start, control, finish, 0.0, 1.0, CURVE_RENDER_SAMPLES)
+	var points = EdgeGeometry.sample_quadratic(start, control, finish, 0.0, 1.0, CURVE_RENDER_SAMPLES)
 	_add_points_to_line(line_1, points)
 
 func _draw_weighted_curved_edge(start: Vector2, control: Vector2, finish: Vector2, actual_dist: float) -> void:
 	var center_t := 0.5
-	var local_tangent = _quadratic_tangent(start, control, finish, center_t).normalized()
+	var local_tangent = EdgeGeometry.quadratic_tangent(start, control, finish, center_t).normalized()
 	var dt = clamp((weight_gap * 0.5) / max(actual_dist, 1.0), 0.04, 0.22)
 	var left_t = clamp(center_t - dt, 0.0, 1.0)
 	var right_t = clamp(center_t + dt, 0.0, 1.0)
 
-	_weight_mid_local = _quadratic_point(start, control, finish, center_t)
+	_weight_mid_local = EdgeGeometry.quadratic_point(start, control, finish, center_t)
 	if not _is_inline_editor_active():
 		weight_label.visible = true
 	weight_label.position = (_weight_mid_local - (weight_label.size / 2.0)).round()
 	_update_weight_label_transform_with_direction(_weight_mid_local, local_tangent)
 
-	var first_points = _sample_quadratic(start, control, finish, 0.0, left_t, 10)
-	var second_points = _sample_quadratic(start, control, finish, right_t, 1.0, 10)
+	var first_points = EdgeGeometry.sample_quadratic(start, control, finish, 0.0, left_t, 10)
+	var second_points = EdgeGeometry.sample_quadratic(start, control, finish, right_t, 1.0, 10)
 	_add_points_to_line(line_1, first_points)
 	_add_points_to_line(line_2, second_points)
 
@@ -353,28 +361,34 @@ func _setup_detection_area() -> void:
 	var midpoint: Vector2
 	var rotation_angle: float
 
-	if _should_draw_bidirectional_curve():
-		var control = _get_bidirectional_control_point(pos1, pos2)
-		var start_tangent = _quadratic_tangent(pos1, control, pos2, 0.0).normalized()
-		var end_tangent = _quadratic_tangent(pos1, control, pos2, 1.0).normalized()
+	var graph := get_parent() as Graph
+	if EdgeGeometry.should_draw_bidirectional_curve(edge_data, graph):
+		var control = EdgeGeometry.get_bidirectional_control_point(
+			edge_data,
+			pos1,
+			pos2,
+			BIDIRECTIONAL_CURVE_FACTOR,
+			BIDIRECTIONAL_CURVE_MIN,
+			BIDIRECTIONAL_CURVE_MAX
+		)
+		var start_tangent = EdgeGeometry.quadratic_tangent(pos1, control, pos2, 0.0).normalized()
+		var end_tangent = EdgeGeometry.quadratic_tangent(pos1, control, pos2, 1.0).normalized()
 		var visual_start = pos1 + (start_tangent * Globals.VERTEX_RADIUS)
 		var visual_end = pos2 - (end_tangent * Globals.VERTEX_RADIUS)
 
 		# Approximate arc length with polyline segments for better hit area size.
-		var curve_points = _sample_quadratic(visual_start, control, visual_end, 0.0, 1.0, CURVE_AREA_SAMPLES)
-		length = 0.0
-		for i in range(1, curve_points.size()):
-			length += curve_points[i - 1].distance_to(curve_points[i])
+		var curve_points = EdgeGeometry.sample_quadratic(visual_start, control, visual_end, 0.0, 1.0, CURVE_AREA_SAMPLES)
+		length = EdgeGeometry.estimate_polyline_length(curve_points)
 
-		midpoint = _quadratic_point(visual_start, control, visual_end, 0.5)
-		var mid_tangent = _quadratic_tangent(visual_start, control, visual_end, 0.5).normalized()
+		midpoint = EdgeGeometry.quadratic_point(visual_start, control, visual_end, 0.5)
+		var mid_tangent = EdgeGeometry.quadratic_tangent(visual_start, control, visual_end, 0.5).normalized()
 		rotation_angle = mid_tangent.angle()
 
 		# Broaden rectangle by bend so clicks follow the curved path.
 		var bend = control.distance_to(pos1.lerp(pos2, 0.5))
 		width += clamp(bend * 0.45, 6.0, 24.0)
 	else:
-		var draw_positions = _get_visual_start_end(pos1,pos2)
+		var draw_positions = EdgeGeometry.get_linear_visual_start_end(pos1, pos2, Globals.VERTEX_RADIUS)
 		var visual_start = draw_positions[0]
 		var visual_end = draw_positions[1]
 		length = visual_start.distance_to(visual_end)
@@ -390,58 +404,40 @@ func _setup_detection_area() -> void:
 	var shape: RectangleShape2D = collision_shape.shape as RectangleShape2D
 	shape.size = Vector2(length, width)
 
-## Calculates where the edge visually starts/ends to avoid overlapping the vertex.
-func _get_visual_start_end(pos1: Vector2, pos2: Vector2) -> Array[Vector2]:
-	var direction = pos1.direction_to(pos2)
-	var visual_start = pos1 + (direction * Globals.VERTEX_RADIUS)
-	var visual_end = pos2 - (direction * Globals.VERTEX_RADIUS)
-	return [visual_start,visual_end]
-
-func _should_draw_bidirectional_curve() -> bool:
-	if not edge_data or not (edge_data.strategy is DirectedStrategy):
-		return false
-	var graph := get_parent() as Graph
-	if graph == null:
-		return false
-	return graph.has_edge(edge_data.dst.id, edge_data.src.id)
-
-func _get_bidirectional_control_point(start: Vector2, finish: Vector2) -> Vector2:
-	var lower_v = edge_data.src
-	var upper_v = edge_data.dst
-	var is_src_lower = edge_data.src.id < edge_data.dst.id
-	if not is_src_lower:
-		lower_v = edge_data.dst
-		upper_v = edge_data.src
-
-	# Human note:
-	# Always derive the normal from the same unordered pair orientation (low id -> high id).
-	# That guarantees A->B and B->A are mirrored, never stacked.
-	var pair_dir = lower_v.pos.direction_to(upper_v.pos)
-	var normal = Vector2(-pair_dir.y, pair_dir.x)
-	var sign = 1.0 if is_src_lower else -1.0
-	var distance = lower_v.pos.distance_to(upper_v.pos)
-	var bend = clamp(distance * BIDIRECTIONAL_CURVE_FACTOR, BIDIRECTIONAL_CURVE_MIN, BIDIRECTIONAL_CURVE_MAX)
-	return start.lerp(finish, 0.5) + (normal * bend * sign)
-
-func _quadratic_point(p0: Vector2, p1: Vector2, p2: Vector2, t: float) -> Vector2:
-	var inv = 1.0 - t
-	return (inv * inv * p0) + (2.0 * inv * t * p1) + (t * t * p2)
-
-func _quadratic_tangent(p0: Vector2, p1: Vector2, p2: Vector2, t: float) -> Vector2:
-	return 2.0 * (1.0 - t) * (p1 - p0) + 2.0 * t * (p2 - p1)
-
-func _sample_quadratic(p0: Vector2, p1: Vector2, p2: Vector2, start_t: float, end_t: float, steps: int) -> PackedVector2Array:
-	var points := PackedVector2Array()
-	var safe_steps = maxi(steps, 2)
-	for i in range(safe_steps):
-		var alpha = float(i) / float(safe_steps - 1)
-		var t = lerpf(start_t, end_t, alpha)
-		points.append(_quadratic_point(p0, p1, p2, t).round())
-	return points
-
 func _add_points_to_line(line: Line2D, points: PackedVector2Array) -> void:
 	for p in points:
 		line.add_point(p)
+
+func _graph_controller_for_this_graph() -> GraphController:
+	var g := get_parent() as Graph
+	if g == null:
+		return null
+	var root := g.get_parent()
+	if root == null:
+		return null
+	for child in root.get_children():
+		if child is GraphController and (child as GraphController).graph == g:
+			return child as GraphController
+	for child in root.get_children():
+		if child is GraphController:
+			return child as GraphController
+	return null
+
+## EdgeView uses accurate curve/segment hit tests (Graph.get_edge_at is segment-based).
+## _input runs before controller._unhandled_input, so we only open the edge menu when
+## selection / vertex / empty-in-multi-selection would not take priority (see mouse_actions).
+func _rbm_should_defer_to_controller(mouse_world: Vector2) -> bool:
+	var graph := get_parent() as Graph
+	if graph == null:
+		return false
+	if graph.get_vertex_id_at(mouse_world) != Globals.NOT_FOUND:
+		return true
+	var ctrl := _graph_controller_for_this_graph()
+	if ctrl == null:
+		return false
+	if ctrl.selection_buffer.size() > 1 and ctrl.selection_bounds.has_point(mouse_world):
+		return true
+	return false
 
 # --- Weight Editor ---
 
@@ -460,9 +456,11 @@ func _input(event: InputEvent) -> void:
 		return
 
 	# Human note:
-	# EdgeView owns edge interaction so controller input stays generic.
-	# We consume the event here to avoid create-mode side effects (like creating a vertex).
+	# EdgeView consumes left-click so create mode does not place a vertex on the edge stroke.
+	# For RMB, defer when controller priority is selection or vertex so mouse_actions can run.
 	if mouse_button_event.button_index == MOUSE_BUTTON_RIGHT:
+		if _rbm_should_defer_to_controller(mouse_world):
+			return
 		_open_edge_context_menu(mouse_button_event.position)
 		get_viewport().set_input_as_handled()
 		return
@@ -482,10 +480,8 @@ func _open_edge_context_menu(screen_pos: Vector2) -> void:
 	if scene_root == null:
 		return
 
-	# Keep popup lookup local to the view. No hard dependency on controller parenting.
 	var popup_menu = scene_root.get_node_or_null("CanvasLayer/PopupMenuLayer")
 	if popup_menu == null:
-		# Fallback for scenes where popup is parented differently.
 		popup_menu = scene_root.get_node_or_null("GraphController/PopupMenu")
 	if popup_menu == null:
 		return
@@ -498,34 +494,33 @@ func _open_edge_context_menu(screen_pos: Vector2) -> void:
 
 func _is_mouse_over_edge(mouse_world_pos: Vector2) -> bool:
 	var points = _get_edge_hit_test_polyline()
-	if points.size() < 2:
-		return false
-
-	# Slightly larger than visual stroke so users don't need pixel-perfect clicks.
 	var threshold = Globals.EDGE_WIDTH * 0.5 + MOUSE_DETECT_SENSITIVITY + EDGE_CLICK_EXTRA_TOLERANCE
-	var threshold_sq = threshold * threshold
-	for i in range(1, points.size()):
-		var closest = Geometry2D.get_closest_point_to_segment(mouse_world_pos, points[i - 1], points[i])
-		var d2 = mouse_world_pos.distance_squared_to(closest)
-		if d2 <= threshold_sq:
-			return true
-	return false
+	# Slightly larger than visual stroke so users don't need pixel-perfect clicks.
+	return EdgeGeometry.is_point_near_polyline(mouse_world_pos, points, threshold)
 
 func _get_edge_hit_test_polyline() -> PackedVector2Array:
 	var src_pos = edge_data.src.pos
 	var dst_pos = edge_data.dst.pos
+	var graph := get_parent() as Graph
 
-	if _should_draw_bidirectional_curve():
-		var control = _get_bidirectional_control_point(src_pos, dst_pos)
-		var tangent_start = _quadratic_tangent(src_pos, control, dst_pos, 0.0).normalized()
-		var tangent_end = _quadratic_tangent(src_pos, control, dst_pos, 1.0).normalized()
+	if EdgeGeometry.should_draw_bidirectional_curve(edge_data, graph):
+		var control = EdgeGeometry.get_bidirectional_control_point(
+			edge_data,
+			src_pos,
+			dst_pos,
+			BIDIRECTIONAL_CURVE_FACTOR,
+			BIDIRECTIONAL_CURVE_MIN,
+			BIDIRECTIONAL_CURVE_MAX
+		)
+		var tangent_start = EdgeGeometry.quadratic_tangent(src_pos, control, dst_pos, 0.0).normalized()
+		var tangent_end = EdgeGeometry.quadratic_tangent(src_pos, control, dst_pos, 1.0).normalized()
 		var visual_start = src_pos + (tangent_start * Globals.VERTEX_RADIUS)
 		var visual_end = dst_pos - (tangent_end * Globals.VERTEX_RADIUS)
-		return _sample_quadratic(visual_start, control, visual_end, 0.0, 1.0, CURVE_HITTEST_SAMPLES)
+		return EdgeGeometry.sample_quadratic(visual_start, control, visual_end, 0.0, 1.0, CURVE_HITTEST_SAMPLES)
 
-	var direction = src_pos.direction_to(dst_pos)
-	var visual_start = src_pos + (direction * Globals.VERTEX_RADIUS)
-	var visual_end = dst_pos - (direction * Globals.VERTEX_RADIUS)
+	var linear_positions = EdgeGeometry.get_linear_visual_start_end(src_pos, dst_pos, Globals.VERTEX_RADIUS)
+	var visual_start = linear_positions[0]
+	var visual_end = linear_positions[1]
 	var points := PackedVector2Array()
 	points.append(visual_start)
 	points.append(visual_end)

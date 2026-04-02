@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="PseudoCodeData" format=3]
+[gd_resource type="Resource" script_class="PseudoCodeData" format=3 uid="uid://c6o8phkpw1txx"]
 
 [ext_resource type="Script" uid="uid://c8h8cvjik2tcu" path="res://scripts/algorithms/pseudo_code/pseudo_code_resource.gd" id="1_dijkstra"]
 
@@ -6,30 +6,24 @@
 script = ExtResource("1_dijkstra")
 algorithm_name = "Dijkstra"
 source_text = "Dijkstra(G, s):
-  for v in V: color[v] = UND, key[v] = ∞--1
-  key[s] = 0--3
-  Q = {s}
-  while Q not empty:
-    u = extract-min(Q)--7
-    for (u, v, w) in Adj[u]:
-      if key[u] + w < key[v]:
-        color[(u, v)] = PATH--10
-        key[v] = key[u] + w--11
-        parent[v] = u
-        Q.insert(v)
-    color[u] = FIN--7"
+for v in V:--1
+    d[v]=inf, p[v]=null, s[v]=UNDISC--1
+d[s]=0, Q.add(s)--2
+while Q is not empty:
+    u = Q.pop_min(), s[u] = FINISHED--3
+    for v in Adj[u]:
+        new = d[u] + w(u, v)
+        if new < d[v] and s[v] != FINISHED:--5
+            d[v] = new, p[v] = u, Q.upsert(v)--6"
 raw_code = "Dijkstra(G, s):
-  for v in V: color[v] = UND, key[v] = ∞
-  key[s] = 0
-  Q = {s}
-  while Q not empty:
-    u = extract-min(Q)
-    for (u, v, w) in Adj[u]:
-      if key[u] + w < key[v]:
-        color[(u, v)] = PATH
-        key[v] = key[u] + w
-        parent[v] = u
-        Q.insert(v)
-    color[u] = FIN"
-steps = [[], [1], [], [2], [], [], [], [5, 11], [], [], [8], [9]]
+for v in V:
+    d[v]=inf, p[v]=null, s[v]=UNDISC
+d[s]=0, Q.add(s)
+while Q is not empty:
+    u = Q.pop_min(), s[u] = FINISHED
+    for v in Adj[u]:
+        new = d[u] + w(u, v)
+        if new < d[v] and s[v] != FINISHED:
+            d[v] = new, p[v] = u, Q.upsert(v)"
+steps = [[], [1, 2], [3], [5], [], [8], [9]]
 metadata/_custom_type_script = "uid://c8h8cvjik2tcu"

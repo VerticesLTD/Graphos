@@ -1,6 +1,8 @@
 @tool
 extends PanelContainer
 
+signal pseudo_layout_updated
+
 @export var data: PseudoCodeData:
 	set(value):
 		if data and data.changed.is_connected(_on_data_changed):
@@ -77,6 +79,20 @@ func _refresh_view() -> void:
 func _on_data_changed() -> void:
 	_refresh_view()
 
+
+func _shrink_to_code_height() -> void:
+	call_deferred("_shrink_to_content_impl")
+
+
+func _shrink_to_content_impl() -> void:
+	if not code_display:
+		return
+	code_display.reset_size()
+	var w: float = code_display.get_content_width()
+	var h: float = code_display.get_content_height()
+	code_display.custom_minimum_size = Vector2(maxf(w, 1.0), maxf(h, 1.0))
+	pseudo_layout_updated.emit()
+
 func next_step() -> void:
 	if not data or current_step_idx >= data.steps.size() -1:
 		return
@@ -113,6 +129,7 @@ func render_step(step_idx:int) -> void:
 			if (
 				trimmed.begins_with("while ")
 				or trimmed.begins_with("for each ")
+				or trimmed.begins_with("for ")
 				or trimmed.begins_with("if ")
 			):
 				if not contextual_lines.has(j):
@@ -140,3 +157,4 @@ func render_step(step_idx:int) -> void:
 			line = "[font_size=15][color=%s]%d.  %s[/color][/font_size]" % [hex_dim, i, line]
 		final_bbcode += line + "\n"
 	code_display.text = final_bbcode
+	call_deferred("_shrink_to_code_height")

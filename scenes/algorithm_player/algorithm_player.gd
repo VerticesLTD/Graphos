@@ -40,6 +40,7 @@ var _is_algorithm_running := false
 
 func _ready() -> void:
 	pseudo_visualizer.visible = false
+	pseudo_visualizer.pseudo_layout_updated.connect(_place_visualizer_bottom_left)
 	algorithm_controls.visible = false
 	_set_vertex_key_visuals(false, [])
 
@@ -134,6 +135,7 @@ func start_algorithm(
 # Animation to show visualizer
 func _expose_visualizer() -> void:
 	pseudo_visualizer.visible = true
+	await get_tree().process_frame
 	await get_tree().process_frame
 	_place_visualizer_bottom_left()
 	pseudo_visualizer.scale = Vector2.ZERO
