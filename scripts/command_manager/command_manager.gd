@@ -1,6 +1,8 @@
 ## Holds a stack of commands and executes/redoes them. Singleton.
 extends Node
 
+signal history_changed
+
 var undo_stack: Array[Command] = []
 var redo_stack: Array[Command] = []
 
@@ -19,6 +21,7 @@ func undo() -> void:
 	var cmd = undo_stack.pop_back()
 	cmd.undo()
 	redo_stack.append(cmd)
+	history_changed.emit()
 
 ## Re-apply the last undone action
 func redo() -> void:
@@ -27,7 +30,8 @@ func redo() -> void:
 	var cmd = redo_stack.pop_back()
 	cmd.execute() 
 	undo_stack.append(cmd)
-		
+	history_changed.emit()
+
 ## Push new command to stack
 func push_to_stack(cmd) -> void:
 	if cmd.add_to_history:

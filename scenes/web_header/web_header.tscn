@@ -1,0 +1,43 @@
+[gd_scene load_steps=3 format=3 uid="uid://bqx7webheader01"]
+
+[ext_resource type="Script" path="res://scenes/web_header/web_header.gd" id="0_script"]
+[ext_resource type="Texture2D" uid="uid://c4kcswmb35gkq" path="res://assets/logo/SplashLogo.png" id="1_logo"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar"]
+bg_color = Color(1, 1, 1, 1)
+border_width_bottom = 1
+border_color = Color(0.847, 0.847, 0.851, 1)
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+
+[node name="WebHeader" type="PanelContainer"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 40.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bar")
+script = ExtResource("0_script")
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Logo" type="TextureRect" parent="HBox"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("1_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="HBox"]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.13, 0.13, 0.15, 1)
+theme_override_font_sizes/font_size = 17
+text = "Graphos"
+vertical_alignment = 1

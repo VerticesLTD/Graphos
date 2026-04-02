@@ -70,6 +70,7 @@ var is_dragging: bool = false
 func _ready() -> void:
 	# If the app's state changed, we want to reset selection
 	Globals.app_state_changed.connect(self.clear_selection_buffer)
+	CommandManager.history_changed.connect(prune_selection_to_live_graph)
 
 	## Inject graph into popup manager so it can create commands like DeleteVertexCommand.new(graph, v)
 	if popup_menu:
@@ -328,6 +329,19 @@ func select_vertices(vertices_to_select: Array[Vertex]) -> void:
 	update_selection_bounds()
 
 		
+## Drops selection entries that no longer exist on the graph (e.g. after undo removes a vertex).
+func prune_selection_to_live_graph() -> void:
+	var kept: Array[Vertex] = []
+	for v in selection_buffer:
+		if v != null and graph.vertices.has(v.id):
+			kept.append(v)
+	if kept.size() == selection_buffer.size():
+		return
+	if kept.is_empty():
+		clear_selection_buffer()
+		return
+	select_vertices(kept)
+
 ## Clears selection buffer.
 func clear_selection_buffer() -> void:
 	# Resetting color

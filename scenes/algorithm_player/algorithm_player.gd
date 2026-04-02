@@ -96,6 +96,9 @@ func start_algorithm(
 			await visualizer_tween.finished
 
 	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
+	if imposter_graph.vertices.is_empty():
+		Notify.show_error("No vertices in selection.")
+		return
 
 	var algorithm_instance: GraphAlgorithm = _algorithm_map[algorithm_type].get(0)
 	var pseudo_resource: PseudoCodeData = _algorithm_map[algorithm_type].get(1)
@@ -132,10 +135,14 @@ func start_algorithm(
 	var imposter_start_node: Vertex = null
 	if starting_node != null:
 		imposter_start_node = imposter_graph.get_vertex(starting_node.id)
-	else:
+	if imposter_start_node == null:
 		for v: Vertex in imposter_graph.vertices.values():
 			imposter_start_node = v
 			break
+
+	if imposter_start_node == null:
+		Notify.show_error("Could not resolve a start vertex for this algorithm.")
+		return
 
 	# Extracting timeline and Pseudo steps from alg run
 	var algorithm_result = algorithm_instance.run(imposter_start_node)
@@ -165,7 +172,7 @@ func start_algorithm(
 	_sync_optional_step_data()
 	_expose_controls()
 
-	global_position = starting_node.pos
+	global_position = imposter_start_node.pos
 
 	_is_algorithm_running = true
 
