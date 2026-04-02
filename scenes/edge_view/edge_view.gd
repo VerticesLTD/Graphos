@@ -3,8 +3,12 @@ class_name UIEdgeView
 
 var weight_gap: float = 30.0
 const MOUSE_DETECT_SENSITIVITY = 9.0
+const EDGE_CLICK_EXTRA_TOLERANCE = 2.0
 const BASE_WEIGHT_FONT_SIZE := 22
 const MIN_WEIGHT_FONT_SIZE := 14
+const CURVE_RENDER_SAMPLES := 16
+const CURVE_HITTEST_SAMPLES := 18
+const CURVE_AREA_SAMPLES := 12
 var edge_data: Edge 
 
 @onready var mouse_detection_area: Area2D = $MouseDetectionArea
@@ -22,6 +26,9 @@ var is_hovered: bool = false
 var is_manual_hover: bool = false
 var _tween: Tween
 var _weight_mid_local: Vector2 = Vector2.ZERO
+const BIDIRECTIONAL_CURVE_FACTOR := 0.18
+const BIDIRECTIONAL_CURVE_MIN := 22.0
+const BIDIRECTIONAL_CURVE_MAX := 56.0
 
 # --- Setup & Core ---
 
@@ -49,9 +56,6 @@ func _ready() -> void:
 			edge_data.animation_requested.connect(_on_animation_requested)
 		
 		# Input handling
-		if not mouse_detection_area.input_event.is_connected(_on_mouse_detection_area_input_event):
-			mouse_detection_area.input_event.connect(_on_mouse_detection_area_input_event)
-
 		if not weight_edit.text_submitted.is_connected(_on_inline_weight_submitted):
 			weight_edit.text_submitted.connect(_on_inline_weight_submitted)
 		if not weight_edit.focus_exited.is_connected(_on_inline_weight_focus_exited):
@@ -162,21 +166,14 @@ func _stop_hover_animation() -> void:
 # --- Geometry Helpers ---
 
 ## Draws and positions the arrowhead if this is a directed edge.
-func _update_arrowhead(pos1: Vector2, pos2: Vector2, current_line_width: float) -> void:
+func _update_arrowhead(arrow_tip: Vector2, direction: Vector2, current_line_width: float, edge_distance: float) -> void:
 	if not edge_data.strategy is DirectedStrategy:
 		arrowhead.visible = false
 		return
 		
 	arrowhead.visible = true
-	
-	var direction = pos1.direction_to(pos2)
-	# Tiny gap so it doesn't touch the circle
-	var visual_end = (pos2 - (direction * (Globals.VERTEX_RADIUS + 4.0))).round()
-	
-	arrowhead.position = visual_end
+	arrowhead.position = arrow_tip.round()
 	arrowhead.rotation = direction.angle()
-	
-	var edge_distance = pos1.distance_to(pos2)
 	var arrow_dimensions = _get_arrow_dimensions(edge_distance, current_line_width)
 	var arrow_length = arrow_dimensions.x
 	var arrow_width = arrow_dimensions.y
@@ -202,42 +199,91 @@ func _get_arrow_dimensions(edge_distance: float, current_line_width: float) -> V
 func _setup_lines_and_weight() -> void:
 	var src_pos = edge_data.src.pos.round()
 	var dst_pos = edge_data.dst.pos.round()
-	
-	# 1. The "Visual End" for the line (Shortened for arrows)
-	var direction = src_pos.direction_to(dst_pos)
-	var visual_dst = (dst_pos - (direction * Globals.VERTEX_RADIUS)).round()
-	
-	if edge_data.strategy is DirectedStrategy:
-		line_1.end_cap_mode = Line2D.LINE_CAP_NONE  # Flat end where it hits the arrow
-		line_2.end_cap_mode = Line2D.LINE_CAP_NONE
-		# Stop the line slightly before the adaptive arrowhead.
-		var arrow_length = _get_arrow_dimensions(src_pos.distance_to(dst_pos), line_1.width).x
-		visual_dst = (visual_dst - (direction * (arrow_length * 0.55))).round()
-	else:
-		line_1.end_cap_mode = Line2D.LINE_CAP_ROUND # Round end for undirected
-		line_2.end_cap_mode = Line2D.LINE_CAP_ROUND
-	
-	# 2. Label anchor:
-	# For directed edges, center on the visible segment (after arrow room).
-	# This keeps the weight away from the arrowhead on short edges.
-	var true_mid = src_pos.lerp(dst_pos, 0.5).round()
-	if edge_data.strategy is DirectedStrategy:
-		var visual_start = (src_pos + (direction * Globals.VERTEX_RADIUS)).round()
-		true_mid = visual_start.lerp(visual_dst, 0.5).round()
 	var actual_dist = src_pos.distance_to(dst_pos)
 	_update_weight_label_metrics(actual_dist)
-	var offset = direction * (weight_gap / 2.0)
 
 	line_1.clear_points()
 	line_2.clear_points()
 
-	# 3. Draw logic
-	if edge_data.is_weighted and _can_draw_inline_weight(actual_dist):
-		_draw_weighted_edge(src_pos, visual_dst, true_mid, offset)
+	var draw_curved := _should_draw_bidirectional_curve()
+	if draw_curved:
+		_draw_bidirectional_curved_edge(src_pos, dst_pos, actual_dist)
 	else:
-		_draw_simple_edge(src_pos, visual_dst)
-	
-	_update_arrowhead(src_pos, dst_pos, line_1.width)
+		_draw_linear_edge(src_pos, dst_pos, actual_dist)
+
+func _draw_linear_edge(src_pos: Vector2, dst_pos: Vector2, actual_dist: float) -> void:
+	var direction = src_pos.direction_to(dst_pos)
+	var visual_dst = (dst_pos - (direction * Globals.VERTEX_RADIUS)).round()
+	var visual_start = (src_pos + (direction * Globals.VERTEX_RADIUS)).round()
+	var arrow_tip = visual_dst
+
+	if edge_data.strategy is DirectedStrategy:
+		line_1.end_cap_mode = Line2D.LINE_CAP_NONE
+		line_2.end_cap_mode = Line2D.LINE_CAP_NONE
+		arrow_tip = (dst_pos - (direction * (Globals.VERTEX_RADIUS + 4.0))).round()
+		var arrow_length = _get_arrow_dimensions(actual_dist, line_1.width).x
+		visual_dst = (arrow_tip - (direction * (arrow_length * 0.55))).round()
+	else:
+		line_1.end_cap_mode = Line2D.LINE_CAP_ROUND
+		line_2.end_cap_mode = Line2D.LINE_CAP_ROUND
+
+	var true_mid = src_pos.lerp(dst_pos, 0.5).round()
+	if edge_data.strategy is DirectedStrategy:
+		true_mid = visual_start.lerp(visual_dst, 0.5).round()
+	var offset = direction * (weight_gap / 2.0)
+
+	if edge_data.is_weighted and _can_draw_inline_weight(actual_dist):
+		_draw_weighted_edge(visual_start, visual_dst, true_mid, offset)
+	else:
+		_draw_simple_edge(visual_start, visual_dst)
+
+	if edge_data.strategy is DirectedStrategy:
+		_update_arrowhead(arrow_tip, direction, line_1.width, actual_dist)
+	else:
+		arrowhead.visible = false
+
+func _draw_bidirectional_curved_edge(src_pos: Vector2, dst_pos: Vector2, actual_dist: float) -> void:
+	line_1.end_cap_mode = Line2D.LINE_CAP_NONE
+	line_2.end_cap_mode = Line2D.LINE_CAP_NONE
+
+	var control = _get_bidirectional_control_point(src_pos, dst_pos)
+	var tangent_start = _quadratic_tangent(src_pos, control, dst_pos, 0.0).normalized()
+	var tangent_end = _quadratic_tangent(src_pos, control, dst_pos, 1.0).normalized()
+	var visual_start = (src_pos + (tangent_start * Globals.VERTEX_RADIUS)).round()
+	var arrow_tip = (dst_pos - (tangent_end * (Globals.VERTEX_RADIUS + 4.0))).round()
+	var arrow_length = _get_arrow_dimensions(actual_dist, line_1.width).x
+	var visual_end = (arrow_tip - (tangent_end * (arrow_length * 0.55))).round()
+
+	if edge_data.is_weighted and _can_draw_inline_weight(actual_dist):
+		_draw_weighted_curved_edge(visual_start, control, visual_end, actual_dist)
+	else:
+		_draw_simple_curved_edge(visual_start, control, visual_end)
+
+	_update_arrowhead(arrow_tip, tangent_end, line_1.width, actual_dist)
+
+func _draw_simple_curved_edge(start: Vector2, control: Vector2, finish: Vector2) -> void:
+	if not _is_inline_editor_active():
+		weight_label.visible = false
+	var points = _sample_quadratic(start, control, finish, 0.0, 1.0, CURVE_RENDER_SAMPLES)
+	_add_points_to_line(line_1, points)
+
+func _draw_weighted_curved_edge(start: Vector2, control: Vector2, finish: Vector2, actual_dist: float) -> void:
+	var center_t := 0.5
+	var local_tangent = _quadratic_tangent(start, control, finish, center_t).normalized()
+	var dt = clamp((weight_gap * 0.5) / max(actual_dist, 1.0), 0.04, 0.22)
+	var left_t = clamp(center_t - dt, 0.0, 1.0)
+	var right_t = clamp(center_t + dt, 0.0, 1.0)
+
+	_weight_mid_local = _quadratic_point(start, control, finish, center_t)
+	if not _is_inline_editor_active():
+		weight_label.visible = true
+	weight_label.position = (_weight_mid_local - (weight_label.size / 2.0)).round()
+	_update_weight_label_transform_with_direction(_weight_mid_local, local_tangent)
+
+	var first_points = _sample_quadratic(start, control, finish, 0.0, left_t, 10)
+	var second_points = _sample_quadratic(start, control, finish, right_t, 1.0, 10)
+	_add_points_to_line(line_1, first_points)
+	_add_points_to_line(line_2, second_points)
 
 func _update_weight_label_metrics(actual_dist: float) -> void:
 	var adaptive_font_size = _get_adaptive_weight_font_size(actual_dist)
@@ -289,22 +335,51 @@ func _update_weight_label_transform(mid_point: Vector2) -> void:
 	if abs(angle) > PI / 2: angle += PI
 	weight_label.rotation = angle
 
-## Determines if the weight label should be drawn based on user settings.
-func _should_display_weight() -> bool:
-	return true	
+func _update_weight_label_transform_with_direction(mid_point: Vector2, direction: Vector2) -> void:
+	var angle = direction.angle()
+	weight_label.pivot_offset = weight_label.size / 2.0
+	weight_label.position = (mid_point - (weight_label.size / 2.0)).round()
+	if abs(angle) > PI / 2:
+		angle += PI
+	weight_label.rotation = angle
 
-## Rebuilds the clickable hit-box to match the visual line perfectly.
+## Determines if the weight label should be drawn based on user settings.
+## Rebuilds the Area2D hit-box used for hover. Precise clicks are handled in _input().
 func _setup_detection_area() -> void:
 	var pos1 = edge_data.src.pos
 	var pos2  = edge_data.dst.pos
-	var draw_positions = _get_visual_start_end(pos1,pos2)
-	var visual_start = draw_positions[0]
-	var visual_end = draw_positions[1]
-
 	var width = Globals.EDGE_WIDTH + MOUSE_DETECT_SENSITIVITY
-	var length: float = visual_start.distance_to(visual_end)
-	var midpoint: Vector2 = (pos1 + pos2) / 2.0
-	var rotation_angle: float = visual_start.angle_to_point(visual_end)
+	var length: float
+	var midpoint: Vector2
+	var rotation_angle: float
+
+	if _should_draw_bidirectional_curve():
+		var control = _get_bidirectional_control_point(pos1, pos2)
+		var start_tangent = _quadratic_tangent(pos1, control, pos2, 0.0).normalized()
+		var end_tangent = _quadratic_tangent(pos1, control, pos2, 1.0).normalized()
+		var visual_start = pos1 + (start_tangent * Globals.VERTEX_RADIUS)
+		var visual_end = pos2 - (end_tangent * Globals.VERTEX_RADIUS)
+
+		# Approximate arc length with polyline segments for better hit area size.
+		var curve_points = _sample_quadratic(visual_start, control, visual_end, 0.0, 1.0, CURVE_AREA_SAMPLES)
+		length = 0.0
+		for i in range(1, curve_points.size()):
+			length += curve_points[i - 1].distance_to(curve_points[i])
+
+		midpoint = _quadratic_point(visual_start, control, visual_end, 0.5)
+		var mid_tangent = _quadratic_tangent(visual_start, control, visual_end, 0.5).normalized()
+		rotation_angle = mid_tangent.angle()
+
+		# Broaden rectangle by bend so clicks follow the curved path.
+		var bend = control.distance_to(pos1.lerp(pos2, 0.5))
+		width += clamp(bend * 0.45, 6.0, 24.0)
+	else:
+		var draw_positions = _get_visual_start_end(pos1,pos2)
+		var visual_start = draw_positions[0]
+		var visual_end = draw_positions[1]
+		length = visual_start.distance_to(visual_end)
+		midpoint = (pos1 + pos2) / 2.0
+		rotation_angle = visual_start.angle_to_point(visual_end)
 
 	mouse_detection_area.position = midpoint
 	mouse_detection_area.rotation = rotation_angle
@@ -322,13 +397,139 @@ func _get_visual_start_end(pos1: Vector2, pos2: Vector2) -> Array[Vector2]:
 	var visual_end = pos2 - (direction * Globals.VERTEX_RADIUS)
 	return [visual_start,visual_end]
 
+func _should_draw_bidirectional_curve() -> bool:
+	if not edge_data or not (edge_data.strategy is DirectedStrategy):
+		return false
+	var graph := get_parent() as Graph
+	if graph == null:
+		return false
+	return graph.has_edge(edge_data.dst.id, edge_data.src.id)
+
+func _get_bidirectional_control_point(start: Vector2, finish: Vector2) -> Vector2:
+	var lower_v = edge_data.src
+	var upper_v = edge_data.dst
+	var is_src_lower = edge_data.src.id < edge_data.dst.id
+	if not is_src_lower:
+		lower_v = edge_data.dst
+		upper_v = edge_data.src
+
+	# Human note:
+	# Always derive the normal from the same unordered pair orientation (low id -> high id).
+	# That guarantees A->B and B->A are mirrored, never stacked.
+	var pair_dir = lower_v.pos.direction_to(upper_v.pos)
+	var normal = Vector2(-pair_dir.y, pair_dir.x)
+	var sign = 1.0 if is_src_lower else -1.0
+	var distance = lower_v.pos.distance_to(upper_v.pos)
+	var bend = clamp(distance * BIDIRECTIONAL_CURVE_FACTOR, BIDIRECTIONAL_CURVE_MIN, BIDIRECTIONAL_CURVE_MAX)
+	return start.lerp(finish, 0.5) + (normal * bend * sign)
+
+func _quadratic_point(p0: Vector2, p1: Vector2, p2: Vector2, t: float) -> Vector2:
+	var inv = 1.0 - t
+	return (inv * inv * p0) + (2.0 * inv * t * p1) + (t * t * p2)
+
+func _quadratic_tangent(p0: Vector2, p1: Vector2, p2: Vector2, t: float) -> Vector2:
+	return 2.0 * (1.0 - t) * (p1 - p0) + 2.0 * t * (p2 - p1)
+
+func _sample_quadratic(p0: Vector2, p1: Vector2, p2: Vector2, start_t: float, end_t: float, steps: int) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	var safe_steps = maxi(steps, 2)
+	for i in range(safe_steps):
+		var alpha = float(i) / float(safe_steps - 1)
+		var t = lerpf(start_t, end_t, alpha)
+		points.append(_quadratic_point(p0, p1, p2, t).round())
+	return points
+
+func _add_points_to_line(line: Line2D, points: PackedVector2Array) -> void:
+	for p in points:
+		line.add_point(p)
+
 # --- Weight Editor ---
 
-## Detects double-clicks on the line to open the weight editing UI.
-func _on_mouse_detection_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.double_click and edge_data.is_weighted:
+func _input(event: InputEvent) -> void:
+	if Globals.current_state == Globals.State.PAN:
+		return
+	if not (event is InputEventMouseButton):
+		return
+
+	var mouse_button_event := event as InputEventMouseButton
+	if not mouse_button_event.pressed:
+		return
+
+	var mouse_world = get_global_mouse_position()
+	if not _is_mouse_over_edge(mouse_world):
+		return
+
+	# Human note:
+	# EdgeView owns edge interaction so controller input stays generic.
+	# We consume the event here to avoid create-mode side effects (like creating a vertex).
+	if mouse_button_event.button_index == MOUSE_BUTTON_RIGHT:
+		_open_edge_context_menu(mouse_button_event.position)
+		get_viewport().set_input_as_handled()
+		return
+
+	if mouse_button_event.button_index == MOUSE_BUTTON_LEFT:
+		get_viewport().set_input_as_handled()
+		if mouse_button_event.double_click and edge_data.is_weighted:
 			_start_inline_weight_edit()
+		return
+
+func _open_edge_context_menu(screen_pos: Vector2) -> void:
+	var graph := get_parent() as Graph
+	if graph == null:
+		return
+
+	var scene_root := graph.get_parent()
+	if scene_root == null:
+		return
+
+	# Keep popup lookup local to the view. No hard dependency on controller parenting.
+	var popup_menu = scene_root.get_node_or_null("CanvasLayer/PopupMenuLayer")
+	if popup_menu == null:
+		# Fallback for scenes where popup is parented differently.
+		popup_menu = scene_root.get_node_or_null("GraphController/PopupMenu")
+	if popup_menu == null:
+		return
+
+	if Globals.active_weight_editor:
+		Globals.active_weight_editor.release_focus()
+		Globals.active_weight_editor = null
+
+	popup_menu.open_for_edge(edge_data, graph.get_global_mouse_position(), screen_pos)
+
+func _is_mouse_over_edge(mouse_world_pos: Vector2) -> bool:
+	var points = _get_edge_hit_test_polyline()
+	if points.size() < 2:
+		return false
+
+	# Slightly larger than visual stroke so users don't need pixel-perfect clicks.
+	var threshold = Globals.EDGE_WIDTH * 0.5 + MOUSE_DETECT_SENSITIVITY + EDGE_CLICK_EXTRA_TOLERANCE
+	var threshold_sq = threshold * threshold
+	for i in range(1, points.size()):
+		var closest = Geometry2D.get_closest_point_to_segment(mouse_world_pos, points[i - 1], points[i])
+		var d2 = mouse_world_pos.distance_squared_to(closest)
+		if d2 <= threshold_sq:
+			return true
+	return false
+
+func _get_edge_hit_test_polyline() -> PackedVector2Array:
+	var src_pos = edge_data.src.pos
+	var dst_pos = edge_data.dst.pos
+
+	if _should_draw_bidirectional_curve():
+		var control = _get_bidirectional_control_point(src_pos, dst_pos)
+		var tangent_start = _quadratic_tangent(src_pos, control, dst_pos, 0.0).normalized()
+		var tangent_end = _quadratic_tangent(src_pos, control, dst_pos, 1.0).normalized()
+		var visual_start = src_pos + (tangent_start * Globals.VERTEX_RADIUS)
+		var visual_end = dst_pos - (tangent_end * Globals.VERTEX_RADIUS)
+		return _sample_quadratic(visual_start, control, visual_end, 0.0, 1.0, CURVE_HITTEST_SAMPLES)
+
+	var direction = src_pos.direction_to(dst_pos)
+	var visual_start = src_pos + (direction * Globals.VERTEX_RADIUS)
+	var visual_end = dst_pos - (direction * Globals.VERTEX_RADIUS)
+	var points := PackedVector2Array()
+	points.append(visual_start)
+	points.append(visual_end)
+	return points
 
 func _start_inline_weight_edit() -> void:
 	if Globals.active_weight_editor and Globals.active_weight_editor != weight_edit:
