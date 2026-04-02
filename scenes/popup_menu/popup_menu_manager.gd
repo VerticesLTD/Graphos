@@ -97,10 +97,10 @@ func _apply_excalidraw_style(menu: PopupMenu) -> void:
 	hover.content_margin_bottom = 4.0
 	menu.add_theme_stylebox_override("hover", hover)
 
-	# Match separator weight everywhere (default theme is ~1px; some rows read thinner).
+	# Explicit thin separators (consistent weight in every row; default theme varies by context).
 	var sep_proto := StyleBoxLine.new()
-	sep_proto.thickness = 2
-	sep_proto.color = Color(0.51, 0.51, 0.51)
+	sep_proto.thickness = 1
+	sep_proto.color = Color(0.55, 0.55, 0.59, 0.5)
 	sep_proto.content_margin_left = 12.0
 	sep_proto.content_margin_right = 12.0
 	menu.add_theme_stylebox_override("separator", sep_proto.duplicate())

@@ -12,25 +12,22 @@ graph_controller_path = NodePath("../GraphController")
 anchors_preset = 2
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -196.0
+offset_left = -148.0
 offset_top = 40.0
 offset_right = -24.0
-offset_bottom = 108.0
+offset_bottom = 112.0
 grow_horizontal = 0
 
 [node name="TriggerPanel" type="PanelContainer" parent="Margin"]
 layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
 theme_override_styles/panel = ExtResource("2_bar")
 
-[node name="TriggerInner" type="MarginContainer" parent="Margin/TriggerPanel"]
+[node name="TemplatesButton" type="Button" parent="Margin/TriggerPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 6
-theme_override_constants/margin_top = 6
-theme_override_constants/margin_right = 6
-theme_override_constants/margin_bottom = 6
-
-[node name="TemplatesButton" type="Button" parent="Margin/TriggerPanel/TriggerInner"]
-layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
 text = "Templates"
 
 [node name="ChooserPopup" type="Popup" parent="."]
@@ -39,7 +36,7 @@ borderless = true
 popup_window = true
 unresizable = true
 visible = false
-min_size = Vector2i(292, 198)
+min_size = Vector2i(328, 380)
 
 [node name="PanelRoot" type="PanelContainer" parent="ChooserPopup"]
 anchors_preset = 15
@@ -59,7 +56,7 @@ theme_override_constants/margin_bottom = 6
 [node name="Scroll" type="ScrollContainer" parent="ChooserPopup/PanelRoot/Margin"]
 layout_mode = 2
 size_flags_vertical = 3
-custom_minimum_size = Vector2(0, 140)
+custom_minimum_size = Vector2(0, 332)
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 2
 

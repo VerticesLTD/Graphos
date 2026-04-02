@@ -8,7 +8,15 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "presets", "data")
 
 VC = [0.118, 0.118, 0.18, 1.0]
-EC = [0.29, 0.31, 0.34, 1.0]
+# Match Globals.EDGE_COLOR Color("495057")
+EC = [73 / 255, 80 / 255, 87 / 255, 1.0]
+# Brand logo vertices (#F39237 #EE9675 #1D97A8 #8BA28F); edges use EC above.
+GRAPHOS_V = [
+    [243 / 255, 146 / 255, 55 / 255, 1.0],
+    [238 / 255, 150 / 255, 117 / 255, 1.0],
+    [29 / 255, 151 / 255, 168 / 255, 1.0],
+    [139 / 255, 162 / 255, 143 / 255, 1.0],
+]
 V_BLUE = [0.263, 0.38, 0.933, 1.0]
 V_TEAL = [0.024, 0.714, 0.627, 1.0]
 
@@ -22,15 +30,15 @@ def dump(name: str, vertices: list, edges: list) -> None:
 
 
 def graphos() -> None:
-    """4-cycle with brand-ish vertex accents (matches Graphos vibe)."""
+    """Logo path: 4 vertices, 3 edges (top-left → bottom-mid → mid-right → inner). Brand palette on vertices."""
     verts = [
-        {"id": 0, "pos": [0, -85], "color": V_BLUE},
-        {"id": 1, "pos": [85, 0], "color": VC},
-        {"id": 2, "pos": [0, 85], "color": V_TEAL},
-        {"id": 3, "pos": [-85, 0], "color": VC},
+        {"id": 0, "pos": [-63, -54], "color": GRAPHOS_V[0]},
+        {"id": 1, "pos": [-9, 54], "color": GRAPHOS_V[1]},
+        {"id": 2, "pos": [54, -9], "color": GRAPHOS_V[2]},
+        {"id": 3, "pos": [0, -27], "color": GRAPHOS_V[3]},
     ]
     edges = []
-    for a, b in [(0, 1), (1, 2), (2, 3), (3, 0)]:
+    for a, b in [(0, 1), (1, 2), (2, 3)]:
         edges.append(
             {
                 "from": a,
@@ -59,7 +67,7 @@ def heart() -> None:
             - 2 * math.cos(3 * t)
             - math.cos(4 * t)
         )
-        x, y = round(x * 5.2), round(y * 5.2)
+        x, y = round(x * 16.0), round(y * 16.0)
         verts.append({"id": i, "pos": [x, y], "color": VC})
     for i in range(n):
         a, b = i, (i + 1) % n
@@ -79,35 +87,47 @@ def heart() -> None:
 
 
 def tesseract() -> None:
-    """4-cube Q4: 16 vertices as 4-bit strings, edges if Hamming distance 1."""
+    """16 vertices, 32 edges: nested regular octagons (flat top), outer/inner cycles, radials, cross-links."""
+    r_out = 100.0
+    r_in = 52.0
     verts = []
-    for i in range(16):
-        # 2D layout: Gray-code order on a circle-ish + radius by popcount
-        bits = bin(i).count("1")
-        ang = i / 16 * 2 * math.pi - math.pi / 2
-        r = 38 + bits * 10
-        x, y = round(44 + r * math.cos(ang)), round(44 + r * math.sin(ang))
-        verts.append({"id": i, "pos": [x - 44, y - 44], "color": VC})
-    seen = set()
-    edges = []
-    for u in range(16):
-        for b in range(4):
-            v = u ^ (1 << b)
-            a, c = (u, v) if u < v else (v, u)
-            key = (a, c)
-            if key in seen:
-                continue
-            seen.add(key)
-            edges.append(
-                {
-                    "from": a,
-                    "to": c,
-                    "strategy": "undirected",
-                    "weighted": False,
-                    "weight": 1.0,
-                    "color": EC,
-                }
-            )
+    for i in range(8):
+        ang = -math.pi / 2 + i * 2 * math.pi / 8
+        x, y = round(r_out * math.cos(ang)), round(r_out * math.sin(ang))
+        verts.append({"id": i, "pos": [x, y], "color": VC})
+    for i in range(8):
+        ang = -math.pi / 2 + i * 2 * math.pi / 8
+        x, y = round(r_in * math.cos(ang)), round(r_in * math.sin(ang))
+        verts.append({"id": 8 + i, "pos": [x, y], "color": VC})
+    edges: list = []
+    seen: set = set()
+
+    def add_edge(a: int, b: int) -> None:
+        if a > b:
+            a, b = b, a
+        key = (a, b)
+        if key in seen:
+            return
+        seen.add(key)
+        edges.append(
+            {
+                "from": a,
+                "to": b,
+                "strategy": "undirected",
+                "weighted": False,
+                "weight": 1.0,
+                "color": EC,
+            }
+        )
+
+    for i in range(8):
+        add_edge(i, (i + 1) % 8)
+    for i in range(8):
+        add_edge(8 + i, 8 + (i + 1) % 8)
+    for i in range(8):
+        add_edge(i, 8 + i)
+        add_edge(i, 8 + (i + 4) % 8)
+    assert len(edges) == 32
     dump("tesseract", verts, edges)
 
 
@@ -115,7 +135,7 @@ def mobius_ladder() -> None:
     """Möbius ladder n=4 → 8 vertices."""
     n = 8
     verts = []
-    r = 95
+    r = 102
     for i in range(n):
         ang = -math.pi / 2 + i * 2 * math.pi / n
         x, y = round(r * math.cos(ang)), round(r * math.sin(ang))
@@ -154,7 +174,7 @@ def mobius_ladder() -> None:
 
 
 def heawood() -> None:
-    """Heawood = Levi graph of Fano plane: points 0-6, lines 7-13."""
+    """Heawood = Levi graph of Fano plane; laid out on one circle along a Hamiltonian cycle."""
     lines = [
         (7, 0, 1, 3),
         (8, 1, 2, 4),
@@ -164,13 +184,7 @@ def heawood() -> None:
         (12, 5, 6, 1),
         (13, 6, 0, 2),
     ]
-    verts = []
-    for i in range(14):
-        ang = -math.pi / 2 + i * 2 * math.pi / 14
-        r = 108 if i < 7 else 62
-        x, y = round(r * math.cos(ang)), round(r * math.sin(ang))
-        verts.append({"id": i, "pos": [x, y], "color": VC})
-    edges = []
+    edges: list = []
     for L, p, q, r in lines:
         for u, v in [(L, p), (L, q), (L, r)]:
             a, b = (u, v) if u < v else (v, u)
@@ -184,22 +198,32 @@ def heawood() -> None:
                     "color": EC,
                 }
             )
+    # Hamiltonian cycle order keeps most edges near the hull (fewer crossings than id order around the circle).
+    cycle = [0, 11, 4, 8, 1, 12, 5, 9, 2, 13, 6, 10, 3, 7]
+    pos_index = {vid: k for k, vid in enumerate(cycle)}
+    r = 128.0
+    verts = []
+    for vid in range(14):
+        k = pos_index[vid]
+        ang = -math.pi / 2 + k * 2 * math.pi / 14
+        x, y = round(r * math.cos(ang)), round(r * math.sin(ang))
+        verts.append({"id": vid, "pos": [x, y], "color": VC})
     dump("heawood", verts, edges)
 
 
 def k33() -> None:
-    """K3,3 utility graph."""
+    """K3,3 utility graph — wide rungs, clear ladder between the two parts."""
     A = [0, 1, 2]
     B = [3, 4, 5]
+    x_left, x_right = -122.0, 122.0
+    sep_y = 108.0
     verts = []
     for i in A:
-        x = -95
-        y = round(-80 + 80 * i)
-        verts.append({"id": i, "pos": [x, y], "color": VC})
+        y = round((i - 1) * sep_y)
+        verts.append({"id": i, "pos": [round(x_left), y], "color": VC})
     for j in B:
-        x = 95
-        y = round(-80 + 80 * (j - 3))
-        verts.append({"id": j, "pos": [x, y], "color": VC})
+        y = round((j - 4) * sep_y)
+        verts.append({"id": j, "pos": [round(x_right), y], "color": VC})
     edges = []
     for a in A:
         for b in B:
@@ -216,35 +240,35 @@ def k33() -> None:
     dump("k33", verts, edges)
 
 
-def flower_snark_j5() -> None:
-    """Wikipedia construction for J5 (n=5), 20 vertices, 30 edges."""
-    # Stars i=1..5: Ai central, Bi,Ci,Di leaves. Vertex ids:
-    # i=1..5 -> base = (i-1)*4, Ai=base, Bi=base+1, Ci=base+2, Di=base+3
-    edges = []
-    for i in range(5):
-        base = i * 4
-        A, B, C, D = base, base + 1, base + 2, base + 3
-        for u, v in [(A, B), (A, C), (A, D)]:
-            edges.append((min(u, v), max(u, v)))
-    # B-cycle B1..B5: ids 1,5,9,13,17
-    Bs = [1, 5, 9, 13, 17]
-    for i in range(5):
-        u, v = Bs[i], Bs[(i + 1) % 5]
-        edges.append((min(u, v), max(u, v)))
-    # 2n-cycle C1..C5 D1..D5: C=2,6,10,14,18 D=3,7,11,15,19
-    order = [2, 6, 10, 14, 18, 3, 7, 11, 15, 19]
-    for i in range(10):
-        u, v = order[i], order[(i + 1) % 10]
-        edges.append((min(u, v), max(u, v)))
-    # unique
-    edges = list(set(edges))
-    assert len(edges) == 30
-    verts = []
-    for v in range(20):
-        ang = -math.pi / 2 + (v / 20) * 2 * math.pi
-        r = 118
-        x, y = round(r * math.cos(ang)), round(r * math.sin(ang))
-        verts.append({"id": v, "pos": [x, y], "color": VC})
+def flower_petal() -> None:
+    """Flower-style graph: center v0, hex v1–v6, petals (v_i, u_i, w_i) with v0–w_i edges (19 V, 36 E)."""
+    # ids: 0=center, 1–6 hex, 7–12 u_i, 13–18 w_i
+    r_hex = 72.0
+    r_u = 98.0
+    r_w = 128.0
+    verts = [{"id": 0, "pos": [0, 0], "color": VC}]
+    for i in range(6):
+        ang = -math.pi / 2 + i * 2 * math.pi / 6
+        c, s = math.cos(ang), math.sin(ang)
+        px, py = -s, c
+        hx, hy = r_hex * c, r_hex * s
+        verts.append({"id": 1 + i, "pos": [round(hx), round(hy)], "color": VC})
+        ux, uy = r_u * c + 18 * px, r_u * s + 18 * py
+        wx, wy = r_w * c, r_w * s
+        verts.append({"id": 7 + i, "pos": [round(ux), round(uy)], "color": VC})
+        verts.append({"id": 13 + i, "pos": [round(wx), round(wy)], "color": VC})
+    raw: list = []
+    for i in range(6):
+        a, b = i + 1, (i + 1) % 6 + 1
+        raw.append((min(a, b), max(a, b)))
+    for k in range(1, 7):
+        raw.append((0, k))
+    for i in range(6):
+        vi, ui, wi = 1 + i, 7 + i, 13 + i
+        for a, b in [(vi, ui), (vi, wi), (ui, wi), (0, wi)]:
+            raw.append((min(a, b), max(a, b)))
+    edges = list({tuple(e) for e in raw})
+    assert len(edges) == 36
     out_e = []
     for a, b in edges:
         out_e.append(
@@ -260,6 +284,74 @@ def flower_snark_j5() -> None:
     dump("flower_snark", verts, out_e)
 
 
+def kneser_62() -> None:
+    """KG(6,2): 15 vertices (2-subsets of {0..5}), edges when disjoint.
+
+    Layered rows by smaller element of the pair — spaced grid instead of a dense midpoint cloud.
+    """
+    pairs: list = []
+    for i in range(6):
+        for j in range(i + 1, 6):
+            pairs.append((i, j))
+    assert len(pairs) == 15
+    col_w = 118.0
+    row_h = 76.0
+    y_top = -152.0
+    verts = []
+    for idx, (i, j) in enumerate(pairs):
+        row_pairs = [(a, b) for a, b in pairs if a == i]
+        ncol = len(row_pairs)
+        col = row_pairs.index((i, j))
+        x0 = -0.5 * col_w * (ncol - 1)
+        x = x0 + col * col_w
+        y = y_top + i * row_h
+        verts.append({"id": idx, "pos": [round(x), round(y)], "color": VC})
+    edges: list = []
+    for ia in range(15):
+        for ib in range(ia + 1, 15):
+            a, b = pairs[ia], pairs[ib]
+            if set(a).isdisjoint(set(b)):
+                edges.append(
+                    {
+                        "from": ia,
+                        "to": ib,
+                        "strategy": "undirected",
+                        "weighted": False,
+                        "weight": 1.0,
+                        "color": EC,
+                    }
+                )
+    assert len(edges) == 45
+    dump("kneser_62", verts, edges)
+
+
+def cycle_12() -> None:
+    """Simple cycle C₁₂ on a regular polygon."""
+    n = 12
+    r = 112.0
+    verts = []
+    edges: list = []
+    for i in range(n):
+        ang = -math.pi / 2 + i * 2 * math.pi / n
+        x, y = round(r * math.cos(ang)), round(r * math.sin(ang))
+        verts.append({"id": i, "pos": [x, y], "color": VC})
+    for i in range(n):
+        a, b = i, (i + 1) % n
+        if a > b:
+            a, b = b, a
+        edges.append(
+            {
+                "from": a,
+                "to": b,
+                "strategy": "undirected",
+                "weighted": False,
+                "weight": 1.0,
+                "color": EC,
+            }
+        )
+    dump("cycle_12", verts, edges)
+
+
 def main() -> None:
     os.makedirs(OUT, exist_ok=True)
     graphos()
@@ -268,7 +360,9 @@ def main() -> None:
     mobius_ladder()
     heawood()
     k33()
-    flower_snark_j5()
+    flower_petal()
+    kneser_62()
+    cycle_12()
 
 
 if __name__ == "__main__":

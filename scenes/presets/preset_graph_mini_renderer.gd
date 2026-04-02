@@ -1,4 +1,4 @@
-## Renders a detached preset Graph inside a SubViewport using current Globals theme colors.
+## Renders a detached preset Graph inside a SubViewport (vertex colors from data; edges use Globals.EDGE_COLOR).
 extends Node2D
 class_name PresetGraphMiniRenderer
 
@@ -53,11 +53,6 @@ func _draw() -> void:
 	var ctr := bb.get_center()
 	var origin := Vector2(vw * 0.5, vh * 0.5)
 
-	var mpt := func(p: Vector2) -> Vector2:
-		return origin + (p - ctr) * sc
-
-	var edge_col := Globals.EDGE_COLOR
-	var vtx_col := Globals.VERTEX_COLOR
 	var lw := clampf(Globals.EDGE_WIDTH * 0.14, 1.1, 2.4)
 	var rr := clampf(Globals.VERTEX_RADIUS * 0.24, 3.2, 6.5)
 
@@ -65,17 +60,18 @@ func _draw() -> void:
 		var e: Edge = v.edges
 		while e:
 			if _graph.vertices.has(e.dst.id) and e.strategy.should_paste_edge(v.id, e.dst.id):
-				var a: Vector2 = mpt.call(pts[v.id])
-				var b: Vector2 = mpt.call(pts[e.dst.id])
-				draw_line(a, b, edge_col, lw)
+				var a: Vector2 = _map_pt(pts[v.id], origin, ctr, sc)
+				var b: Vector2 = _map_pt(pts[e.dst.id], origin, ctr, sc)
+				var ec: Color = Globals.EDGE_COLOR
+				draw_line(a, b, ec, lw)
 				if e.strategy is DirectedStrategy:
-					_draw_arrow_head(a, b, edge_col, lw)
+					_draw_arrow_head(a, b, ec, lw)
 			e = e.next
 
 	for v: Vertex in _graph.vertices.values():
-		var c: Vector2 = mpt.call(pts[v.id])
+		var c: Vector2 = _map_pt(pts[v.id], origin, ctr, sc)
 		draw_circle(c, rr + 1.1, Color(1, 1, 1, 0.92))
-		draw_circle(c, rr, vtx_col)
+		draw_circle(c, rr, v.color)
 
 
 func _draw_arrow_head(from: Vector2, to: Vector2, col: Color, _lw: float) -> void:
@@ -87,3 +83,7 @@ func _draw_arrow_head(from: Vector2, to: Vector2, col: Color, _lw: float) -> voi
 	var n := dir.orthogonal() * 3.8
 	var poly := PackedVector2Array([to, tip + n, tip - n])
 	draw_colored_polygon(poly, col)
+
+
+func _map_pt(p: Vector2, origin: Vector2, ctr: Vector2, sc: float) -> Vector2:
+	return origin + (p - ctr) * sc

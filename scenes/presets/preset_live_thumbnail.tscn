@@ -22,7 +22,7 @@ stretch = true
 handle_input_locally = false
 size = Vector2i(128, 88)
 render_target_update_mode = 3
-transparent_bg = false
+transparent_bg = true
 
 [node name="MiniRenderer" type="Node2D" parent="SubViewportContainer/SubViewport"]
 script = ExtResource("2_ren")
