@@ -80,8 +80,8 @@ func _zoom_camera(factor: float) -> void:
 	# COrrection: Shifting the camera by the difference keeps the cursor pinned to the same spot.
 	position += (mouse_pos_before - mouse_pos_after)
  
-func toggle_pan_mode(enabled: bool) -> void:
-	_pan_mode_enabled = enabled
+func toggle_pan_mode(pan_enabled: bool) -> void:
+	_pan_mode_enabled = pan_enabled
 	_update_cursor_shape()
 
 # Internal helper to handle the cursor logic

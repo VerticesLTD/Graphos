@@ -13,9 +13,10 @@ static func should_draw_bidirectional_curve(edge_data: Edge, graph: Graph) -> bo
 
 static func get_linear_visual_start_end(pos1: Vector2, pos2: Vector2, vertex_radius: float) -> Array[Vector2]:
 	var direction = pos1.direction_to(pos2)
-	var visual_start = pos1 + (direction * vertex_radius)
-	var visual_end = pos2 - (direction * vertex_radius)
-	return [visual_start, visual_end]
+	var seg_start = pos1 + (direction * vertex_radius)
+	var seg_end = pos2 - (direction * vertex_radius)
+	var out: Array[Vector2] = [seg_start, seg_end]
+	return out
 
 static func get_bidirectional_control_point(
 	edge_data: Edge,
@@ -35,10 +36,10 @@ static func get_bidirectional_control_point(
 	# Stable pair orientation guarantees mirrored arcs for A->B and B->A.
 	var pair_dir = lower_v.pos.direction_to(upper_v.pos)
 	var normal = Vector2(-pair_dir.y, pair_dir.x)
-	var sign = 1.0 if is_src_lower else -1.0
+	var bend_sign = 1.0 if is_src_lower else -1.0
 	var distance = lower_v.pos.distance_to(upper_v.pos)
 	var bend = clamp(distance * curve_factor, curve_min, curve_max)
-	return start.lerp(finish, 0.5) + (normal * bend * sign)
+	return start.lerp(finish, 0.5) + (normal * bend * bend_sign)
 
 static func quadratic_point(p0: Vector2, p1: Vector2, p2: Vector2, t: float) -> Vector2:
 	var inv = 1.0 - t

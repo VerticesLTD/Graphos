@@ -362,6 +362,8 @@ func _setup_detection_area() -> void:
 	var rotation_angle: float
 
 	var graph := get_parent() as Graph
+	var visual_start: Vector2
+	var visual_end: Vector2
 	if EdgeGeometry.should_draw_bidirectional_curve(edge_data, graph):
 		var control = EdgeGeometry.get_bidirectional_control_point(
 			edge_data,
@@ -373,8 +375,8 @@ func _setup_detection_area() -> void:
 		)
 		var start_tangent = EdgeGeometry.quadratic_tangent(pos1, control, pos2, 0.0).normalized()
 		var end_tangent = EdgeGeometry.quadratic_tangent(pos1, control, pos2, 1.0).normalized()
-		var visual_start = pos1 + (start_tangent * Globals.VERTEX_RADIUS)
-		var visual_end = pos2 - (end_tangent * Globals.VERTEX_RADIUS)
+		visual_start = pos1 + (start_tangent * Globals.VERTEX_RADIUS)
+		visual_end = pos2 - (end_tangent * Globals.VERTEX_RADIUS)
 
 		# Approximate arc length with polyline segments for better hit area size.
 		var curve_points = EdgeGeometry.sample_quadratic(visual_start, control, visual_end, 0.0, 1.0, CURVE_AREA_SAMPLES)
@@ -389,8 +391,8 @@ func _setup_detection_area() -> void:
 		width += clamp(bend * 0.45, 6.0, 24.0)
 	else:
 		var draw_positions = EdgeGeometry.get_linear_visual_start_end(pos1, pos2, Globals.VERTEX_RADIUS)
-		var visual_start = draw_positions[0]
-		var visual_end = draw_positions[1]
+		visual_start = draw_positions[0]
+		visual_end = draw_positions[1]
 		length = visual_start.distance_to(visual_end)
 		midpoint = (pos1 + pos2) / 2.0
 		rotation_angle = visual_start.angle_to_point(visual_end)

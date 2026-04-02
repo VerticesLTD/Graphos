@@ -5,6 +5,7 @@ const LOG_TAG = "ALG_PLAYER"
 const PSEUDO_MARGIN := 24.0
 
 const _PrimScript := preload("res://scripts/algorithms/logic/Prim.gd")
+const _KruskalScript := preload("res://scripts/algorithms/logic/Kruskal.gd")
 
 @onready var algorithm_controls: AlgorithmControls = $UILayer/AlgorithmControls
 @onready var pseudo_visualizer: PanelContainer = $UILayer/PseudoVisualizer
@@ -15,6 +16,7 @@ enum ALGORITHMS {
 	DFS,
 	DIJKSTRA,
 	PRIM,
+	KRUSKAL,
 }
 
 # Animations
@@ -27,6 +29,7 @@ var _algorithm_map: Dictionary = {
 	ALGORITHMS.DFS : [DFS.new(), preload("uid://chwkrpy8dpkfk")],
 	ALGORITHMS.DIJKSTRA : [Dijkstra.new(), preload("res://scripts/algorithms/pseudo_code/Dijkstra.tres")],
 	ALGORITHMS.PRIM : [_PrimScript.new(), preload("res://scripts/algorithms/pseudo_code/Prim.tres")],
+	ALGORITHMS.KRUSKAL : [_KruskalScript.new(), preload("res://scripts/algorithms/pseudo_code/Kruskal.tres")],
 }
 
 ## Stores the events by order of the algorithm's execution.
@@ -109,6 +112,11 @@ func start_algorithm(
 				"Graph is not fully connected.\n"
 				+ "Prim will only span the reachable component starting from the selected vertex."
 			)
+		elif algorithm_type == ALGORITHMS.KRUSKAL:
+			Notify.show_notification(
+				"Graph is not fully connected.\n"
+				+ "Kruskal will build a minimum spanning forest (one tree per component)."
+			)
 		else:
 			Notify.show_notification(
 				"Graph is not fully connected.\n"
@@ -121,7 +129,13 @@ func start_algorithm(
 		selection_buffer
 	)
 
-	var imposter_start_node = imposter_graph.get_vertex(starting_node.id)
+	var imposter_start_node: Vertex = null
+	if starting_node != null:
+		imposter_start_node = imposter_graph.get_vertex(starting_node.id)
+	else:
+		for v: Vertex in imposter_graph.vertices.values():
+			imposter_start_node = v
+			break
 
 	# Extracting timeline and Pseudo steps from alg run
 	var algorithm_result = algorithm_instance.run(imposter_start_node)
@@ -345,7 +359,7 @@ func cancel_algorithm_execution() -> void:
 func _sync_optional_step_data() -> void:
 	if algorithm_controls == null:
 		return
-	if _running_algorithm != ALGORITHMS.PRIM:
+	if _running_algorithm != ALGORITHMS.PRIM and _running_algorithm != ALGORITHMS.KRUSKAL:
 		algorithm_controls.set_optional_step_data("")
 		return
 	if current_step_index <= 0:

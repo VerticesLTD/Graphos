@@ -399,6 +399,8 @@ func _algorithm_requires_start_vertex(algorithm: AlgorithmPlayer.ALGORITHMS) -> 
 	match algorithm:
 		AlgorithmPlayer.ALGORITHMS.BFS, AlgorithmPlayer.ALGORITHMS.DFS, AlgorithmPlayer.ALGORITHMS.DIJKSTRA, AlgorithmPlayer.ALGORITHMS.PRIM:
 			return true
+		AlgorithmPlayer.ALGORITHMS.KRUSKAL:
+			return false
 		_:
 			return false
 

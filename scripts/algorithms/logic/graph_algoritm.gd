@@ -213,3 +213,19 @@ func log_initialize_vertices(color: Color, pseudo_step = null) -> void:
 			real_vertices.append(real_v)
 	timeline.append(ChangeSelectionVertexColorCommand.new(real_vertices, color))
 	log_pseudo_step(pseudo_step)
+
+## Sets each vertex to its own color in ONE timeline step (e.g. Kruskal make-set).
+func change_and_log_vertices_per_vertex_colors(imposter_vertices: Array[Vertex], new_colors: Array[Color], pseudo_step = null) -> void:
+	assert(imposter_vertices.size() == new_colors.size())
+	var real_vertices: Array[Vertex] = []
+	var filtered_colors: Array[Color] = []
+	for i in range(imposter_vertices.size()):
+		var iv: Vertex = imposter_vertices[i]
+		var rv: Vertex = real_graph.get_vertex(iv.id)
+		iv.color = new_colors[i]
+		if rv:
+			real_vertices.append(rv)
+			filtered_colors.append(new_colors[i])
+	if not real_vertices.is_empty():
+		timeline.append(ChangeVerticesPerVertexColorCommand.new(real_vertices, filtered_colors))
+	log_pseudo_step(pseudo_step)

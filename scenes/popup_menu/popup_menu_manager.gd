@@ -41,6 +41,7 @@ const ALGORITHM_MENU_ITEMS := [
 	{"label": "Depth First Search", "id": AlgorithmPlayer.ALGORITHMS.DFS},
 	{"label": "Dijkstra Shortest Paths", "id": AlgorithmPlayer.ALGORITHMS.DIJKSTRA},
 	{"label": "Prim Minimum Spanning Tree", "id": AlgorithmPlayer.ALGORITHMS.PRIM},
+	{"label": "Kruskal Minimum Spanning Tree", "id": AlgorithmPlayer.ALGORITHMS.KRUSKAL},
 ]
 
 # Helper to generate the color square icon

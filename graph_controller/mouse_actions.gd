@@ -7,7 +7,8 @@ var _bounds_scale_tween: Tween
 
 var action_map: Dictionary = {
 	&"left_click" : [_handle_left_click, _handle_left_release],
-	&"left_click_ctrl" : [null, null],
+	## Must use the same handlers: when Ctrl is held, Godot matches `left_click_ctrl`, not `left_click`.
+	&"left_click_ctrl" : [_handle_left_click, _handle_left_release],
 	&"right_click" : [_handle_right_click, _handle_left_release],
 	&"right_click_ctrl" : [null, null],
 	&"ctrl" : [null, func(_event): controller.clear_link_context(_event)],
@@ -83,7 +84,10 @@ func _handle_left_click(event: InputEventMouseButton):
 
 	# Get the vertex in the position of the mouse(or not found)
 	var id = graph.get_vertex_id_at(mouse_global_pos)
-	var is_ctrl = Input.is_key_pressed(KEY_CTRL)
+	# Prefer modifiers on this event (matches `left_click_ctrl`); also support Meta (Cmd on macOS).
+	var is_ctrl: bool = event.ctrl_pressed or event.meta_pressed
+	if not is_ctrl:
+		is_ctrl = Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
 
 	# Check if we select something now
 	if selection_buffer.size() > 1:
@@ -229,7 +233,7 @@ func _handle_right_click(event: InputEventMouseButton):
 	pass
 	
 ## Handle mouse movement
-func _handle_mouse_movement(event: InputEventMouseMotion):
+func _handle_mouse_movement(_event: InputEventMouseMotion):
 	var mouse_world_pos := controller.graph.get_global_mouse_position()
 
 	# LANE 1: PASSIVE (Hovering)
