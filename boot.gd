@@ -15,26 +15,10 @@ var _load_finished: bool = false
 
 func _ready() -> void:
 	_fit_logo_and_bar_width()
-	# Web export usually has thread_support disabled; threaded loading is unreliable in the browser.
-	if OS.has_feature("web"):
-		_start_web_load()
-		return
 	var err := ResourceLoader.load_threaded_request(MAIN_PATH)
 	if err != OK:
 		push_error("Boot: load_threaded_request failed (%s), loading main synchronously." % err)
 		get_tree().change_scene_to_file.call_deferred(MAIN_PATH)
-
-
-func _start_web_load() -> void:
-	var main_scene: PackedScene = load(MAIN_PATH) as PackedScene
-	if main_scene == null:
-		push_error("Boot: failed to load main scene on Web")
-		get_tree().quit(1)
-		return
-	_packed_main = main_scene
-	_load_finished = true
-	progress_bar.value = 100.0
-	set_process(true)
 
 
 func _process(delta: float) -> void:
