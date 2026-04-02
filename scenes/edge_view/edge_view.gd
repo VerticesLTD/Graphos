@@ -484,6 +484,8 @@ func _get_edge_hit_test_polyline() -> PackedVector2Array:
 	var src_pos = edge_data.src.pos
 	var dst_pos = edge_data.dst.pos
 	var graph := get_parent() as Graph
+	var visual_start: Vector2
+	var visual_end: Vector2
 
 	if EdgeGeometry.should_draw_bidirectional_curve(edge_data, graph):
 		var control = EdgeGeometry.get_bidirectional_control_point(
@@ -496,13 +498,13 @@ func _get_edge_hit_test_polyline() -> PackedVector2Array:
 		)
 		var tangent_start = EdgeGeometry.quadratic_tangent(src_pos, control, dst_pos, 0.0).normalized()
 		var tangent_end = EdgeGeometry.quadratic_tangent(src_pos, control, dst_pos, 1.0).normalized()
-		var visual_start = src_pos + (tangent_start * Globals.VERTEX_RADIUS)
-		var visual_end = dst_pos - (tangent_end * Globals.VERTEX_RADIUS)
+		visual_start = src_pos + (tangent_start * Globals.VERTEX_RADIUS)
+		visual_end = dst_pos - (tangent_end * Globals.VERTEX_RADIUS)
 		return EdgeGeometry.sample_quadratic(visual_start, control, visual_end, 0.0, 1.0, CURVE_HITTEST_SAMPLES)
 
 	var linear_positions = EdgeGeometry.get_linear_visual_start_end(src_pos, dst_pos, Globals.VERTEX_RADIUS)
-	var visual_start = linear_positions[0]
-	var visual_end = linear_positions[1]
+	visual_start = linear_positions[0]
+	visual_end = linear_positions[1]
 	var points := PackedVector2Array()
 	points.append(visual_start)
 	points.append(visual_end)

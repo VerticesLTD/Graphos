@@ -346,7 +346,7 @@ func _make_selection_menu(clicked_vertex: Vertex, mouse_pos: Vector2) -> Array:
 	var algo_submenu := []
 	for entry in ALGORITHM_MENU_ITEMS:
 		var algo_name: String = entry["label"]
-		var algorithm: AlgorithmPlayer.ALGORITHMS = entry["id"]
+		var algorithm: AlgorithmPlayer.ALGORITHMS = entry["id"] as AlgorithmPlayer.ALGORITHMS
 		var cmd = null
 		if not selection_snapshot.is_empty():
 			cmd = func(): run_algorithm.emit(algorithm, clicked_vertex)
