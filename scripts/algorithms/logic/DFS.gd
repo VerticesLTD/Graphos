@@ -1,6 +1,9 @@
 class_name DFS
 extends GraphAlgorithm
 
+func get_requirements() -> Dictionary:
+	return {"warn_if_weighted": true}
+
 func run(_start_vertex: Vertex) -> Array:
 	var current_v_processed = 0
 

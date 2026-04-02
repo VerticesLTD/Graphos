@@ -45,6 +45,7 @@ func _reset_alg_variables() -> void:
 ##   "directed"            : bool — true = must be directed, false = must be undirected
 ##   "weighted"            : bool — true = must be weighted,  false = must be unweighted
 ##   "no_negative_weights" : bool — true = no edge may have a negative weight
+##   "warn_if_weighted"    : bool — if true, show an info notification when the graph is weighted (e.g. BFS/DFS ignore weights)
 ## Omitting a key means the algorithm has no requirement for that property.
 func get_requirements() -> Dictionary:
 	return {}
@@ -55,7 +56,7 @@ func requires_vertex_keys_display() -> bool:
 	return false
 
 ## Validates graph against the base integrity rules and this algorithm's requirements.
-## Shows a Notify error and returns false on the first violation.
+## Shows a Notify error and returns false on the first violation. May show an informational notification (e.g. traversal on weighted graphs).
 func check_requirements(graph: Graph) -> bool:
 	# --- Always: mixed directed/undirected guard ---
 	var dominant_strategy := graph.get_graph_dominant_strategy()
@@ -90,6 +91,11 @@ func check_requirements(graph: Graph) -> bool:
 		if not needs_weighted and weight_state != "unweighted":
 			Notify.show_error("%s requires an unweighted graph." % get_script().resource_path.get_file().get_basename())
 			return false
+
+	# --- Per-algorithm: info when graph is weighted but algorithm ignores weights (e.g. BFS/DFS) ---
+	if reqs.get("warn_if_weighted", false) and weight_state == "weighted":
+		var alg_name: String = get_script().resource_path.get_file().get_basename()
+		Notify.show_notification("%s ignores edge weights; only adjacency affects the traversal." % alg_name)
 
 	# --- Per-algorithm: no negative weights ---
 	if reqs.get("no_negative_weights", false):

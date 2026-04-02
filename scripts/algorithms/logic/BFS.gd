@@ -3,7 +3,7 @@ class_name BFS
 extends GraphAlgorithm
 
 func get_requirements() -> Dictionary:
-	return {"weighted": false}
+	return {"warn_if_weighted": true}
 
 ## run function for the algorithm
 ## @param _start_vertex    The vertex the algorithm starts from
