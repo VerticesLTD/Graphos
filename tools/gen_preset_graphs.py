@@ -3,6 +3,7 @@
 import json
 import math
 import os
+import random
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "presets", "data")
@@ -19,6 +20,73 @@ GRAPHOS_V = [
 ]
 V_BLUE = [0.263, 0.38, 0.933, 1.0]
 V_TEAL = [0.024, 0.714, 0.627, 1.0]
+
+
+def _fruchterman_reingold_layout(
+    n: int,
+    undirected_edges: list[tuple[int, int]],
+    *,
+    iterations: int = 260,
+    seed: int = 7,
+    target_radius: float = 120.0,
+) -> list[tuple[int, int]]:
+    """Deterministic spring-like layout (Fruchterman–Reingold style) for dense small graphs."""
+    rng = random.Random(seed)
+    pos: list = []
+    for i in range(n):
+        ang = -math.pi / 2 + 2 * math.pi * i / max(n, 1)
+        r0 = 0.14 + rng.uniform(-0.03, 0.03)
+        pos.append([r0 * math.cos(ang), r0 * math.sin(ang)])
+    nbr = [set() for _ in range(n)]
+    for a, b in undirected_edges:
+        nbr[a].add(b)
+        nbr[b].add(a)
+    w = 2.5
+    area = w * w
+    k = math.sqrt(area / max(n, 1))
+    for it in range(iterations):
+        disp = [[0.0, 0.0] for _ in range(n)]
+        for i in range(n):
+            for j in range(i + 1, n):
+                dx = pos[j][0] - pos[i][0]
+                dy = pos[j][1] - pos[i][1]
+                d = math.hypot(dx, dy) + 1e-9
+                fr = (k * k) / d
+                fx = (fr * dx) / d
+                fy = (fr * dy) / d
+                disp[i][0] -= fx
+                disp[i][1] -= fy
+                disp[j][0] += fx
+                disp[j][1] += fy
+        for i in range(n):
+            for j in nbr[i]:
+                if j < i:
+                    continue
+                dx = pos[j][0] - pos[i][0]
+                dy = pos[j][1] - pos[i][1]
+                d = math.hypot(dx, dy) + 1e-9
+                fa = (d * d) / k
+                fx = (fa * dx) / d
+                fy = (fa * dy) / d
+                disp[i][0] += fx
+                disp[i][1] += fy
+                disp[j][0] -= fx
+                disp[j][1] -= fy
+        temp = w * 0.065 * ((1.0 - it / max(iterations - 1, 1)) ** 1.15)
+        for i in range(n):
+            dx, dy = disp[i][0], disp[i][1]
+            mag = math.hypot(dx, dy) + 1e-12
+            step = min(mag, temp)
+            pos[i][0] += (dx / mag) * step
+            pos[i][1] += (dy / mag) * step
+    cx = sum(p[0] for p in pos) / n
+    cy = sum(p[1] for p in pos) / n
+    for p in pos:
+        p[0] -= cx
+        p[1] -= cy
+    m = max(max(abs(p[0]), abs(p[1])) for p in pos) or 1.0
+    s = target_radius / m
+    return [(round(p[0] * s), round(p[1] * s)) for p in pos]
 
 
 def dump(name: str, vertices: list, edges: list) -> None:
@@ -287,30 +355,20 @@ def flower_petal() -> None:
 def kneser_62() -> None:
     """KG(6,2): 15 vertices (2-subsets of {0..5}), edges when disjoint.
 
-    Layered rows by smaller element of the pair — spaced grid instead of a dense midpoint cloud.
+    Fruchterman–Reingold–style layout (deterministic) to spread high-degree nodes and untangle edges.
     """
     pairs: list = []
     for i in range(6):
         for j in range(i + 1, 6):
             pairs.append((i, j))
     assert len(pairs) == 15
-    col_w = 118.0
-    row_h = 76.0
-    y_top = -152.0
-    verts = []
-    for idx, (i, j) in enumerate(pairs):
-        row_pairs = [(a, b) for a, b in pairs if a == i]
-        ncol = len(row_pairs)
-        col = row_pairs.index((i, j))
-        x0 = -0.5 * col_w * (ncol - 1)
-        x = x0 + col * col_w
-        y = y_top + i * row_h
-        verts.append({"id": idx, "pos": [round(x), round(y)], "color": VC})
+    edge_pairs: list = []
     edges: list = []
     for ia in range(15):
         for ib in range(ia + 1, 15):
             a, b = pairs[ia], pairs[ib]
             if set(a).isdisjoint(set(b)):
+                edge_pairs.append((ia, ib))
                 edges.append(
                     {
                         "from": ia,
@@ -322,6 +380,8 @@ def kneser_62() -> None:
                     }
                 )
     assert len(edges) == 45
+    xy = _fruchterman_reingold_layout(15, edge_pairs, iterations=280, seed=11, target_radius=122.0)
+    verts = [{"id": i, "pos": [xy[i][0], xy[i][1]], "color": VC} for i in range(15)]
     dump("kneser_62", verts, edges)
 
 
