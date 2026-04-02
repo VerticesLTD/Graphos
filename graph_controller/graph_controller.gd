@@ -53,6 +53,8 @@ const HOLD_REPEAT_INITIAL_DELAY := 0.28
 const HOLD_REPEAT_INTERVAL := 0.07
 var _held_algorithm_action: StringName = &""
 var _held_algorithm_timer := 0.0
+var _held_history_action: StringName = &""
+var _held_history_timer := 0.0
 var _last_tool_state: int = -1
 
 ## Vars to handle dragging
@@ -91,6 +93,7 @@ func _process(delta: float) -> void:
 	if Globals.is_mass_select and not is_dragging:
 		_populate_selection_buffer()
 	_process_algorithm_key_hold(delta)
+	_process_history_key_hold(delta)
 
 ## ------------------------------------------------------------------------------
 ## INPUT HANDLING
@@ -99,6 +102,25 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if Globals.current_state == Globals.State.PAN:
 		return
+
+	if event is InputEventKey:
+		# Ctrl+Z / Ctrl+Y: first press applies once, then repeats while held.
+		if event.is_action_pressed("undo") and not event.echo:
+			CommandManager.undo()
+			_held_history_action = &"undo"
+			_held_history_timer = HOLD_REPEAT_INITIAL_DELAY
+			return
+		if event.is_action_pressed("redo") and not event.echo:
+			CommandManager.redo()
+			_held_history_action = &"redo"
+			_held_history_timer = HOLD_REPEAT_INITIAL_DELAY
+			return
+		if event.is_action_released("undo") and _held_history_action == &"undo":
+			_held_history_action = &""
+			return
+		if event.is_action_released("redo") and _held_history_action == &"redo":
+			_held_history_action = &""
+			return
 
 	# Close text editor if needed
 	if event is InputEventMouseButton and event.pressed:
@@ -173,6 +195,21 @@ func _process_algorithm_key_hold(delta: float) -> void:
 		elif _held_algorithm_action == &"ui_right":
 			player.step_forward()
 		_held_algorithm_timer += HOLD_REPEAT_INTERVAL
+
+func _process_history_key_hold(delta: float) -> void:
+	if _held_history_action == &"":
+		return
+	if not Input.is_action_pressed(_held_history_action):
+		_held_history_action = &""
+		return
+
+	_held_history_timer -= delta
+	while _held_history_timer <= 0.0:
+		if _held_history_action == &"undo":
+			CommandManager.undo()
+		elif _held_history_action == &"redo":
+			CommandManager.redo()
+		_held_history_timer += HOLD_REPEAT_INTERVAL
 
 ## Starts dragging a node
 func start_dragging(id: int = Globals.NOT_FOUND) -> void:
