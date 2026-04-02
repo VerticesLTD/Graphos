@@ -1,0 +1,202 @@
+{
+  "format_version": 1,
+  "vertices": [
+    {
+      "id": 0,
+      "pos": [
+        -95,
+        -80
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 1,
+      "pos": [
+        -95,
+        0
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 2,
+      "pos": [
+        -95,
+        80
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 3,
+      "pos": [
+        95,
+        -80
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 4,
+      "pos": [
+        95,
+        0
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 5,
+      "pos": [
+        95,
+        80
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 0,
+      "to": 3,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 0,
+      "to": 4,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 0,
+      "to": 5,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 1,
+      "to": 3,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 1,
+      "to": 4,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 1,
+      "to": 5,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 2,
+      "to": 3,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 2,
+      "to": 4,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 2,
+      "to": 5,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    }
+  ]
+}

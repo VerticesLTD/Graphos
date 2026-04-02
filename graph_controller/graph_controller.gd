@@ -389,6 +389,44 @@ func close_active_editor() -> void:
 		Globals.active_weight_editor = null
 		
 ## ------------------------------------------------------------------------------
+## PRESETS (JSON templates; insert via PasteCommand for undo/redo)
+## ------------------------------------------------------------------------------
+
+func get_viewport_center_world_pos() -> Vector2:
+	if graph == null:
+		return Vector2.ZERO
+	var vp := graph.get_viewport()
+	if vp == null:
+		return Vector2.ZERO
+	var cam := vp.get_camera_2d()
+	if cam:
+		return cam.get_screen_center_position()
+	return graph.get_global_mouse_position()
+
+
+func insert_preset_from_json_path(json_path: String) -> void:
+	var tpl: Graph = GraphPresetIO.load_template_from_file(json_path)
+	if tpl == null:
+		Notify.show_error("Could not load graph template.")
+		return
+	var need: int = tpl.vertices.size()
+	if need == 0:
+		tpl.queue_free()
+		return
+	var room: int = Globals.MAX_VERTICES - graph.num_vertices
+	if need > room:
+		Notify.show_error(
+			"Insert failed: only %d vertex slots left, but this template needs %d."
+			% [room, need]
+		)
+		tpl.queue_free()
+		return
+	var anchor := get_viewport_center_world_pos()
+	var cmd := PasteCommand.new(graph, tpl, anchor, self)
+	CommandManager.execute(cmd)
+
+
+## ------------------------------------------------------------------------------
 ## ALGORITHM PLAYER
 ## ------------------------------------------------------------------------------
 

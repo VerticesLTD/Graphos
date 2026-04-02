@@ -1,0 +1,735 @@
+{
+  "format_version": 1,
+  "vertices": [
+    {
+      "id": 0,
+      "pos": [
+        0,
+        -26
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 1,
+      "pos": [
+        1,
+        -31
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 2,
+      "pos": [
+        7,
+        -44
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 3,
+      "pos": [
+        20,
+        -56
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 4,
+      "pos": [
+        40,
+        -62
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 5,
+      "pos": [
+        61,
+        -57
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 6,
+      "pos": [
+        77,
+        -42
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 7,
+      "pos": [
+        83,
+        -21
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 8,
+      "pos": [
+        77,
+        1
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 9,
+      "pos": [
+        61,
+        22
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 10,
+      "pos": [
+        40,
+        41
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 11,
+      "pos": [
+        20,
+        58
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 12,
+      "pos": [
+        7,
+        74
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 13,
+      "pos": [
+        1,
+        84
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 14,
+      "pos": [
+        0,
+        88
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 15,
+      "pos": [
+        -1,
+        84
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 16,
+      "pos": [
+        -7,
+        74
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 17,
+      "pos": [
+        -20,
+        58
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 18,
+      "pos": [
+        -40,
+        41
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 19,
+      "pos": [
+        -61,
+        22
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 20,
+      "pos": [
+        -77,
+        1
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 21,
+      "pos": [
+        -83,
+        -21
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 22,
+      "pos": [
+        -77,
+        -42
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 23,
+      "pos": [
+        -61,
+        -57
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 24,
+      "pos": [
+        -40,
+        -62
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 25,
+      "pos": [
+        -20,
+        -56
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 26,
+      "pos": [
+        -7,
+        -44
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    },
+    {
+      "id": 27,
+      "pos": [
+        -1,
+        -31
+      ],
+      "color": [
+        0.118,
+        0.118,
+        0.18,
+        1.0
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 0,
+      "to": 1,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 1,
+      "to": 2,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 2,
+      "to": 3,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 3,
+      "to": 4,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 4,
+      "to": 5,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 5,
+      "to": 6,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 6,
+      "to": 7,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 7,
+      "to": 8,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 8,
+      "to": 9,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 9,
+      "to": 10,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 10,
+      "to": 11,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 11,
+      "to": 12,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 12,
+      "to": 13,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 13,
+      "to": 14,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 14,
+      "to": 15,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 15,
+      "to": 16,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 16,
+      "to": 17,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 17,
+      "to": 18,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 18,
+      "to": 19,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 19,
+      "to": 20,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 20,
+      "to": 21,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 21,
+      "to": 22,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 22,
+      "to": 23,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 23,
+      "to": 24,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 24,
+      "to": 25,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 25,
+      "to": 26,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 26,
+      "to": 27,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    },
+    {
+      "from": 0,
+      "to": 27,
+      "strategy": "undirected",
+      "weighted": false,
+      "weight": 1.0,
+      "color": [
+        0.29,
+        0.31,
+        0.34,
+        1.0
+      ]
+    }
+  ]
+}
