@@ -40,6 +40,62 @@ func _reset_alg_variables() -> void:
 	timeline.clear()
 	pseudo_steps.clear()
 
+## Returns a dictionary declaring what this algorithm requires from the graph.
+## Supported keys:
+##   "directed"            : bool — true = must be directed, false = must be undirected
+##   "weighted"            : bool — true = must be weighted,  false = must be unweighted
+##   "no_negative_weights" : bool — true = no edge may have a negative weight
+## Omitting a key means the algorithm has no requirement for that property.
+func get_requirements() -> Dictionary:
+	return {}
+
+## Validates graph against the base integrity rules and this algorithm's requirements.
+## Shows a Notify error and returns false on the first violation.
+func check_requirements(graph: Graph) -> bool:
+	# --- Always: mixed directed/undirected guard ---
+	var dominant_strategy := graph.get_graph_dominant_strategy()
+	if graph.num_edges > 0 and dominant_strategy == null:
+		Notify.show_error("Mixed Strategy Error: Directed and Undirected edges cannot coexist during an algorithm.")
+		return false
+
+	# --- Always: mixed weighted/unweighted guard ---
+	var weight_state = graph.get_graph_weight_state()
+	if weight_state == null:
+		Notify.show_error("Mixed Weight Error: All edges must be either Weighted or Unweighted in order to run an algorithm.")
+		return false
+
+	var reqs := get_requirements()
+
+	# --- Per-algorithm: directed / undirected ---
+	if reqs.has("directed") and dominant_strategy != null:
+		var needs_directed: bool = reqs["directed"]
+		if needs_directed and not (dominant_strategy is DirectedStrategy):
+			Notify.show_error("%s requires a directed graph." % get_script().resource_path.get_file().get_basename())
+			return false
+		if not needs_directed and not (dominant_strategy is UndirectedStrategy):
+			Notify.show_error("%s requires an undirected graph." % get_script().resource_path.get_file().get_basename())
+			return false
+
+	# --- Per-algorithm: weighted / unweighted ---
+	if reqs.has("weighted"):
+		var needs_weighted: bool = reqs["weighted"]
+		if needs_weighted and weight_state != "weighted":
+			Notify.show_error("%s requires a weighted graph." % get_script().resource_path.get_file().get_basename())
+			return false
+		if not needs_weighted and weight_state != "unweighted":
+			Notify.show_error("%s requires an unweighted graph." % get_script().resource_path.get_file().get_basename())
+			return false
+
+	# --- Per-algorithm: no negative weights ---
+	if reqs.get("no_negative_weights", false):
+		for v: Vertex in graph.vertices.values():
+			for edge: Edge in v.get_outgoing_edges():
+				if edge.is_weighted and edge.weight < 0:
+					Notify.show_error("%s does not support negative edge weights." % get_script().resource_path.get_file().get_basename())
+					return false
+
+	return true
+
 ## Every graph algorithm must have a run function.
 ## Every graph algorithm has a start node, and needs to return an array.
 ## The array MUST be strctures as so:

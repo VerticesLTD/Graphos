@@ -2,6 +2,9 @@
 class_name BFS
 extends GraphAlgorithm
 
+func get_requirements() -> Dictionary:
+	return {"weighted": false}
+
 ## run function for the algorithm
 ## @param _start_vertex    The vertex the algorithm starts from
 func run(_start_vertex: Vertex) -> Array:

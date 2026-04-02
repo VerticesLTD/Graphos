@@ -83,26 +83,14 @@ func start_algorithm(
 
 	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
 
-	# Check if the graph is corrupted.
-	# Empty-edge selections are valid and should not be treated as "mixed".
-	var dominant_strategy = imposter_graph.get_graph_dominant_strategy()
-	if imposter_graph.num_edges > 0 and not dominant_strategy:
-		Notify.show_error("Mixed Strategy Error: Directed and Undirected edges cannot coexist during an algorithm.")
-		return
-
-	if not imposter_graph.get_graph_weight_state():
-		Notify.show_error("Mixed Weight Error: All edges must be either Weighted or Unweighted in order to run an algorithm.")
-		return
-
-	if not imposter_graph:
-		Notify.show_error("Algorithm Error: Selection contains mixed graph types.")
-		return # ABORT
-
 	var algorithm_instance: GraphAlgorithm = _algorithm_map[algorithm_type].get(0)
 	var pseudo_resource: PseudoCodeData = _algorithm_map[algorithm_type].get(1)
 
 	assert(algorithm_instance != null)
 	assert(pseudo_resource != null)
+
+	if not algorithm_instance.check_requirements(imposter_graph):
+		return
 
 	algorithm_instance.set_alg_variables(imposter_graph,graph)
 
