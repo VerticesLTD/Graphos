@@ -48,7 +48,7 @@ func _generate_and_execute_paste() -> void:
 		var offset = old_v.pos - center
 		var new_pos = mouse_global_pos + offset
 		
-		var v_cmd = AddVertexCommand.new(graph, new_pos)
+		var v_cmd = AddVertexCommand.new(graph, new_pos, old_v.color)
 		v_cmd.execute()
 		created_vertex_cmds.append(v_cmd)
 		id_map[old_v.id] = v_cmd.vertex
@@ -64,8 +64,8 @@ func _generate_and_execute_paste() -> void:
 					var new_dst = id_map[e.dst.id]
 					
 					var e_cmd = AddEdgeCommand.new(
-						graph, new_src.id, new_dst.id, e.weight, 
-						e.strategy, e.is_weighted
+						graph, new_src.id, new_dst.id, e.weight,
+						e.strategy, e.is_weighted, e.color
 					)
 					e_cmd.execute()
 					created_edge_cmds.append(e_cmd)

@@ -97,6 +97,16 @@ func _apply_excalidraw_style(menu: PopupMenu) -> void:
 	hover.content_margin_bottom = 4.0
 	menu.add_theme_stylebox_override("hover", hover)
 
+	# Explicit thin separators (consistent weight in every row; default theme varies by context).
+	var sep_proto := StyleBoxLine.new()
+	sep_proto.thickness = 1
+	sep_proto.color = Color(0.55, 0.55, 0.59, 0.5)
+	sep_proto.content_margin_left = 12.0
+	sep_proto.content_margin_right = 12.0
+	menu.add_theme_stylebox_override("separator", sep_proto.duplicate())
+	menu.add_theme_stylebox_override("labeled_separator_left", sep_proto.duplicate())
+	menu.add_theme_stylebox_override("labeled_separator_right", sep_proto.duplicate())
+
 	menu.add_theme_color_override("font_color", Color(0.118, 0.118, 0.18))
 	menu.add_theme_color_override("font_hover_color", Color(0.263, 0.38, 0.933))
 	menu.add_theme_color_override("font_disabled_color", Color(0.65, 0.65, 0.7))
@@ -346,7 +356,7 @@ func _make_selection_menu(clicked_vertex: Vertex, mouse_pos: Vector2) -> Array:
 	var algo_submenu := []
 	for entry in ALGORITHM_MENU_ITEMS:
 		var algo_name: String = entry["label"]
-		var algorithm: AlgorithmPlayer.ALGORITHMS = entry["id"]
+		var algorithm: AlgorithmPlayer.ALGORITHMS = entry["id"] as AlgorithmPlayer.ALGORITHMS
 		var cmd = null
 		if not selection_snapshot.is_empty():
 			cmd = func(): run_algorithm.emit(algorithm, clicked_vertex)
@@ -422,8 +432,7 @@ func _get_edges_within_selection(selection_vertices: Array[Vertex]) -> Array[Edg
 	return unique_edges
 
 func _grid_toggle_menu_label() -> String:
-	# Use popup shortcut column so the icon appears on the far right.
-	return "Toggle Grid\t✓" if _is_grid_enabled else "Toggle Grid"
+	return "Hide Grid" if _is_grid_enabled else "Show Grid"
 
 func _toggle_grid_from_menu() -> void:
 	_is_grid_enabled = not _is_grid_enabled

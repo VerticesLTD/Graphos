@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://cjtn7ni7fjvft" path="res://scenes/camera/camera.tscn" id="11_camera"]
 [ext_resource type="Script" uid="uid://brhvjsox00got" path="res://scenes/background/math_grid_background.gd" id="12_math_grid"]
 [ext_resource type="Script" path="res://graph_controller/ghost_edge_preview.gd" id="13_ghost_edge"]
+[ext_resource type="PackedScene" path="res://scenes/presets/preset_picker.tscn" id="14_preset_picker"]
 
 [node name="Main" type="Node2D" unique_id=446252932]
 script = ExtResource("1_yyfjg")
@@ -67,3 +68,5 @@ script = ExtResource("6_th5th")
 [node name="ToolBar" parent="CanvasLayer" unique_id=165261049 instance=ExtResource("7_7smn1")]
 
 [node name="PopupMenuLayer" parent="CanvasLayer" unique_id=665487505 instance=ExtResource("8_raeie")]
+
+[node name="PresetPickerRoot" parent="." instance=ExtResource("14_preset_picker")]

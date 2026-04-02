@@ -26,7 +26,7 @@ func _capture_incident_edges() -> void:
 ## Helper to create a snapshot command of an existing edge's data
 func _create_edge_cmd(e: Edge) -> AddEdgeCommand:
 	return AddEdgeCommand.new(
-		graph, e.src.id, e.dst.id, e.weight, e.strategy, e.is_weighted
+		graph, e.src.id, e.dst.id, e.weight, e.strategy, e.is_weighted, e.color
 	)
 
 func execute() -> void:

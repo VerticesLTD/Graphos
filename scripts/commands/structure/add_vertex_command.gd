@@ -4,15 +4,17 @@ extends Command
 
 var pos: Vector2
 var vertex: Vertex
+var vertex_color: Color = Globals.VERTEX_COLOR
 
-func _init(g: Graph, mouse_pos: Vector2):
+func _init(g: Graph, mouse_pos: Vector2, _vertex_color: Color = Globals.VERTEX_COLOR):
 	super(g)
 	pos = mouse_pos
+	vertex_color = _vertex_color
 
 func execute() -> void:
 	if vertex == null:
 		# First time execution: create the vertex
-		vertex = graph.add_vertex(pos)
+		vertex = graph.add_vertex(pos, vertex_color)
 	else:
 		# Redo: Re-add the exact same vertex object to the graph
 		graph.restore_vertex(vertex)
