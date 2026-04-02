@@ -425,19 +425,18 @@ func _graph_controller_for_this_graph() -> GraphController:
 			return child as GraphController
 	return null
 
-## EdgeView uses accurate curve/segment hit tests (Graph.get_edge_at is segment-based).
-## _input runs before controller._unhandled_input, so we only open the edge menu when
-## selection / vertex / empty-in-multi-selection would not take priority (see mouse_actions).
-func _rbm_should_defer_to_controller(mouse_world: Vector2) -> bool:
+## If we handled every LMB on the stroke, vertex clicks near endpoints would never reach the graph
+## (polyline hit is fat). Same defer rules as RMB: vertex wins, or multi-select box wins.
+func _should_defer_edge_click_to_controller(mouse_world: Vector2) -> bool:
 	var graph := get_parent() as Graph
 	if graph == null:
 		return false
 	if graph.get_vertex_id_at(mouse_world) != Globals.NOT_FOUND:
 		return true
-	var ctrl := _graph_controller_for_this_graph()
-	if ctrl == null:
+	var gctrl := _graph_controller_for_this_graph()
+	if gctrl == null:
 		return false
-	if ctrl.selection_buffer.size() > 1 and ctrl.selection_bounds.has_point(mouse_world):
+	if gctrl.selection_buffer.size() > 1 and gctrl.selection_bounds.has_point(mouse_world):
 		return true
 	return false
 
@@ -457,17 +456,16 @@ func _input(event: InputEvent) -> void:
 	if not _is_mouse_over_edge(mouse_world):
 		return
 
-	# Human note:
-	# EdgeView consumes left-click so create mode does not place a vertex on the edge stroke.
-	# For RMB, defer when controller priority is selection or vertex so mouse_actions can run.
 	if mouse_button_event.button_index == MOUSE_BUTTON_RIGHT:
-		if _rbm_should_defer_to_controller(mouse_world):
+		if _should_defer_edge_click_to_controller(mouse_world):
 			return
 		_open_edge_context_menu(mouse_button_event.position)
 		get_viewport().set_input_as_handled()
 		return
 
 	if mouse_button_event.button_index == MOUSE_BUTTON_LEFT:
+		if _should_defer_edge_click_to_controller(mouse_world):
+			return
 		get_viewport().set_input_as_handled()
 		if mouse_button_event.double_click and edge_data.is_weighted:
 			_start_inline_weight_edit()

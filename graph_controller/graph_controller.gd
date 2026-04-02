@@ -1,4 +1,4 @@
-## A class to control the graph, recieves inputs, and changes the graph. extends Node class_name GraphController
+## Controls the graph: input, selection, and Ctrl-connect session state. (GraphController)
 extends Node
 class_name GraphController
 
@@ -12,8 +12,12 @@ const VERTEX_BELOW = 1
 @onready var popup_menu: GraphContextMenuManager = $"../CanvasLayer/PopupMenuLayer"
 @onready var math_grid_background: MathGridBackground = $"../MathGridBackground"
 
-## The selection buffer to link multiple nodes with an edge
-var link_buffer: Array[int] = []
+## Ctrl-connect session: active endpoint for the *next* edge (not inferred from order tail).
+var link_head: int = Globals.NOT_FOUND
+## Distinct vertices touched this session (for coloring).
+var link_session: Dictionary = {}
+## Visit order for undo (may repeat vertex ids when revisiting).
+var link_order: Array[int] = []
 
 ## The rectangle which bounds the selection
 var selection_bounds: Rect2 = Rect2()
@@ -263,16 +267,21 @@ func handle_vertex_placement(pos: Vector2) -> void:
 	# Create and execute the command
 	CommandManager.execute(AddVertexCommand.new(graph, pos))
 
-## Clears the seletion buffer for linking nodes.
+## Clears Ctrl-connect path state and vertex chain colors.
 func clear_link_context(_event: InputEvent) -> void:
-	# 1. Clean the visual feedback
-	for id in link_buffer:
-		var v = graph.get_vertex(id)
+	for vid in link_session:
+		var v = graph.get_vertex(int(vid))
+		if v:
+			v.color = Globals.VERTEX_COLOR
+	link_session.clear()
+	link_order.clear()
+	link_head = Globals.NOT_FOUND
 
-		if v: v.color = Globals.VERTEX_COLOR
-	
-	# 2. Empty the logic container
-	link_buffer.clear()
+
+func sync_link_session_from_order() -> void:
+	link_session.clear()
+	for vid in link_order:
+		link_session[vid] = true
 
 ## Looks for nodes inside Globals.selection_rectangle and adds them
 ## to buffer.
@@ -329,20 +338,17 @@ func clear_selection_buffer() -> void:
 	animation_manager.update_current_selection(selection_buffer)
 	update_selection_bounds()
 
-## ONLY refreshes the link buffer colors. It doesn't touch the Array logic.
+## Refreshes chain / head colors from link_session + link_head.
 func refresh_link_buffer_colors() -> void:
-	if link_buffer.is_empty():
+	if link_session.is_empty():
 		return
-
-	# 1. Paint everything in the buffer as "Path" nodes
-	for id in link_buffer:
-		_set_vertex_color(id, Globals.VERTEX_COLOR_CHAIN)
-
-	# 2. Paint the very last one as the "Active Head"
-	_set_vertex_color(link_buffer.back(), Globals.VERTEX_COLOR_CHAIN_HEAD)
+	for vid in link_session:
+		_set_vertex_color(int(vid), Globals.VERTEX_COLOR_CHAIN)
+	if link_head != Globals.NOT_FOUND:
+		_set_vertex_color(link_head, Globals.VERTEX_COLOR_CHAIN_HEAD)
 	
 	
-## Sets a vertex color. id type isnt mantioned because we can get null.
+## Sets a vertex color. id may be untyped because callers can pass null.
 func _set_vertex_color(id, color: Color) -> void:
 	if id == null:
 		return

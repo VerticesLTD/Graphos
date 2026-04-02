@@ -37,27 +37,24 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 		return
 
-	# End connect-chain when any Ctrl/Meta key is released. The Input Map action "ctrl"
-	# often binds only one physical key, so the other Ctrl side never ran clear_link_context.
+	# Release Ctrl/Meta ends the connect session (backup: Input Map "ctrl" may only bind one physical key).
 	if event is InputEventKey and not event.pressed:
 		var pk: int = event.physical_keycode
 		# KEY_CTRL + typical Right-Control physical code (not always == KEY_CTRL across backends).
 		const _PHYS_CTRL_R := 4194328
 		if pk == KEY_CTRL or pk == KEY_META or pk == _PHYS_CTRL_R:
-			if not controller.link_buffer.is_empty():
+			if not controller.link_session.is_empty():
 				controller.clear_link_context(event)
 
 	# If the menu closed less than 200ms ago, ignore ALL clicks.
 	# This prevents "Accidental Vertices" (Left Click)
 	if controller.popup_menu and controller.popup_menu.MainMenu.visible:
-			# Still handle right-release cleanup while menu is open.
-			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and not event.pressed:
-				_handle_right_release(event)
-				return
-			# If it's a mouse click, we consume it so it doesn't create vertices or re-open menus
-			if event is InputEventMouseButton and event.pressed:
-				get_viewport().set_input_as_handled()
-			return		
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and not event.pressed:
+			_handle_right_release(event)
+			return
+		if event is InputEventMouseButton and event.pressed:
+			get_viewport().set_input_as_handled()
+		return
 
 	if event is InputEventMouseMotion:
 		_handle_mouse_movement(event)
@@ -92,30 +89,31 @@ func _handle_left_click(event: InputEventMouseButton):
 	_last_mouse_world_pos = mouse_global_pos
 	_has_last_mouse_world_pos = true
 
-	# Get the vertex in the position of the mouse(or not found)
 	var id = graph.get_vertex_id_at(mouse_global_pos)
-	# Prefer modifiers on this event (matches `left_click_ctrl`); also support Meta (Cmd on macOS).
-	var is_ctrl: bool = event.ctrl_pressed or event.meta_pressed
-	if not is_ctrl:
-		is_ctrl = Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
+	# Combine Input + event: modifier on the mouse event can lag or be missing on some OS/backends.
+	var is_ctrl: bool = (
+		Input.is_key_pressed(KEY_CTRL)
+		or Input.is_key_pressed(KEY_META)
+		or event.ctrl_pressed
+		or event.meta_pressed
+	)
 
-	# Normal (non-modifier) clicks are not part of the Ctrl path tool — drop stale chain state.
-	if not is_ctrl and not controller.link_buffer.is_empty():
-		controller.clear_link_context(event)
-
-	# Check if we select something now
+	# Multi-drag: only when not using Ctrl+connect (otherwise we never reach _handle_path_connection).
 	if selection_buffer.size() > 1:
 		if controller.selection_bounds.has_point(mouse_global_pos):
-			controller.start_dragging()
-			return 
-			
-			
+			if not (is_ctrl and Globals.current_state == Globals.State.CREATE):
+				controller.start_dragging()
+				return
+
 	# Clicked Vertex (not inside the rectangle)  
 	if id != Globals.NOT_FOUND:
 		var clicked_v: Vertex = graph.get_vertex(id)
 		if is_ctrl and Globals.current_state == Globals.State.CREATE:
 			_handle_path_connection(mouse_global_pos)
 		else:
+			# Leaving connect-by-Ctrl mode: normal select/drag — drop path state here only (not on every click).
+			if not controller.link_session.is_empty():
+				controller.clear_link_context(event)
 			if clicked_v:
 				controller.select_vertices([clicked_v])
 			controller.start_dragging(id)
@@ -134,20 +132,15 @@ func _handle_left_click(event: InputEventMouseButton):
 		elif selection_buffer.is_empty():
 			controller.handle_vertex_placement(mouse_global_pos) # Just create
 	
+	# Empty click without Ctrl ends the connect chain; Ctrl+empty is handled above.
+	if not is_ctrl and not controller.link_session.is_empty():
+		controller.clear_link_context(event)
 	# Clearing node selection on an empty click
 	controller.clear_selection_buffer()
 	
-func _handle_left_release(event: InputEventMouseButton):
-	# Only clear the connect-chain on mouse-up if the modifier is actually released *on this event*.
-	# Input.is_key_pressed(KEY_CTRL) can read false for a frame on mouse-up while Ctrl is still held,
-	# which cleared link_buffer between chained Ctrl+clicks (edge needed two attempts to appear).
-	var mod_still_held := false
-	if event is InputEventMouseButton:
-		mod_still_held = event.ctrl_pressed or event.meta_pressed
-	if not mod_still_held:
-		mod_still_held = Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META)
-	if not mod_still_held and not controller.link_buffer.is_empty():
-		controller.clear_link_context(event)
+func _handle_left_release(_event: InputEventMouseButton):
+	# Do not clear the Ctrl-connect chain here — was flaky between clicks.
+	# Path ends on Ctrl/Meta key release (_unhandled_input) or on non-ctrl click (above).
 	_cleanup_after_release()
 
 func _handle_right_release(_event: InputEventMouseButton):
@@ -180,42 +173,45 @@ func _cleanup_after_release() -> void:
 		controller.update_selection_bounds(1.0)
 
 
-## Handles connecting a few vertices in a row.
-## If user clicked on a vertex, it's ID is remembered.
-## When 2 different vertices have been clicked, add an edge between them.
+## Ctrl+click connect: next edge is always (link_head -> clicked vertex). Session/head live on GraphController.
 func _handle_path_connection(pos: Vector2) -> void:
 	var graph = controller.graph
-	var link_buffer = controller.link_buffer
+	var id := graph.get_vertex_id_at(pos)
+	var head: int = controller.link_head
 
-	var id = graph.get_vertex_id_at(pos)
-	var last_id = link_buffer.back() if not link_buffer.is_empty() else Globals.NOT_FOUND
-	
-	# 1. EMPTY SPACE: Create
 	if id == Globals.NOT_FOUND:
-		var step = PathStepCommand.new(graph, pos, last_id)
+		var step := PathStepCommand.new(graph, pos, head)
 		CommandManager.execute(step)
-		link_buffer.append(step.v_cmd.vertex.id)
+		var new_id: int = step.v_cmd.vertex.id
+		controller.link_order.append(new_id)
+		controller.sync_link_session_from_order()
+		controller.link_head = new_id
+		controller.refresh_link_buffer_colors()
+		return
 
-	# 2. CLICKED SAME VERTEX AS CHAIN HEAD
-	elif not link_buffer.is_empty() and link_buffer.back() == id:
-		# With a single vertex in the chain, repeat-click means "reset" — not undo (avoids blocking
-		# a fresh two-vertex connect after a failed clear_link_context).
-		if link_buffer.size() < 2:
+	if head != Globals.NOT_FOUND and id == head:
+		if controller.link_order.size() < 2:
 			controller.clear_link_context(null)
 			return
-		var v_to_undo = graph.get_vertex(id)
+		var v_to_undo := graph.get_vertex(id)
 		if v_to_undo:
-			var prev_id = link_buffer[link_buffer.size() - 2]
-			var macro = PathUndoCommand.new(graph, v_to_undo, prev_id)
-			CommandManager.execute(macro)
-			link_buffer.pop_back()
+			var prev_id: int = controller.link_order[controller.link_order.size() - 2]
+			CommandManager.execute(PathUndoCommand.new(graph, v_to_undo, prev_id))
+		controller.link_order.pop_back()
+		controller.link_head = (
+			controller.link_order.back()
+			if not controller.link_order.is_empty()
+			else Globals.NOT_FOUND
+		)
+		controller.sync_link_session_from_order()
+		controller.refresh_link_buffer_colors()
+		return
 
-	# 3. EXISTING VERTEX: connect
-	else:
-		if last_id != Globals.NOT_FOUND and controller.should_add_connection(last_id, id):
-			CommandManager.execute(AddEdgeCommand.new(graph, last_id, id))
-		link_buffer.append(id)
-	
+	controller.link_order.append(id)
+	if head != Globals.NOT_FOUND and head != id and controller.should_add_connection(head, id):
+		CommandManager.execute(AddEdgeCommand.new(graph, head, id))
+	controller.sync_link_session_from_order()
+	controller.link_head = id
 	controller.refresh_link_buffer_colors()
 
 func _handle_right_click(event: InputEventMouseButton):
@@ -255,8 +251,7 @@ func _handle_right_click(event: InputEventMouseButton):
 	## 4. Empty space
 	if popup_menu:
 		popup_menu.open_for_canvas(mouse_global_pos, mouse_screen_pos)
-	pass
-	
+
 ## Handle mouse movement
 func _handle_mouse_movement(_event: InputEventMouseMotion):
 	var mouse_world_pos := controller.graph.get_global_mouse_position()
