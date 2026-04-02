@@ -5,7 +5,7 @@
 [ext_resource type="StyleBox" uid="uid://bdiessvqitwl2" path="res://scenes/tool_bar/tool_bar_background.tres" id="2_u1pd4"]
 [ext_resource type="StyleBox" uid="uid://npixnrumei6q" path="res://scenes/tool_bar/button_normal.tres" id="3_lpcgc"]
 [ext_resource type="StyleBox" uid="uid://edc2pra87k3x" path="res://scenes/tool_bar/button_hover.tres" id="4_u1pd4"]
-[ext_resource type="Texture2D" uid="uid://c4kcswmb35gkq" path="res://assets/logo/SplashLogo.png" id="4_selection_logo"]
+[ext_resource type="Texture2D" uid="uid://v5eliv4lx04j" path="res://assets/icons/cursor-alt-svgrepo-com.svg" id="4_selection_icon"]
 [ext_resource type="Texture2D" uid="uid://cmgktymkkl21e" path="res://assets/icons/create_tool_icon.svg" id="5_2j54p"]
 [ext_resource type="Texture2D" path="res://assets/icons/hand_toolbar.svg" id="6_pan"]
 
@@ -83,7 +83,7 @@ offset_left = -28.0
 offset_right = 28.0
 offset_bottom = 40.0
 grow_horizontal = 2
-theme_override_constants/margin_top = 12
+theme_override_constants/margin_top = 40
 script = ExtResource("1_gdu6t")
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=1805701736]
@@ -122,7 +122,7 @@ theme_override_constants/margin_bottom = 5
 [node name="Icon" type="TextureRect" parent="PanelContainer/HBoxContainer/Selection/MarginContainer" unique_id=1192355074]
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("4_selection_logo")
+texture = ExtResource("4_selection_icon")
 expand_mode = 1
 stretch_mode = 5
 

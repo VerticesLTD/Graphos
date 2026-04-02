@@ -1,6 +1,73 @@
 [gd_scene format=3 uid="uid://bq1um7bo8tkkx"]
 
-[ext_resource type="Script" uid="uid://bjn4s6kpo5ubr" path="res://boot.gd" id="1_6cbyf"]
+[ext_resource type="Script" uid="uid://bjn4s6kpo5ubr" path="res://boot.gd" id="1_boot"]
+[ext_resource type="Texture2D" uid="uid://c4kcswmb35gkq" path="res://assets/logo/SplashLogo.png" id="2_logo"]
 
-[node name="Boot" type="Node" unique_id=1925332711]
-script = ExtResource("1_6cbyf")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_bg"]
+bg_color = Color(0.88, 0.89, 0.93, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_fill"]
+bg_color = Color(0.263, 0.38, 0.933, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="Boot" type="Control" unique_id=1925332711]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_boot")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1925332712]
+
+[node name="Background" type="ColorRect" parent="CanvasLayer" unique_id=1925332713]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer" unique_id=1925332714]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/CenterContainer" unique_id=1925332715]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="Logo" type="TextureRect" parent="CanvasLayer/CenterContainer/VBoxContainer" unique_id=1925332716]
+custom_minimum_size = Vector2(320, 160)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+mouse_filter = 2
+texture = ExtResource("2_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ProgressBar" type="ProgressBar" parent="CanvasLayer/CenterContainer/VBoxContainer" unique_id=1925332717]
+custom_minimum_size = Vector2(320, 16)
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_styles/background = SubResource("StyleBoxFlat_prog_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_prog_fill")
+max_value = 100.0
+value = 0.0
+show_percentage = false
