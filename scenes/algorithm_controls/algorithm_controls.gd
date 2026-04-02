@@ -38,7 +38,9 @@ func _ready() -> void:
 
 
 func _resolve_progress_fill() -> ProgressBar:
-	var progress_node := get_node_or_null("Panel/VBox/ProgressFill") as ProgressBar
+	var progress_node := get_node_or_null("Panel/VBox/ProgressTrack/ProgressFill") as ProgressBar
+	if progress_node == null:
+		progress_node = get_node_or_null("Panel/VBox/ProgressFill") as ProgressBar
 	if progress_node == null:
 		progress_node = get_node_or_null("Panel/UIOverlay/ProgressFill") as ProgressBar
 	return progress_node

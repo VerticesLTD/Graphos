@@ -47,9 +47,25 @@ func run(_start_vertex: Vertex) -> Array:
 			continue
 
 		settled[u.id] = true
-		mst_weight += u.key
 		change_and_log_vertex_color(u, COLOR_FINISHED, 3)
 		current_v_processed += 1
+		data_updates.append({
+			&"vertices_processed": current_v_processed,
+			&"mst_weight": mst_weight,
+		})
+
+		# Step 4: add (p[u], u) to MST (weight is d[u]; root has p[u]==null and d[u]==0).
+		mst_weight += u.key
+		if u.parent != null:
+			var mst_edge: Edge = imposter_graph.get_edge(u.parent, u)
+			if mst_edge == null:
+				mst_edge = imposter_graph.get_edge(u, u.parent)
+			if mst_edge:
+				change_and_log_edge_color(mst_edge, COLOR_EDGE_PATH, 4)
+			else:
+				log_pseudo_step(4, true)
+		else:
+			log_pseudo_step(4, true)
 		data_updates.append({
 			&"vertices_processed": current_v_processed,
 			&"mst_weight": mst_weight,

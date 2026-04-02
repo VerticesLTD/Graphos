@@ -83,16 +83,20 @@ corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_bg"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
 bg_color = Color(0.263, 0.38, 0.933, 0.12)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prog_fill"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
 bg_color = Color(0.263, 0.38, 0.933, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
@@ -138,7 +142,6 @@ theme_override_constants/margin_right = 6
 layout_mode = 2
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
 theme_override_font_sizes/font_size = 13
-text = ""
 
 [node name="BackBtn" type="TextureButton" parent="Panel/VBox/RowMargin/Row/CenterGroup" unique_id=554299384]
 modulate = Color(0.25, 0.25, 0.28, 1)
@@ -224,10 +227,21 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_speed_normal")
 theme_override_styles/focus = SubResource("StyleBoxFlat_speed_hover")
 text = "1x"
 
-[node name="ProgressFill" type="ProgressBar" parent="Panel/VBox" unique_id=1420688072]
+[node name="ProgressTrack" type="Control" parent="Panel/VBox" unique_id=1420688071]
+clip_contents = true
 custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="ProgressFill" type="ProgressBar" parent="Panel/VBox/ProgressTrack" unique_id=1420688072]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -10.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_prog_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_prog_fill")
