@@ -3,8 +3,8 @@ class_name UIEdgeView
 
 var weight_gap: float = 30.0
 const MOUSE_DETECT_SENSITIVITY = 9.0
-const MIN_INLINE_WEIGHT_DISTANCE := 120.0
-const DETACHED_WEIGHT_OFFSET := 24.0
+const BASE_WEIGHT_FONT_SIZE := 22
+const MIN_WEIGHT_FONT_SIZE := 14
 var edge_data: Edge 
 
 @onready var mouse_detection_area: Area2D = $MouseDetectionArea
@@ -208,44 +208,50 @@ func _setup_lines_and_weight() -> void:
 		line_1.end_cap_mode = Line2D.LINE_CAP_ROUND # Round end for undirected
 		line_2.end_cap_mode = Line2D.LINE_CAP_ROUND
 	
-	# 2. The "True Mid" for the Label (Center-to-Center)
-	# Using dst_pos here ensures the label stays in the mathematical middle
+	# 2. Label anchor:
+	# For directed edges, center on the visible segment (after arrow room).
+	# This keeps the weight away from the arrowhead on short edges.
 	var true_mid = src_pos.lerp(dst_pos, 0.5).round()
-	var offset = direction * (weight_gap / 2.0)
+	if edge_data.strategy is DirectedStrategy:
+		var visual_start = (src_pos + (direction * Globals.VERTEX_RADIUS)).round()
+		true_mid = visual_start.lerp(visual_dst, 0.5).round()
 	var actual_dist = src_pos.distance_to(dst_pos)
+	_update_weight_label_metrics(actual_dist)
+	var offset = direction * (weight_gap / 2.0)
 
 	line_1.clear_points()
 	line_2.clear_points()
 
 	# 3. Draw logic
-	if edge_data.is_weighted and _should_use_detached_weight_label(actual_dist):
-		_draw_simple_edge(src_pos, visual_dst)
-		_place_detached_weight_label(true_mid, direction)
-	elif edge_data.is_weighted and actual_dist > (weight_gap * 2.2):
+	if edge_data.is_weighted and _can_draw_inline_weight(actual_dist):
 		_draw_weighted_edge(src_pos, visual_dst, true_mid, offset)
 	else:
 		_draw_simple_edge(src_pos, visual_dst)
 	
 	_update_arrowhead(src_pos, dst_pos, line_1.width)
 
-func _should_use_detached_weight_label(actual_dist: float) -> bool:
-	return edge_data.is_weighted and actual_dist < MIN_INLINE_WEIGHT_DISTANCE
+func _update_weight_label_metrics(actual_dist: float) -> void:
+	var adaptive_font_size = _get_adaptive_weight_font_size(actual_dist)
+	weight_label.add_theme_font_size_override("font_size", adaptive_font_size)
+	var base_gap = 43.0 if weight_label.text.length() >= 3 else 30.0
+	weight_gap = base_gap * (float(adaptive_font_size) / float(BASE_WEIGHT_FONT_SIZE))
 
-func _place_detached_weight_label(mid: Vector2, direction: Vector2) -> void:
-	weight_label.visible = true
-	var normal = Vector2(-direction.y, direction.x)
-	# Keep the detached label on the visually "upper" side for consistency.
-	if normal.y > 0.0:
-		normal = -normal
-	weight_label.rotation = 0.0
-	weight_label.position = (mid + (normal * DETACHED_WEIGHT_OFFSET) - (weight_label.size / 2.0)).round()
+func _get_adaptive_weight_font_size(actual_dist: float) -> int:
+	var t = inverse_lerp(70.0, 150.0, actual_dist)
+	return int(round(lerp(float(MIN_WEIGHT_FONT_SIZE), float(BASE_WEIGHT_FONT_SIZE), clamp(t, 0.0, 1.0))))
+
+func _can_draw_inline_weight(actual_dist: float) -> bool:
+	var min_required = max(38.0, weight_gap * 1.35)
+	if edge_data.strategy is DirectedStrategy:
+		min_required += 10.0
+	return actual_dist >= min_required
 
 ## Helper: Line segments stop at visual_dst, but gap is centered at true_mid
 func _draw_weighted_edge(start: Vector2, end: Vector2, mid: Vector2, offset: Vector2) -> void:
 	weight_label.visible = true
-	# Force the label to the mathematical midpoint
+	# Force the label to the chosen midpoint anchor.
 	weight_label.position = (mid - (weight_label.size / 2.0)).round()
-	_update_weight_label_transform() # Handles rotation
+	_update_weight_label_transform(mid) # Handles rotation
 	
 	line_1.add_point(start)
 	line_1.add_point((mid - offset).round())
@@ -259,10 +265,9 @@ func _draw_simple_edge(start: Vector2, end: Vector2) -> void:
 	line_1.add_point(end)
 		
 ## Centers and rotates the weight label within the line gap.
-func _update_weight_label_transform() -> void:
+func _update_weight_label_transform(mid_point: Vector2) -> void:
 	var pos1 = edge_data.src.pos.round()
 	var pos2 = edge_data.dst.pos.round()
-	var mid_point = ((pos1 + pos2) / 2.0).round()
 	var direction = pos2-pos1
 	var angle = direction.angle()
 
