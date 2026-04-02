@@ -1,4 +1,5 @@
 ## Prim's minimum spanning tree algorithm (start vertex s).
+## Negative edge weights are allowed; the MST minimizes total weight.
 class_name Prim
 extends GraphAlgorithm
 
@@ -6,7 +7,6 @@ func get_requirements() -> Dictionary:
 	return {
 		"weighted": true,
 		"directed": false,
-		"no_negative_weights": true,
 	}
 
 func requires_vertex_keys_display() -> bool:
@@ -14,6 +14,7 @@ func requires_vertex_keys_display() -> bool:
 
 func run(_start_vertex: Vertex) -> Array:
 	var current_v_processed := 0
+	var mst_weight := 0.0
 	var data_updates: Array = []
 
 	verify_initialization()
@@ -27,10 +28,11 @@ func run(_start_vertex: Vertex) -> Array:
 		&"E": imposter_graph.num_edges,
 		&"V": imposter_graph.num_vertices,
 		&"vertices_processed": current_v_processed,
+		&"mst_weight": mst_weight,
 	})
 
 	change_and_log_vertex_key(_start_vertex, 0.0, 2)
-	data_updates.append(null)
+	data_updates.append({&"mst_weight": mst_weight})
 
 	var frontier: Array[Vertex] = []
 	var in_frontier := {}
@@ -45,9 +47,13 @@ func run(_start_vertex: Vertex) -> Array:
 			continue
 
 		settled[u.id] = true
+		mst_weight += u.key
 		change_and_log_vertex_color(u, COLOR_FINISHED, 3)
 		current_v_processed += 1
-		data_updates.append({&"vertices_processed": current_v_processed})
+		data_updates.append({
+			&"vertices_processed": current_v_processed,
+			&"mst_weight": mst_weight,
+		})
 
 		for edge in u.get_outgoing_edges():
 			var v: Vertex = edge.get_other_vertex(u)
@@ -58,10 +64,10 @@ func run(_start_vertex: Vertex) -> Array:
 			var w: float = float(edge.weight)
 			if w < v.key:
 				change_and_log_edge_color(edge, COLOR_EDGE_PATH, 5)
-				data_updates.append(null)
+				data_updates.append({&"mst_weight": mst_weight})
 
 				change_and_log_vertex_key(v, w, 6)
-				data_updates.append(null)
+				data_updates.append({&"mst_weight": mst_weight})
 
 				v.parent = u
 				_upsert_frontier(frontier, in_frontier, v)

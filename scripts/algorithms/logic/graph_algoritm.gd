@@ -44,7 +44,8 @@ func _reset_alg_variables() -> void:
 ## Supported keys:
 ##   "directed"            : bool — true = must be directed, false = must be undirected
 ##   "weighted"            : bool — true = must be weighted,  false = must be unweighted
-##   "no_negative_weights" : bool — true = no edge may have a negative weight
+##   "no_negative_weights" : bool — true = no edge may have a negative weight (use for algorithms
+##                            where negatives break correctness, e.g. Dijkstra; not needed for Prim/MST)
 ##   "warn_if_weighted"    : bool — if true, show an info notification when the graph is weighted (e.g. BFS/DFS ignore weights)
 ## Omitting a key means the algorithm has no requirement for that property.
 func get_requirements() -> Dictionary:

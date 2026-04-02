@@ -35,6 +35,9 @@ var timeline: Array[Command] = []
 ## Array stored from algorithm execution. Contains updates for the controls panel data section.
 var data_updates: Array
 
+## Which algorithm is running (used for optional per-algorithm HUD, e.g. Prim MST weight).
+var _running_algorithm: ALGORITHMS = ALGORITHMS.BFS
+
 # This is the pointer tracking our current point in the execution
 var current_step_index: int = 0
 # Used to calculate progress of algorithm
@@ -100,6 +103,18 @@ func start_algorithm(
 	if not algorithm_instance.check_requirements(imposter_graph):
 		return
 
+	if not imposter_graph.is_weakly_connected():
+		if algorithm_type == ALGORITHMS.PRIM:
+			Notify.show_notification(
+				"Graph is not fully connected.\n"
+				+ "Prim will only span the reachable component starting from the selected vertex."
+			)
+		else:
+			Notify.show_notification(
+				"Graph is not fully connected.\n"
+				+ "The algorithm will only run on the reachable component starting from the selected vertex."
+			)
+
 	algorithm_instance.set_alg_variables(imposter_graph,graph)
 	_set_vertex_key_visuals(
 		algorithm_instance.requires_vertex_keys_display(),
@@ -120,6 +135,9 @@ func start_algorithm(
 	data_updates = algorithm_result.get(2)
 	assert(timeline != null and pseudo_steps != null and data_updates != null)
 
+	current_step_index = 0
+	_running_algorithm = algorithm_type
+
 	# Setting visualizer
 	pseudo_visualizer.data = pseudo_resource
 	if pseudo_resource and pseudo_resource.steps.size() > 1:
@@ -130,6 +148,7 @@ func start_algorithm(
 
 	algorithm_controls.set_step_info(0, max_step)
 	_update_progress_bar()
+	_sync_optional_step_data()
 	_expose_controls()
 
 	global_position = starting_node.pos
@@ -231,7 +250,9 @@ func step_forward(update_progress_bar = true) -> void:
 	# Move pointer forward
 	current_step_index += 1
 
-	if update_progress_bar: _update_progress_bar()
+	if update_progress_bar:
+		_update_progress_bar()
+	_sync_optional_step_data()
 
 ## Move to previous timeline and/or pseudo step
 func step_backward(update_progress_bar = true) -> void:
@@ -264,7 +285,9 @@ func step_backward(update_progress_bar = true) -> void:
 		GLogger.debug("Pseudo step rendered",LOG_TAG)
 		pseudo_visualizer.render_step(current_pseudo_step)
 
-	if update_progress_bar: _update_progress_bar()
+	if update_progress_bar:
+		_update_progress_bar()
+	_sync_optional_step_data()
 
 ## Go to a specific step
 func go_to_step(target_index: int, update_progress_bar = true) -> void:
@@ -272,6 +295,7 @@ func go_to_step(target_index: int, update_progress_bar = true) -> void:
 		current_step_index = 0
 		if update_progress_bar:
 			_update_progress_bar()
+		_sync_optional_step_data()
 		return
 
 	target_index = clampi(target_index, 0, timeline.size())
@@ -284,6 +308,8 @@ func go_to_step(target_index: int, update_progress_bar = true) -> void:
 	while current_step_index > target_index:
 		step_backward(update_progress_bar)
 
+	_sync_optional_step_data()
+
 func _update_progress_bar() -> void:
 	var current := float(current_step_index)
 	var maximum := maxf(float(max_step), 1.0)
@@ -295,6 +321,7 @@ func _update_progress_bar() -> void:
 func reset_to_start() -> void:
 	if timeline.is_empty() or pseudo_steps.is_empty():
 		current_step_index = 0
+		_sync_optional_step_data()
 		return
 	go_to_step(0)
 
@@ -314,6 +341,32 @@ func cancel_algorithm_execution() -> void:
 
 	_is_algorithm_running = false
 	_set_vertex_key_visuals(false, [])
+
+func _sync_optional_step_data() -> void:
+	if algorithm_controls == null:
+		return
+	if _running_algorithm != ALGORITHMS.PRIM:
+		algorithm_controls.set_optional_step_data("")
+		return
+	if current_step_index <= 0:
+		algorithm_controls.set_optional_step_data("MST weight: 0")
+		return
+	var idx := current_step_index - 1
+	if idx < 0 or idx >= data_updates.size():
+		algorithm_controls.set_optional_step_data("")
+		return
+	var du = data_updates[idx]
+	var mst_w := 0.0
+	if du is Dictionary:
+		mst_w = float(du.get(&"mst_weight", 0.0))
+	algorithm_controls.set_optional_step_data("MST weight: %s" % _format_mst_weight_display(mst_w))
+
+
+func _format_mst_weight_display(w: float) -> String:
+	if is_equal_approx(w, roundf(w)):
+		return str(int(roundf(w)))
+	return str(snappedf(w, 0.01))
+
 
 func _set_vertex_key_visuals(show_keys: bool, vertices: Array[Vertex]) -> void:
 	var id_set := {}

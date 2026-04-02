@@ -415,7 +415,42 @@ func get_graph_weight_state() -> Variant:
 			return null # MIXED
 			
 	return "weighted" if first_is_weighted else "unweighted"
-		
+
+
+## Returns true if the graph is one weakly connected component (for undirected graphs, usual connectivity).
+## Traverses outgoing and incoming edges so directed graphs are checked correctly.
+func is_weakly_connected() -> bool:
+	var n: int = vertices.size()
+	if n <= 1:
+		return true
+	var start: Vertex = null
+	for v: Vertex in vertices.values():
+		start = v
+		break
+	if start == null:
+		return true
+	var visited: Dictionary = {}
+	var queue: Array[Vertex] = [start]
+	visited[start.id] = true
+	var qi := 0
+	while qi < queue.size():
+		var u: Vertex = queue[qi]
+		qi += 1
+		var e: Edge = u.edges
+		while e:
+			var v: Vertex = e.dst
+			if vertices.has(v.id) and not visited.has(v.id):
+				visited[v.id] = true
+				queue.append(v)
+			e = e.next
+		for inc: Edge in get_incoming_edges(u):
+			var w: Vertex = inc.src
+			if vertices.has(w.id) and not visited.has(w.id):
+				visited[w.id] = true
+				queue.append(w)
+	return visited.size() == n
+
+
 ## Helper: Returns a flat array containing every unique edge object in the graph.
 func _get_unique_edges() -> Array[Edge]:
 	var list: Array[Edge] = []

@@ -17,6 +17,8 @@ var _playing := false
 var _auto_play_timer: Timer
 var _speed_index: int = 1  # Default ×1.0
 
+@onready var optional_data_slot: MarginContainer = $Panel/VBox/RowMargin/Row/CenterGroup/OptionalDataSlot
+@onready var optional_data_label: Label = $Panel/VBox/RowMargin/Row/CenterGroup/OptionalDataSlot/OptionalDataLabel
 @onready var play_btn: TextureButton = $Panel/VBox/RowMargin/Row/CenterGroup/PlayBtn
 @onready var pause_btn: TextureButton = $Panel/VBox/RowMargin/Row/CenterGroup/PauseBtn
 @onready var speed_btn: Button = $Panel/VBox/RowMargin/Row/SpeedWrap/SpeedBtn
@@ -36,10 +38,9 @@ func _ready() -> void:
 
 
 func _resolve_progress_fill() -> ProgressBar:
-	var progress_node := get_node_or_null("Panel/UIOverlay/ProgressFill") as ProgressBar
+	var progress_node := get_node_or_null("Panel/VBox/ProgressFill") as ProgressBar
 	if progress_node == null:
-		# Backward compatibility with older scene layout.
-		progress_node = get_node_or_null("Panel/VBox/ProgressFill") as ProgressBar
+		progress_node = get_node_or_null("Panel/UIOverlay/ProgressFill") as ProgressBar
 	return progress_node
 
 
@@ -122,9 +123,22 @@ func set_step_info(_current: int, _max_steps: int) -> void:
 	pass
 
 
+## Optional stats to the left of the step-back control (e.g. Prim). Empty hides the slot.
+func set_optional_step_data(text: String) -> void:
+	if optional_data_slot == null or optional_data_label == null:
+		return
+	if text.is_empty():
+		optional_data_slot.visible = false
+		optional_data_label.text = ""
+		return
+	optional_data_label.text = text
+	optional_data_slot.visible = true
+
+
 ## Reset all display state (called when algorithm is cancelled).
 func reset() -> void:
 	set_auto_playing(false)
+	set_optional_step_data("")
 	progress_fill.value = 0
 	_speed_index = 1
 	_apply_speed()
