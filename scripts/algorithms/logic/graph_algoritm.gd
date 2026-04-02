@@ -51,7 +51,7 @@ func get_requirements() -> Dictionary:
 	return {}
 
 ## Whether this algorithm should render per-vertex key badges.
-## Override in algorithms such as Dijkstra/Prim that rely on keys.
+## Override in algorithms such as Dijkstra or Prim that rely on keys.
 func requires_vertex_keys_display() -> bool:
 	return false
 

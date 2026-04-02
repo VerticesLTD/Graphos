@@ -8,6 +8,7 @@ var vertex_data: Vertex
 
 @onready var label: Label = $Label
 @onready var key_badge: Node2D = $KeyBadge
+@onready var key_bubble_ring: Polygon2D = $KeyBadge/BubbleRing
 @onready var key_bubble: Polygon2D = $KeyBadge/Bubble
 @onready var key_label: Label = $KeyBadge/KeyLabel
 @onready var collision_circle: CollisionShape2D = $MouseDetectionArea/CollisionShape2D
@@ -18,6 +19,8 @@ var draw_radius_hovered = Globals.VERTEX_RADIUS
 var draw_color_hovered = Globals.VERTEX_COLOR
 const VERTEX_POLYGON_POINTS := 96
 const KEY_BADGE_RADIUS := 10.0
+## Extra radius for the ring behind the fill (reads on white backgrounds).
+const KEY_BADGE_RING_WIDTH := 1.75
 
 # Animations
 var is_hovered: bool = false
@@ -85,6 +88,8 @@ func _update_key_badge() -> void:
 		return
 
 	key_badge.visible = true
+	var ring_r: float = KEY_BADGE_RADIUS + KEY_BADGE_RING_WIDTH
+	key_bubble_ring.polygon = _build_circle_polygon(ring_r, 56)
 	key_bubble.polygon = _build_circle_polygon(KEY_BADGE_RADIUS, 56)
 	key_label.text = _format_key(vertex_data.key)
 

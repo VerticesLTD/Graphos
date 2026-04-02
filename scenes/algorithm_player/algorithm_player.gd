@@ -4,6 +4,8 @@ extends Node2D
 const LOG_TAG = "ALG_PLAYER"
 const PSEUDO_MARGIN := 24.0
 
+const _PrimScript := preload("res://scripts/algorithms/logic/Prim.gd")
+
 @onready var algorithm_controls: AlgorithmControls = $UILayer/AlgorithmControls
 @onready var pseudo_visualizer: PanelContainer = $UILayer/PseudoVisualizer
 var pseudo_steps: Array
@@ -11,7 +13,8 @@ var pseudo_steps: Array
 enum ALGORITHMS {
 	BFS,
 	DFS,
-	DIJKSTRA
+	DIJKSTRA,
+	PRIM,
 }
 
 # Animations
@@ -22,7 +25,8 @@ var controls_tween: Tween
 var _algorithm_map: Dictionary = {
 	ALGORITHMS.BFS : [BFS.new(),preload("uid://b6pr3p6u5gqym")],
 	ALGORITHMS.DFS : [DFS.new(), preload("uid://chwkrpy8dpkfk")],
-	ALGORITHMS.DIJKSTRA : [Dijkstra.new(), preload("res://scripts/algorithms/pseudo_code/Dijkstra.tres")]
+	ALGORITHMS.DIJKSTRA : [Dijkstra.new(), preload("res://scripts/algorithms/pseudo_code/Dijkstra.tres")],
+	ALGORITHMS.PRIM : [_PrimScript.new(), preload("res://scripts/algorithms/pseudo_code/Prim.tres")],
 }
 
 ## Stores the events by order of the algorithm's execution.

@@ -1,39 +1,34 @@
-## Class to run Dijkstra's shortest path algorithm and log it.
-class_name Dijkstra
+## Prim's minimum spanning tree algorithm (start vertex s).
+class_name Prim
 extends GraphAlgorithm
 
 func get_requirements() -> Dictionary:
 	return {
 		"weighted": true,
-		"no_negative_weights": true
+		"directed": false,
+		"no_negative_weights": true,
 	}
 
 func requires_vertex_keys_display() -> bool:
 	return true
 
-## run function for the algorithm
-## @param _start_vertex The vertex the algorithm starts from
 func run(_start_vertex: Vertex) -> Array:
 	var current_v_processed := 0
-	var data_updates := []
+	var data_updates: Array = []
 
 	verify_initialization()
 	assert(_start_vertex.is_imposter, "Algorithm instructed to run on a REAL graph (not imposter)")
 
-	# Step 1: initialize all vertices as undiscovered.
 	log_initialize_vertices(COLOR_NOT_DISCOVERED, 1)
-	data_updates.append({
-		&"E": imposter_graph.num_edges,
-		&"V": imposter_graph.num_vertices,
-		&"vertices_processed": current_v_processed
-	})
-
-	# Keep key/parent initialization explicit for correctness and readability.
 	for v: Vertex in imposter_graph.vertices.values():
 		v.key = Globals.INF
 		v.parent = null
+	data_updates.append({
+		&"E": imposter_graph.num_edges,
+		&"V": imposter_graph.num_vertices,
+		&"vertices_processed": current_v_processed,
+	})
 
-	# Source starts with dist/key=0 and enters the frontier.
 	change_and_log_vertex_key(_start_vertex, 0.0, 2)
 	data_updates.append(null)
 
@@ -56,15 +51,16 @@ func run(_start_vertex: Vertex) -> Array:
 
 		for edge in u.get_outgoing_edges():
 			var v: Vertex = edge.get_other_vertex(u)
+			# State before relax: skip vertices already in the MST (check finished first).
 			if settled.has(v.id):
 				continue
 
-			var new_dist: float = u.key + float(edge.weight)
-			if new_dist < v.key:
+			var w: float = float(edge.weight)
+			if w < v.key:
 				change_and_log_edge_color(edge, COLOR_EDGE_PATH, 5)
 				data_updates.append(null)
 
-				change_and_log_vertex_key(v, new_dist, 6)
+				change_and_log_vertex_key(v, w, 6)
 				data_updates.append(null)
 
 				v.parent = u
@@ -72,12 +68,13 @@ func run(_start_vertex: Vertex) -> Array:
 
 	assert(
 		timeline.size() == pseudo_steps.size() and pseudo_steps.size() == data_updates.size(),
-		"Dijkstra mismatch: timeline=%d pseudo=%d data=%d" % [timeline.size(), pseudo_steps.size(), data_updates.size()]
+		"Prim mismatch: timeline=%d pseudo=%d data=%d" % [timeline.size(), pseudo_steps.size(), data_updates.size()]
 	)
 
 	var result = [timeline.duplicate(), pseudo_steps.duplicate(), data_updates.duplicate(true)]
 	_reset_alg_variables()
 	return result
+
 
 func _upsert_frontier(vertices: Array[Vertex], in_frontier: Dictionary, v: Vertex) -> void:
 	if in_frontier.has(v.id):

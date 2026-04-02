@@ -21,7 +21,7 @@ func run(_start_vertex: Vertex) -> Array:
 	})
 
 	# Mark start as discovered and push it.
-	change_and_log_vertex_color(_start_vertex, COLOR_VISITING, 4)
+	change_and_log_vertex_color(_start_vertex, COLOR_VISITING, 2)
 	data_updates.append(null)
 
 	var stack = []
@@ -34,13 +34,16 @@ func run(_start_vertex: Vertex) -> Array:
 			var v = edge.get_other_vertex(u)
 
 			if v.color == COLOR_NOT_DISCOVERED:
-				discover_vertex_via_edge_and_log(edge, v, COLOR_EDGE_PATH, COLOR_VISITING, 10)
+				change_and_log_edge_color(edge, COLOR_EDGE_PATH, 5)
 				data_updates.append(null)
 
 				v.parent = u
+				change_and_log_vertex_color(v, COLOR_VISITING, 6)
+				data_updates.append(null)
+
 				stack.push_back(v)
 
-		change_and_log_vertex_color(u, COLOR_FINISHED, 11)
+		change_and_log_vertex_color(u, COLOR_FINISHED, 3)
 		current_v_processed += 1
 		data_updates.append({&"vertices_processed": current_v_processed})
 
