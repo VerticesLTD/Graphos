@@ -15,12 +15,12 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="Graphos"
-config/icon="res://assets/logo/SplashLogo.png"
-run/main_scene="uid://yxcr5kwlindq"
+run/main_scene="uid://bq1um7bo8tkkx"
 config/features=PackedStringArray("4.6", "GL Compatibility")
-boot_splash/show_image=false
+boot_splash/bg_color=Color(1, 1, 1, 1)
 boot_splash/stretch_mode=0
 boot_splash/image="uid://c4kcswmb35gkq"
+config/icon="res://assets/logo/SplashLogo.png"
 
 [autoload]
 
