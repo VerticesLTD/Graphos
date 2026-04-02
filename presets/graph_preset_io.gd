@@ -1,4 +1,4 @@
-## Loads and saves graph presets as JSON (template graphs: imposter data only).
+## Loads and saves graph presets as JSON (detached graph data for insert/paste).
 ##
 ## Root object:
 ##   format_version: int (currently 1)
@@ -17,7 +17,7 @@ class_name GraphPresetIO
 const FORMAT_VERSION := 1
 
 
-static func load_template_from_file(path: String) -> Graph:
+static func load_preset_from_file(path: String) -> Graph:
 	var text := FileAccess.get_file_as_string(path)
 	if text.is_empty():
 		push_error("GraphPresetIO: empty or missing file: %s" % path)

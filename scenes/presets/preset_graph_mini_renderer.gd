@@ -15,7 +15,7 @@ func set_graph_from_json_path(json_path: String) -> void:
 	if _graph:
 		_graph.queue_free()
 		_graph = null
-	_graph = GraphPresetIO.load_template_from_file(json_path)
+	_graph = GraphPresetIO.load_preset_from_file(json_path)
 	queue_redraw()
 
 

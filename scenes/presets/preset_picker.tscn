@@ -24,13 +24,13 @@ size_flags_horizontal = 8
 size_flags_vertical = 0
 theme_override_styles/panel = ExtResource("2_bar")
 
-[node name="TemplatesButton" type="Button" parent="Margin/TriggerPanel"]
+[node name="PresetsButton" type="Button" parent="Margin/TriggerPanel"]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-text = "Templates"
+text = "Presets"
 
-[node name="ChooserPopup" type="Popup" parent="."]
+[node name="PresetsPopup" type="Popup" parent="."]
 transparent = false
 borderless = true
 popup_window = true
@@ -38,7 +38,7 @@ unresizable = true
 visible = false
 min_size = Vector2i(328, 380)
 
-[node name="PanelRoot" type="PanelContainer" parent="ChooserPopup"]
+[node name="PanelRoot" type="PanelContainer" parent="PresetsPopup"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -46,21 +46,21 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = ExtResource("2_bar")
 
-[node name="Margin" type="MarginContainer" parent="ChooserPopup/PanelRoot"]
+[node name="Margin" type="MarginContainer" parent="PresetsPopup/PanelRoot"]
 layout_mode = 2
 theme_override_constants/margin_left = 6
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 6
 theme_override_constants/margin_bottom = 6
 
-[node name="Scroll" type="ScrollContainer" parent="ChooserPopup/PanelRoot/Margin"]
+[node name="Scroll" type="ScrollContainer" parent="PresetsPopup/PanelRoot/Margin"]
 layout_mode = 2
 size_flags_vertical = 3
 custom_minimum_size = Vector2(0, 332)
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 2
 
-[node name="Grid" type="GridContainer" parent="ChooserPopup/PanelRoot/Margin/Scroll"]
+[node name="Grid" type="GridContainer" parent="PresetsPopup/PanelRoot/Margin/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 6

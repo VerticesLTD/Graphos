@@ -1,8 +1,8 @@
-## Floating Templates control (top-right): compact panel matching main toolbar chrome.
+## Floating Presets control (top-right): compact panel matching main toolbar chrome.
 extends CanvasLayer
 
 const FALLBACK_TILE_ICON: Texture2D = preload("res://assets/icons/create_tool_icon.svg")
-const TRIGGER_TOOLBAR_ICON: Texture2D = preload("res://assets/icons/templates_toolbar.svg")
+const TRIGGER_TOOLBAR_ICON: Texture2D = preload("res://assets/icons/presets_toolbar.svg")
 const LIVE_THUMB_SCENE: PackedScene = preload("res://scenes/presets/preset_live_thumbnail.tscn")
 
 const STYLE_BTN_NORMAL = preload("res://scenes/tool_bar/button_normal.tres")
@@ -14,8 +14,8 @@ const POPUP_HEIGHT := 380
 
 @export var graph_controller_path: NodePath = ^"../GraphController"
 
-@onready var _trigger: Button = $Margin/TriggerPanel/TemplatesButton
-@onready var _popup: Popup = $ChooserPopup
+@onready var _trigger: Button = $Margin/TriggerPanel/PresetsButton
+@onready var _popup: Popup = $PresetsPopup
 
 var _graph_controller: GraphController
 
@@ -46,7 +46,7 @@ func _style_trigger_button() -> void:
 
 	_trigger.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_trigger.icon = TRIGGER_TOOLBAR_ICON
-	_trigger.text = "Templates"
+	_trigger.text = "Presets"
 	_trigger.custom_minimum_size = Vector2(104, 52)
 	_trigger.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_trigger.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -74,7 +74,7 @@ func _style_trigger_button() -> void:
 
 
 func _build_grid() -> void:
-	var grid: GridContainer = $ChooserPopup/PanelRoot/Margin/Scroll/Grid
+	var grid: GridContainer = $PresetsPopup/PanelRoot/Margin/Scroll/Grid
 	for c in grid.get_children():
 		c.queue_free()
 	for entry in GraphPresetCatalog.built_in_entries():

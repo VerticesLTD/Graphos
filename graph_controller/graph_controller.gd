@@ -389,7 +389,7 @@ func close_active_editor() -> void:
 		Globals.active_weight_editor = null
 		
 ## ------------------------------------------------------------------------------
-## PRESETS (JSON templates; insert via PasteCommand for undo/redo)
+## PRESETS (JSON; insert via PasteCommand for undo/redo)
 ## ------------------------------------------------------------------------------
 
 func get_viewport_center_world_pos() -> Vector2:
@@ -405,24 +405,24 @@ func get_viewport_center_world_pos() -> Vector2:
 
 
 func insert_preset_from_json_path(json_path: String) -> void:
-	var tpl: Graph = GraphPresetIO.load_template_from_file(json_path)
-	if tpl == null:
-		Notify.show_error("Could not load graph template.")
+	var preset_graph: Graph = GraphPresetIO.load_preset_from_file(json_path)
+	if preset_graph == null:
+		Notify.show_error("Could not load graph preset.")
 		return
-	var need: int = tpl.vertices.size()
+	var need: int = preset_graph.vertices.size()
 	if need == 0:
-		tpl.queue_free()
+		preset_graph.queue_free()
 		return
 	var room: int = Globals.MAX_VERTICES - graph.num_vertices
 	if need > room:
 		Notify.show_error(
-			"Insert failed: only %d vertex slots left, but this template needs %d."
+			"Insert failed: only %d vertex slots left, but this preset needs %d."
 			% [room, need]
 		)
-		tpl.queue_free()
+		preset_graph.queue_free()
 		return
 	var anchor := get_viewport_center_world_pos()
-	var cmd := PasteCommand.new(graph, tpl, anchor, self)
+	var cmd := PasteCommand.new(graph, preset_graph, anchor, self)
 	CommandManager.execute(cmd)
 
 
