@@ -136,7 +136,8 @@ func _build_popup() -> void:
 	_url_field.editable = false
 	_url_field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_url_field.add_theme_font_size_override("font_size", 11)
-	_url_field.add_theme_color_override("font_color", DARK)
+	_url_field.add_theme_color_override("font_color",          DARK)
+	_url_field.add_theme_color_override("font_readonly_color", DARK)
 	_url_field.add_theme_color_override("font_placeholder_color", MUTED)
 	var field_bg := StyleBoxFlat.new()
 	field_bg.bg_color = Color(0.94, 0.94, 0.96)
