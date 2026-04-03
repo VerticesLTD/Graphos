@@ -35,7 +35,6 @@ func _ready() -> void:
 
 
 func _style_top_right_bar() -> void:
-	# --- Share button: outlined style — primary accent without visual dominance ---
 	_share_btn.text = "Share"
 	_share_btn.icon = null
 	_share_btn.custom_minimum_size = Vector2(76, 36)
@@ -74,7 +73,6 @@ func _style_top_right_bar() -> void:
 	_share_btn.add_theme_color_override("font_focus_color",   SHARE_BLUE)
 	_share_btn.tooltip_text = "Share your graph\nGenerate a link anyone can open and explore"
 
-	# --- Presets button: white panel style matching the app chrome ---
 	_presets_btn.text = "Presets"
 	_presets_btn.icon = null
 	_presets_btn.custom_minimum_size = Vector2(84, 36)

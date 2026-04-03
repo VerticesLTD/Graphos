@@ -31,8 +31,8 @@ var _current_url: String = ""
 
 func _ready() -> void:
 	_build_popup()
-	# Pre-warm: force layout to be calculated before first user click,
-	# so the popup opens at the correct size immediately.
+	# Force layout calculation off-screen before the first user click,
+	# so the popup always opens at the correct size on the very first show.
 	call_deferred("_prewarm_popup")
 
 
@@ -44,10 +44,6 @@ func _prewarm_popup() -> void:
 	await get_tree().process_frame
 	_popup.hide()
 
-
-# ---------------------------------------------------------------------------
-# Public API — called by PresetPicker's Share button
-# ---------------------------------------------------------------------------
 
 func toggle_popup(trigger_rect: Rect2) -> void:
 	if _popup.visible:
@@ -82,10 +78,6 @@ func toggle_popup(trigger_rect: Rect2) -> void:
 	_popup.popup()
 
 
-# ---------------------------------------------------------------------------
-# Popup construction
-# ---------------------------------------------------------------------------
-
 func _build_popup() -> void:
 	var panel := PanelContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -113,7 +105,6 @@ func _build_popup() -> void:
 	vbox.add_theme_constant_override("separation", 10)
 	margin.add_child(vbox)
 
-	# — Header ----------------------------------------------------------------
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 7)
 	vbox.add_child(header)
@@ -133,12 +124,10 @@ func _build_popup() -> void:
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 
-	# — Separator -------------------------------------------------------------
 	var hsep := HSeparator.new()
 	hsep.add_theme_color_override("color", Color(0.878, 0.878, 0.878))
 	vbox.add_child(hsep)
 
-	# — URL row ---------------------------------------------------------------
 	var url_row := HBoxContainer.new()
 	url_row.add_theme_constant_override("separation", 6)
 	vbox.add_child(url_row)
@@ -166,7 +155,6 @@ func _build_popup() -> void:
 	_copy_btn.pressed.connect(_on_copy_pressed)
 	url_row.add_child(_copy_btn)
 
-	# — Copy-reset timer ------------------------------------------------------
 	_copy_timer = Timer.new()
 	_copy_timer.wait_time = COPY_RESET_SECS
 	_copy_timer.one_shot = true
@@ -204,10 +192,6 @@ func _make_accent_button(label: String, color: Color, hover_color: Color) -> But
 	btn.add_theme_color_override("font_focus_color",   Color.WHITE)
 	return btn
 
-
-# ---------------------------------------------------------------------------
-# Copy behaviour
-# ---------------------------------------------------------------------------
 
 func _on_url_field_input(ev: InputEvent) -> void:
 	if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:

@@ -29,10 +29,6 @@ func _ready() -> void:
 	_register_hashchange_listener()
 
 
-# ---------------------------------------------------------------------------
-# Startup URL loading
-# ---------------------------------------------------------------------------
-
 func _try_load_from_url() -> void:
 	var fragment: String = str(JavaScriptBridge.eval("window.location.hash"))
 	if fragment.is_empty() or not ShareEncoder.is_share_fragment(fragment):
@@ -50,7 +46,7 @@ func _try_load_from_url() -> void:
 	_persistence_manager.apply_document(result)
 	loaded_from_url = true
 
-	# Clear hash so reloads / bookmarks don't re-apply the same graph.
+	# Clear the hash so reloads/bookmarks don't re-apply the same graph.
 	JavaScriptBridge.eval(
 		"history.replaceState(null,'',window.location.pathname+window.location.search)"
 	)
@@ -75,10 +71,6 @@ func _on_hashchange(_args: Array) -> void:
 		"history.replaceState(null,'',window.location.pathname+window.location.search)"
 	)
 
-
-# ---------------------------------------------------------------------------
-# URL generation & clipboard copy (called by SharePanel)
-# ---------------------------------------------------------------------------
 
 ## Generate the full shareable URL for the current graph state.
 ## Returns "" on desktop or on error.
