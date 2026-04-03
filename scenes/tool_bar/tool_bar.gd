@@ -12,10 +12,14 @@ func _ready() -> void:
 	# Sync the UI to whatever the Globals are on startup
 	directed_btn.button_pressed = Globals.active_strategy is DirectedStrategy
 	weighted_btn.button_pressed = Globals.is_weighted_mode
-	
+
 	# Connect the signals via code
 	directed_btn.toggled.connect(_on_directed_toggled)
 	weighted_btn.toggled.connect(_on_weighted_toggled)
+
+	# Stay in sync when Globals change externally (e.g. document load).
+	Globals.strategy_changed.connect(_sync_directed_btn)
+	Globals.weighted_mode_changed.connect(_sync_weighted_btn)
 	
 # --- 2. KEYBOARD SHORTCUTS ---
 func _input(event: InputEvent) -> void:
@@ -38,6 +42,18 @@ func _on_directed_toggled(is_on: bool) -> void:
 
 func _on_weighted_toggled(is_on: bool) -> void:
 	Globals.is_weighted_mode = is_on
+
+# --- 4. EXTERNAL SYNC (called when Globals change programmatically) ---
+## Block button signals while syncing to prevent re-entrant toggle loops.
+func _sync_directed_btn() -> void:
+	directed_btn.set_block_signals(true)
+	directed_btn.button_pressed = Globals.active_strategy is DirectedStrategy
+	directed_btn.set_block_signals(false)
+
+func _sync_weighted_btn() -> void:
+	weighted_btn.set_block_signals(true)
+	weighted_btn.button_pressed = Globals.is_weighted_mode
+	weighted_btn.set_block_signals(false)
 	
 func _on_selection_pressed() -> void:
 	Globals.current_state = Globals.State.SELECTION

@@ -566,6 +566,12 @@ func _toggle_grid_from_menu() -> void:
 	toggle_grid_requested.emit(_is_grid_enabled)
 
 
+## Sync internal grid state without emitting toggle_grid_requested.
+## Called by PersistenceManager when restoring a saved document.
+func sync_grid_state(enabled: bool) -> void:
+	_is_grid_enabled = enabled
+
+
 func find_vertex_view(node: Node) -> UIVertexView:
 	var current = node
 	while current:
