@@ -16,9 +16,9 @@ vertical = true
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_toggle_normal"]
 content_margin_left = 8.0
-content_margin_top = 2.0
+content_margin_top = 1.0
 content_margin_right = 8.0
-content_margin_bottom = 2.0
+content_margin_bottom = 1.0
 bg_color = Color(1, 1, 1, 0.6)
 border_width_left = 1
 border_width_top = 1
@@ -32,9 +32,9 @@ corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_toggle_pressed"]
 content_margin_left = 8.0
-content_margin_top = 2.0
+content_margin_top = 1.0
 content_margin_right = 8.0
-content_margin_bottom = 2.0
+content_margin_bottom = 1.0
 bg_color = Color(0.863, 0.898, 0.98, 1)
 border_width_left = 1
 border_width_top = 1
@@ -48,9 +48,9 @@ corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_toggle_hover"]
 content_margin_left = 8.0
-content_margin_top = 2.0
+content_margin_top = 1.0
 content_margin_right = 8.0
-content_margin_bottom = 2.0
+content_margin_bottom = 1.0
 bg_color = Color(0.906, 0.922, 0.988, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
@@ -59,9 +59,9 @@ corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_toggle_hover_pressed"]
 content_margin_left = 8.0
-content_margin_top = 2.0
+content_margin_top = 1.0
 content_margin_right = 8.0
-content_margin_bottom = 2.0
+content_margin_bottom = 1.0
 bg_color = Color(0.83, 0.882, 0.98, 1)
 border_width_left = 1
 border_width_top = 1
@@ -99,6 +99,7 @@ script = ExtResource("1_uiivm")
 texture_filter = 4
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+size_flags_vertical = 4
 focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
@@ -130,6 +131,7 @@ stretch_mode = 5
 texture_filter = 4
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+size_flags_vertical = 4
 focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
@@ -195,6 +197,8 @@ theme_override_styles/separator = SubResource("StyleBoxLine_lpcgc")
 
 [node name="Modifiers" type="VBoxContainer" parent="PanelContainer/HBoxContainer" unique_id=900645983]
 layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 2
 
 [node name="DirectedBtn" type="Button" parent="PanelContainer/HBoxContainer/Modifiers" unique_id=1608271324]
 layout_mode = 2
@@ -202,7 +206,7 @@ theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
 theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_colors/font_hover_pressed_color = Color(0.263, 0.38, 0.933, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_toggle_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_toggle_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_toggle_hover")
@@ -218,7 +222,7 @@ theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
 theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_colors/font_hover_pressed_color = Color(0.263, 0.38, 0.933, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_toggle_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_toggle_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_toggle_hover")
