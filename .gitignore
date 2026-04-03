@@ -4,3 +4,7 @@
 .vscode/
 .secrets
 export/**
+
+# Local editor / AI assistant metadata (not project source)
+.cursor/
+.claude/
