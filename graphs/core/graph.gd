@@ -10,7 +10,6 @@ const VERTEX_VIEW_SCENE = preload("uid://cxt6f2vgtos0c")
 var vertices: Dictionary = {} # int -> Vertex
 var free_ids: Array[int] = []
 var _next_vertex_id: int = 0
-var _next_vertex_warning_at: int = Globals.VERTEX_WARNING_START
 
 # Spatial index for fast point->vertex lookups (used heavily during mouse interactions).
 const _VERTEX_GRID_CELL_SIZE := 64.0
@@ -48,7 +47,6 @@ func get_next_available_id() -> int:
 func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR) -> Vertex:
 	var v = Vertex.new(get_next_available_id(), color, Globals.INF, Globals.INF, pos)		
 	_register_and_visualize(v)
-	_maybe_warn_for_large_vertex_count()
 	
 	return v
 
@@ -198,19 +196,16 @@ func get_edge_at(mouse_pos: Vector2, threshold: float = 12.0) -> Edge:
 	for v: Vertex in vertices.values():
 		var e: Edge = v.edges
 		while e:
-			var a: Vector2 = e.src.pos
-			var b: Vector2 = e.dst.pos
-			
-			var closest: Vector2 = Geometry2D.get_closest_point_to_segment(mouse_pos, a, b)
-			var d2: float = (mouse_pos - closest).length_squared()
-
-			# Strictly less than (<). If we check the reverse edge later and it's 
-			# the exact same distance, it just ignores it.
-			if d2 < best_d2: 
-				best_d2 = d2
-				best = e
-
-			e = e.next
+				var a: Vector2 = e.src.pos
+				var b: Vector2 = e.dst.pos
+				var closest: Vector2 = Geometry2D.get_closest_point_to_segment(mouse_pos, a, b)
+				var d2: float = (mouse_pos - closest).length_squared()
+				# Strictly less than (<). If we check the reverse edge later and it's
+				# the exact same distance, it just ignores it.
+				if d2 < best_d2:
+					best_d2 = d2
+					best = e
+				e = e.next
 
 	return best
 	
@@ -542,7 +537,6 @@ func clear() -> void:
 	_incoming_by_vertex_id.clear()
 	_edge_by_key.clear()
 	_next_vertex_id = 0
-	_next_vertex_warning_at = Globals.VERTEX_WARNING_START
 	free_ids.clear()
 	num_edges = 0
 
@@ -648,13 +642,3 @@ func _cell_key(cx: int, cy: int) -> String:
 
 func _edge_key(src_id: int, dst_id: int) -> String:
 	return "%d:%d" % [src_id, dst_id]
-
-func _maybe_warn_for_large_vertex_count() -> void:
-	var count := num_vertices
-	if count < _next_vertex_warning_at:
-		return
-	Notify.show_notification(
-		"Large graph (%d vertices). Performance may degrade when zoomed out." % count
-	)
-	while count >= _next_vertex_warning_at:
-		_next_vertex_warning_at += Globals.VERTEX_WARNING_STEP

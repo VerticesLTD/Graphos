@@ -27,7 +27,7 @@ func _ready() -> void:
 	_print_timing("is_weakly_connected()", func(): g.is_weakly_connected())
 	_print_timing("get_vertex_id_at() × 100k", func(): _bench_vertex_pick_queries(g, 100_000))
 	_print_timing("get_vertex_id_at_linear() × 100k", func(): _bench_vertex_pick_queries_linear(g, 100_000))
-	_print_timing("get_edge_at() × 50k", func(): _bench_get_edge_at_queries(g, 50_000))
+	_print_timing("get_edge_at() × 2k", func(): _bench_get_edge_at_queries(g, 2_000))
 	_print_timing("get_edge forward+reverse × E", func(): _bench_get_edge_pairs(g))
 	_print_timing("_walk_unique_edges (canonical keys)", func(): _walk_unique_edges_canonical_keys(g))
 	_print_timing("Dijkstra-style _pop_min × V", func(): _bench_linear_pop_min(n_dense))

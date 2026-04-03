@@ -103,9 +103,6 @@ const NOT_FOUND = -1
 # ------------
 # Capacity and Limits
 # ------------
-## Soft warning milestones (no hard cap): 1000, 2000, 3000, ...
-const VERTEX_WARNING_START: int = 1000
-const VERTEX_WARNING_STEP: int = 1000
 const INF: float = 1e18
 # ------------
 # EDGE LINE EDIT
