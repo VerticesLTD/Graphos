@@ -386,23 +386,23 @@ func _get_handle_at(world_pos: Vector2) -> ResizeHandle:
 
 	var gz := controller.get_resize_grab_zone()
 	var tl := bounds.position
-	var tr := Vector2(bounds.end.x, bounds.position.y)
+	var _tr := Vector2(bounds.end.x, bounds.position.y)
 	var bl := Vector2(bounds.position.x, bounds.end.y)
 	var br := bounds.end
 
 	# Corners take priority — check them before edges.
 	if abs(world_pos.x - tl.x) <= gz and abs(world_pos.y - tl.y) <= gz: return ResizeHandle.TOP_LEFT
-	if abs(world_pos.x - tr.x) <= gz and abs(world_pos.y - tr.y) <= gz: return ResizeHandle.TOP_RIGHT
+	if abs(world_pos.x - _tr.x) <= gz and abs(world_pos.y - _tr.y) <= gz: return ResizeHandle.TOP_RIGHT
 	if abs(world_pos.x - bl.x) <= gz and abs(world_pos.y - bl.y) <= gz: return ResizeHandle.BOTTOM_LEFT
 	if abs(world_pos.x - br.x) <= gz and abs(world_pos.y - br.y) <= gz: return ResizeHandle.BOTTOM_RIGHT
 
 	# Edges: within gz perpendicular to the line, anywhere along its length.
-	var in_x := world_pos.x >= tl.x - gz and world_pos.x <= tr.x + gz
+	var in_x := world_pos.x >= tl.x - gz and world_pos.x <= _tr.x + gz
 	var in_y := world_pos.y >= tl.y - gz and world_pos.y <= bl.y + gz
 	if abs(world_pos.y - tl.y) <= gz and in_x: return ResizeHandle.TOP
 	if abs(world_pos.y - bl.y) <= gz and in_x: return ResizeHandle.BOTTOM
 	if abs(world_pos.x - tl.x) <= gz and in_y: return ResizeHandle.LEFT
-	if abs(world_pos.x - tr.x) <= gz and in_y: return ResizeHandle.RIGHT
+	if abs(world_pos.x - _tr.x) <= gz and in_y: return ResizeHandle.RIGHT
 
 	return ResizeHandle.NONE
 

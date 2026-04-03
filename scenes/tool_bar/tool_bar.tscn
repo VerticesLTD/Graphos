@@ -10,9 +10,32 @@
 [ext_resource type="Texture2D" path="res://assets/icons/hand_toolbar.svg" id="6_pan"]
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_lpcgc"]
-color = Color(0.5058824, 0.5058824, 0.5058824, 0.5411765)
-thickness = 2
+color = Color(0.72, 0.72, 0.76, 0.85)
+grow_begin = -4.0
+grow_end = -4.0
+thickness = 1
 vertical = true
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_toolbar_panel"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.878, 0.878, 0.878, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 7.0
+expand_margin_top = 7.0
+expand_margin_right = 7.0
+expand_margin_bottom = 7.0
+shadow_color = Color(0, 0, 0, 0.10)
+shadow_size = 6
+shadow_offset = Vector2(0, 2)
+content_margin_left = 5.0
+content_margin_right = 5.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_toggle_normal"]
 content_margin_left = 8.0
@@ -88,7 +111,7 @@ script = ExtResource("1_gdu6t")
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=1805701736]
 layout_mode = 2
-theme_override_styles/panel = ExtResource("2_u1pd4")
+theme_override_styles/panel = SubResource("StyleBoxFlat_toolbar_panel")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer" unique_id=2079157308]
 layout_mode = 2
@@ -101,6 +124,8 @@ custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
+tooltip_text = "Select
+Click or drag to select and move vertices"
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -133,6 +158,8 @@ custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
+tooltip_text = "Draw
+Click to place vertices · drag between them to connect"
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -166,6 +193,8 @@ custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
+tooltip_text = "Pan
+Drag to move around the canvas"
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -203,6 +232,8 @@ theme_override_constants/separation = 2
 
 [node name="DirectedBtn" type="Button" parent="PanelContainer/HBoxContainer/Modifiers" unique_id=1608271324]
 layout_mode = 2
+tooltip_text = "Directed edges
+Arrows show the direction of each connection"
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
 theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
@@ -219,6 +250,8 @@ text = "Directed"
 
 [node name="WeightedBtn" type="Button" parent="PanelContainer/HBoxContainer/Modifiers" unique_id=1787136133]
 layout_mode = 2
+tooltip_text = "Weighted edges
+Assign numeric values to connections"
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
 theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)

@@ -1,14 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://ccka0nd856cca"]
 
-[ext_resource type="Script" path="res://scenes/sharing/share_panel.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cfsqin614jde0" path="res://scenes/sharing/share_panel.gd" id="1_script"]
 
-[node name="SharePanel" type="CanvasLayer"]
+[node name="SharePanel" type="CanvasLayer" unique_id=1567134206]
 layer = 2
 script = ExtResource("1_script")
 
-[node name="SharePopup" type="Popup" parent="."]
-transparent = false
-borderless = true
-popup_window = true
-unresizable = true
-visible = false
+[node name="SharePopup" type="Popup" parent="." unique_id=547913023]

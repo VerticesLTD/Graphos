@@ -72,6 +72,7 @@ func _style_top_right_bar() -> void:
 	_share_btn.add_theme_color_override("font_hover_color",   SHARE_BLUE)
 	_share_btn.add_theme_color_override("font_pressed_color", Color(0.25, 0.36, 0.78))
 	_share_btn.add_theme_color_override("font_focus_color",   SHARE_BLUE)
+	_share_btn.tooltip_text = "Share your graph\nGenerate a link anyone can open and explore"
 
 	# --- Presets button: white panel style matching the app chrome ---
 	_presets_btn.text = "Presets"
@@ -110,6 +111,7 @@ func _style_top_right_bar() -> void:
 	_presets_btn.add_theme_color_override("font_hover_color",   ACCENT)
 	_presets_btn.add_theme_color_override("font_pressed_color", ACCENT)
 	_presets_btn.add_theme_color_override("font_focus_color",   DARK)
+	_presets_btn.tooltip_text = "Load a preset\nExplore classic structures: cycles, trees, complete graphs & more"
 
 
 func _build_grid() -> void:
