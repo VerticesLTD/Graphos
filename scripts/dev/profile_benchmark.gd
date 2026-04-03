@@ -25,6 +25,9 @@ func _ready() -> void:
 	_print_timing("get_graph_dominant_strategy()", func(): g.get_graph_dominant_strategy())
 	_print_timing("get_graph_weight_state()", func(): g.get_graph_weight_state())
 	_print_timing("is_weakly_connected()", func(): g.is_weakly_connected())
+	_print_timing("get_vertex_id_at() × 100k", func(): _bench_vertex_pick_queries(g, 100_000))
+	_print_timing("get_vertex_id_at_linear() × 100k", func(): _bench_vertex_pick_queries_linear(g, 100_000))
+	_print_timing("get_edge_at() × 50k", func(): _bench_get_edge_at_queries(g, 50_000))
 	_print_timing("get_edge forward+reverse × E", func(): _bench_get_edge_pairs(g))
 	_print_timing("_walk_unique_edges (canonical keys)", func(): _walk_unique_edges_canonical_keys(g))
 	_print_timing("Dijkstra-style _pop_min × V", func(): _bench_linear_pop_min(n_dense))
@@ -56,8 +59,11 @@ func _print_timing(label: String, callable: Callable) -> void:
 
 func _build_dense_directed_no_ui(g: Graph, n: int) -> void:
 	var strat := DirectedStrategy.new()
-	for _i in n:
-		g.add_vertex(Vector2.ZERO)
+	var cols := maxi(1, int(ceil(sqrt(float(n)))))
+	for i in n:
+		var x := float(i % cols) * 80.0
+		var y := (float(i) / float(cols)) * 80.0
+		g.add_vertex(Vector2(x, y))
 	for i in n:
 		for j in n:
 			if i == j:
@@ -80,6 +86,32 @@ func _bench_get_edge_pairs(g: Graph) -> void:
 	for e in edges:
 		var _f: Edge = g.get_edge(e.src, e.dst)
 		var _r: Edge = g.get_edge(e.dst, e.src)
+
+func _bench_vertex_pick_queries(g: Graph, query_count: int) -> void:
+	for i in query_count:
+		# Deterministic mix of hits and misses.
+		var p := Vector2(float(i % 100), float((i * 37) % 100))
+		var _id := g.get_vertex_id_at(p)
+
+func _bench_vertex_pick_queries_linear(g: Graph, query_count: int) -> void:
+	var radius_sq := Globals.VERTEX_RADIUS * Globals.VERTEX_RADIUS
+	for i in query_count:
+		var p := Vector2(float(i % 100), float((i * 37) % 100))
+		var found := Globals.NOT_FOUND
+		for v: Vertex in g.vertices.values():
+			if (v.pos - p).length_squared() <= radius_sq:
+				found = v.id
+				break
+		var _id := found
+
+func _bench_get_edge_at_queries(g: Graph, query_count: int) -> void:
+	var cols := maxi(1, int(ceil(sqrt(float(g.num_vertices)))))
+	for i in query_count:
+		# Sweep points over the same world range used by _build_dense_directed_no_ui.
+		var x := float(i % (cols * 80))
+		var y := float((i * 37) % (cols * 80))
+		var p := Vector2(x, y)
+		var _edge := g.get_edge_at(p, 12.0)
 
 
 ## Mirrors `Graph._get_unique_edges` traversal cost (O(E) with dict), not the old `Array.has` path.

@@ -7,6 +7,11 @@ signal state_changed
 @warning_ignore("UNUSED_SIGNAL")
 signal vanished(v: Vertex)
 
+## Dedicated movement signal so Graph can update spatial indexes without
+## rescanning every vertex each query.
+@warning_ignore("unused_signal")
+signal position_changed(v: Vertex, old_pos: Vector2, new_pos: Vector2)
+
 ## This lets algorithms say vertex.animation_requested.emit("hover_start")
 @warning_ignore("unused_signal")
 signal animation_requested(anim_name: String)
@@ -63,7 +68,10 @@ var key: float = Globals.INF:
 var pos: Vector2 = Vector2.ZERO:
 	set(value):
 		if pos == value: return
+		var old_pos := pos
 		pos = value
+		if not is_imposter:
+			position_changed.emit(self, old_pos, value)
 		_notify_change()
 		
 var parent: Vertex = null:

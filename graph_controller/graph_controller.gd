@@ -418,14 +418,6 @@ func insert_preset_from_json_path(json_path: String) -> void:
 	if need == 0:
 		preset_graph.queue_free()
 		return
-	var room: int = Globals.MAX_VERTICES - graph.num_vertices
-	if need > room:
-		Notify.show_error(
-			"Insert failed: only %d vertex slots left, but this preset needs %d."
-			% [room, need]
-		)
-		preset_graph.queue_free()
-		return
 	var anchor := get_viewport_center_world_pos()
 	var cmd := PasteCommand.new(graph, preset_graph, anchor, self)
 	CommandManager.execute(cmd)

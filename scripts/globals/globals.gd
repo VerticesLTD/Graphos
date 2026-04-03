@@ -36,6 +36,7 @@ var algorithm_key_vertex_ids: Dictionary = {}:
 	set(value):
 		algorithm_key_vertex_ids = value
 		algorithm_key_visuals_changed.emit()
+
 # ------------
 # Tool Modifiers (For CREATE state)
 # ------------
@@ -102,7 +103,9 @@ const NOT_FOUND = -1
 # ------------
 # Capacity and Limits
 # ------------
-const MAX_VERTICES: int = 500
+## Soft warning milestones (no hard cap): 1000, 2000, 3000, ...
+const VERTEX_WARNING_START: int = 1000
+const VERTEX_WARNING_STEP: int = 1000
 const INF: float = 1e18
 # ------------
 # EDGE LINE EDIT

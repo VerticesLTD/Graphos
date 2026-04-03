@@ -6,6 +6,8 @@ class_name DirectedStrategy extends ConnectionStrategy
 func add_edge(graph: Graph, src: Vertex, dst: Vertex, weight: float, is_weighted: bool, shout: bool) -> void:
 	# Create the logical link (pass 'self' for the strategy)
 	var edge = src.connect_to(dst, is_weighted, weight, self) 
+	if edge:
+		graph._on_edge_added(edge)
 
 	# If UI updates are allowed, draw the line on the screen
 	if shout and edge:
@@ -18,6 +20,7 @@ func delete_edge(graph: Graph, src_node: Vertex, dst_node: Vertex) -> void:
 	var edge: Edge = src_node.disconnect_from(dst_node)
 	
 	if edge: 
+		graph._on_edge_removed(edge)
 		edge.vanished.emit(src_node) # Tell the UI to self-destruct
 		graph.num_edges -= 1
 

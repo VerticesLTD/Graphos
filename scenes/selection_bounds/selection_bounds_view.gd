@@ -14,8 +14,9 @@ func _draw() -> void:
 	var color = Globals.SELECTION_BORDER_COLOR
 	var zoom_factor = _get_camera_zoom_factor()
 	var ui_scale = 1.0 / zoom_factor
+	# Keep dashed border readable at any zoom (constant-ish screen thickness).
 	var dash_gap = 6.0 * ui_scale
-	var line_width = 1.5 * ui_scale
+	var line_width = clampf(1.5 * ui_scale, 0.8, 3.5)
 	
 	# Corners
 	var tl = rect.position
@@ -29,15 +30,23 @@ func _draw() -> void:
 	draw_dashed_line(br, bl, color, line_width, dash_gap)
 	draw_dashed_line(bl, tl, color, line_width, dash_gap)
 	
-	# Draw Excalidraw-style Handles
+	# Corner handles: "constant screen px" would be `8 * ui_scale`, but when zoomed out
+	# vertices shrink on screen while 8px handles stay fat — they dwarf the nodes.
+	# Cap world size so handles stay roughly comparable to vertex silhouette.
+	var handle_size := _handle_world_size(ui_scale)
 	for pos in [tl, _tr, bl, br]:
-		_draw_handle(pos, ui_scale)
+		_draw_handle(pos, handle_size, ui_scale)
 
-func _draw_handle(pos: Vector2, ui_scale: float) -> void:
-	var size = 8.0 * ui_scale
+func _handle_world_size(ui_scale: float) -> float:
+	var target_screen_px := 8.0
+	var uncapped := target_screen_px * ui_scale
+	var max_world := Globals.VERTEX_RADIUS * 0.85
+	return clampf(minf(uncapped, max_world), 1.2, max_world)
+
+func _draw_handle(pos: Vector2, size: float, outline_scale: float) -> void:
 	var handle_rect = Rect2(pos - Vector2(size/2, size/2), Vector2(size, size))
 	draw_rect(handle_rect, Color.WHITE, true) # Fill
-	draw_rect(handle_rect, Globals.SELECTION_BORDER_COLOR, false, ui_scale) # Outline
+	draw_rect(handle_rect, Globals.SELECTION_BORDER_COLOR, false, clampf(outline_scale, 0.5, 2.0))
 
 func _get_camera_zoom_factor() -> float:
 	var camera := get_viewport().get_camera_2d()

@@ -7,6 +7,10 @@ func add_edge(_graph: Graph, src: Vertex, dst: Vertex, weight: float, is_weighte
 	# Create the links (pass and 'self' for the strategy)
 	var edge_a = src.connect_to(dst, is_weighted, weight, self) 
 	var edge_b = dst.connect_to(src, is_weighted, weight, self) 
+	if edge_a:
+		_graph._on_edge_added(edge_a)
+	if edge_b:
+		_graph._on_edge_added(edge_b)
 
 	# If UI updates are allowed, draw the line for ONLY one of them
 	if shout and edge_a and edge_b:
@@ -18,6 +22,10 @@ func delete_edge(_graph: Graph, src_node: Vertex, dst_node: Vertex) -> void:
 	# Disconnect both ways
 	var edge_a: Edge = src_node.disconnect_from(dst_node)
 	var edge_b: Edge = dst_node.disconnect_from(src_node)
+	if edge_a:
+		_graph._on_edge_removed(edge_a)
+	if edge_b:
+		_graph._on_edge_removed(edge_b)
 
 	# Tell the UI to self-destruct
 	# Whichever one has the 'UIEdgeView' listening will trigger the queue_free().

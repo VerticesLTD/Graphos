@@ -9,7 +9,18 @@ const VERTEX_VIEW_SCENE = preload("uid://cxt6f2vgtos0c")
 
 var vertices: Dictionary = {} # int -> Vertex
 var free_ids: Array[int] = []
+var _next_vertex_id: int = 0
+var _next_vertex_warning_at: int = Globals.VERTEX_WARNING_START
 
+# Spatial index for fast point->vertex lookups (used heavily during mouse interactions).
+const _VERTEX_GRID_CELL_SIZE := 64.0
+var _vertex_grid: Dictionary = {}       # "cx:cy" -> Array[int] vertex ids
+var _vertex_cell_by_id: Dictionary = {} # int -> "cx:cy"
+
+# Incoming adjacency cache: dst_id -> Array[Edge]
+var _incoming_by_vertex_id: Dictionary = {}
+# Direct edge index for O(1) get_edge / has_edge lookups: "src:dst" -> Edge
+var _edge_by_key: Dictionary = {}
 
 var num_edges: int = 0
 var num_vertices: int:
@@ -22,31 +33,32 @@ func is_directed() -> bool:
 
 
 func _ready() -> void:
-	## Initialize the ID pool.
-	for i in range(Globals.MAX_VERTICES):
-		free_ids.append(i)
+	pass
 
 # Pops the lowest available ID from the pool
 func get_next_available_id() -> int:
-	if free_ids.is_empty():
-		return Globals.NOT_FOUND
-	# Since we populate 0 to MAX, the front is always the minimum.
-	return free_ids.pop_front()		
+	if not free_ids.is_empty():
+		# IDs recycled from deletions are kept sorted.
+		return free_ids.pop_front()
+	var id := _next_vertex_id
+	_next_vertex_id += 1
+	return id
 	
 # Creates a data vertex and initiates visualization
 func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR) -> Vertex:
-	if vertices.size() >= Globals.MAX_VERTICES:
-		Notify.show_error("Vertex limit reached (Max: %d). Try deleting some?" % Globals.MAX_VERTICES)
-		return null
-		
 	var v = Vertex.new(get_next_available_id(), color, Globals.INF, Globals.INF, pos)		
 	_register_and_visualize(v)
+	_maybe_warn_for_large_vertex_count()
 	
 	return v
 
 ## Helper to handle dictionary storage and UI spawning
 func _register_and_visualize(v: Vertex) -> void:
 	vertices[v.id] = v
+	_next_vertex_id = maxi(_next_vertex_id, v.id + 1)
+	_incoming_by_vertex_id[v.id] = []
+	_track_vertex_in_spatial_index(v)
+	_connect_vertex_movement_signal(v)
 	
 	if v.is_imposter: return # Imposters don't need a UI representation
 	
@@ -83,6 +95,9 @@ func delete_vertex(v: Vertex) -> void:
 	free_ids.append(v.id)
 	free_ids.sort() # Ensure the next ID taken is the lowest
 	
+	_untrack_vertex_from_spatial_index(v.id)
+	_disconnect_vertex_movement_signal(v)
+	_incoming_by_vertex_id.erase(v.id)
 	v.vanished.emit(v) # View hears this and deletes itself
 	vertices.erase(v.id)
 
@@ -143,6 +158,9 @@ func get_vertex(id: int) -> Vertex:
 	
 ## Returns the edge connecting u and v, or null if none exists.
 func get_edge(u: Vertex, v: Vertex) -> Edge:
+	var indexed: Edge = _edge_by_key.get(_edge_key(u.id, v.id))
+	if indexed != null:
+		return indexed
 	var e = u.edges
 	while e:
 		if e.dst == v: return e
@@ -151,21 +169,25 @@ func get_edge(u: Vertex, v: Vertex) -> Edge:
 	
 ## Returns a vertex "touching" the given position, or null if none exist
 func get_vertex_id_at(pos: Vector2) -> int:
-	# Optional, add a parameter for the vertex radius
-	for v: Vertex in vertices.values():
-		if v.pos.distance_to(pos) <= Globals.VERTEX_RADIUS:
-			return v.id
+	var radius_sq := Globals.VERTEX_RADIUS * Globals.VERTEX_RADIUS
+	var base_cell := _cell_from_pos(pos)
+
+	# Check current cell and 8 neighbors to capture boundary hits.
+	for dy in range(-1, 2):
+		for dx in range(-1, 2):
+			var key := _cell_key(base_cell.x + dx, base_cell.y + dy)
+			var ids: Array = _vertex_grid.get(key, [])
+			for id in ids:
+				var v: Vertex = vertices.get(id)
+				if v == null:
+					continue
+				if (v.pos - pos).length_squared() <= radius_sq:
+					return v.id
 	return Globals.NOT_FOUND
 
 ## Returns true if an edge exists between two vertices.
 func has_edge(src_id: int, dst_id: int) -> bool:
-	var v: Vertex = vertices.get(src_id)
-	if not v: return false
-	var e = v.edges
-	while e:
-		if e.dst.id == dst_id: return true
-		e = e.next
-	return false
+	return _edge_by_key.has(_edge_key(src_id, dst_id))
 
 ## Returns the closest Edge under the mouse, or null if none is close enough.
 ## threshold is in world units (same coordinate space as Vertex.pos).
@@ -195,6 +217,16 @@ func get_edge_at(mouse_pos: Vector2, threshold: float = 12.0) -> Edge:
 ## Returns all edges in the graph that point TO the given vertex.
 ## Useful for directed graph operations without complex data structures.
 func get_incoming_edges(target: Vertex) -> Array[Edge]:
+	var cached: Array = _incoming_by_vertex_id.get(target.id, [])
+	if not cached.is_empty():
+		var result: Array[Edge] = []
+		for e in cached:
+			if e != null:
+				result.append(e as Edge)
+		return result
+	if _incoming_by_vertex_id.has(target.id):
+		return []
+	# Fallback path for ad-hoc imposter graphs that bypass _register_and_visualize.
 	var incoming: Array[Edge] = []
 	for v in vertices.values():
 		var e = v.edges
@@ -505,6 +537,13 @@ func reset_keys(value: float = Globals.INF) -> void:
 ## Removes all vertices and edges from the graph.
 func clear() -> void:
 	vertices.clear()
+	_vertex_grid.clear()
+	_vertex_cell_by_id.clear()
+	_incoming_by_vertex_id.clear()
+	_edge_by_key.clear()
+	_next_vertex_id = 0
+	_next_vertex_warning_at = Globals.VERTEX_WARNING_START
+	free_ids.clear()
 	num_edges = 0
 
 ## Final cleanup before the Graph node is deleted from memory
@@ -513,9 +552,109 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		for v in vertices.values():
 			if is_instance_valid(v):
+				_disconnect_vertex_movement_signal(v)
 				v.vanished.emit(v) # Ensure UI views die first
 		vertices.clear()
+		_vertex_grid.clear()
+		_vertex_cell_by_id.clear()
+		_incoming_by_vertex_id.clear()
+		_edge_by_key.clear()
+		free_ids.clear()
 				
 		# We don't need to manually queue_free children.
 		# When this Graph (Node2D) is removed from memory, Godot automatically
 		# removes all children (vertex_views and edge_views) from the Scene Tree.
+
+# Edge lifecycle hooks called by connection strategies.
+func _on_edge_added(edge: Edge) -> void:
+	if edge == null or edge.dst == null:
+		return
+	var dst_id := edge.dst.id
+	if not _incoming_by_vertex_id.has(dst_id):
+		_incoming_by_vertex_id[dst_id] = []
+	(_incoming_by_vertex_id[dst_id] as Array).append(edge)
+	_edge_by_key[_edge_key(edge.src.id, edge.dst.id)] = edge
+
+func _on_edge_removed(edge: Edge) -> void:
+	if edge == null or edge.dst == null:
+		return
+	var dst_id := edge.dst.id
+	var incoming: Array = _incoming_by_vertex_id.get(dst_id, [])
+	if incoming.is_empty():
+		return
+	incoming.erase(edge)
+	_incoming_by_vertex_id[dst_id] = incoming
+	_edge_by_key.erase(_edge_key(edge.src.id, edge.dst.id))
+
+func _connect_vertex_movement_signal(v: Vertex) -> void:
+	if v == null or v.is_imposter:
+		return
+	if not v.position_changed.is_connected(_on_vertex_position_changed):
+		v.position_changed.connect(_on_vertex_position_changed)
+
+func _disconnect_vertex_movement_signal(v: Vertex) -> void:
+	if v == null or v.is_imposter:
+		return
+	if v.position_changed.is_connected(_on_vertex_position_changed):
+		v.position_changed.disconnect(_on_vertex_position_changed)
+
+func _on_vertex_position_changed(v: Vertex, old_pos: Vector2, new_pos: Vector2) -> void:
+	var old_key := _cell_key_from_pos(old_pos)
+	var new_key := _cell_key_from_pos(new_pos)
+	if old_key == new_key:
+		return
+	_remove_vertex_id_from_cell(v.id, old_key)
+	var list: Array = _vertex_grid.get(new_key, [])
+	list.append(v.id)
+	_vertex_grid[new_key] = list
+	_vertex_cell_by_id[v.id] = new_key
+
+func _track_vertex_in_spatial_index(v: Vertex) -> void:
+	var key := _cell_key_from_pos(v.pos)
+	var list: Array = _vertex_grid.get(key, [])
+	list.append(v.id)
+	_vertex_grid[key] = list
+	_vertex_cell_by_id[v.id] = key
+
+func _untrack_vertex_from_spatial_index(vertex_id: int) -> void:
+	var key: String = _vertex_cell_by_id.get(vertex_id, "")
+	if key == "":
+		return
+	_remove_vertex_id_from_cell(vertex_id, key)
+	_vertex_cell_by_id.erase(vertex_id)
+
+func _remove_vertex_id_from_cell(vertex_id: int, key: String) -> void:
+	var list: Array = _vertex_grid.get(key, [])
+	if list.is_empty():
+		return
+	list.erase(vertex_id)
+	if list.is_empty():
+		_vertex_grid.erase(key)
+	else:
+		_vertex_grid[key] = list
+
+func _cell_from_pos(pos: Vector2) -> Vector2i:
+	return Vector2i(
+		int(floor(pos.x / _VERTEX_GRID_CELL_SIZE)),
+		int(floor(pos.y / _VERTEX_GRID_CELL_SIZE))
+	)
+
+func _cell_key_from_pos(pos: Vector2) -> String:
+	var cell := _cell_from_pos(pos)
+	return _cell_key(cell.x, cell.y)
+
+func _cell_key(cx: int, cy: int) -> String:
+	return "%d:%d" % [cx, cy]
+
+func _edge_key(src_id: int, dst_id: int) -> String:
+	return "%d:%d" % [src_id, dst_id]
+
+func _maybe_warn_for_large_vertex_count() -> void:
+	var count := num_vertices
+	if count < _next_vertex_warning_at:
+		return
+	Notify.show_notification(
+		"Large graph (%d vertices). Performance may degrade when zoomed out." % count
+	)
+	while count >= _next_vertex_warning_at:
+		_next_vertex_warning_at += Globals.VERTEX_WARNING_STEP
