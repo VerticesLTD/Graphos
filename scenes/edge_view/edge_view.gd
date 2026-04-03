@@ -449,7 +449,7 @@ func _input(event: InputEvent) -> void:
 		if _should_defer_edge_click_to_controller(mouse_world):
 			return
 		get_viewport().set_input_as_handled()
-		if mouse_button_event.double_click and edge_data.is_weighted:
+		if edge_data.is_weighted:
 			_start_inline_weight_edit()
 		return
 

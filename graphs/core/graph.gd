@@ -105,15 +105,15 @@ func add_edge(src_id: int, dst_id: int, weight: float, target_strategy: Connecti
 	
 	if not v_src or not v_dst: return
 
-	# Validate the connection is legal
-	var error_msg = _validate_connection(v_src, v_dst, target_strategy, is_weighted)
-	
-	if error_msg != "":
-		if shout: Notify.show_error(error_msg)
+	# Validate only strategy-level hard conflicts (duplicate/invalid pair rules).
+	# Mixed directed/undirected and weighted/unweighted are now allowed at edit/create time.
+	var specific_error = target_strategy.get_connection_error(self, v_src, v_dst)
+	if specific_error != "":
+		if shout:
+			Notify.show_error(specific_error)
 		return
 
 	# --- ALL CLEAR ---
-	# The vertices passed the vibe check. Lock in the data and spawn the UI.
 	target_strategy.add_edge(self, v_src, v_dst, weight, is_weighted, shout)
 				
 # Adds an Edge View to the scene

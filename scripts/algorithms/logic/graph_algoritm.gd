@@ -62,13 +62,13 @@ func check_requirements(graph: Graph) -> bool:
 	# --- Always: mixed directed/undirected guard ---
 	var dominant_strategy := graph.get_graph_dominant_strategy()
 	if graph.num_edges > 0 and dominant_strategy == null:
-		Notify.show_error("Mixed Strategy Error: Directed and Undirected edges cannot coexist during an algorithm.")
+		Notify.show_error("Mixed directionality: algorithms require one edge type. Use right-click \u2192 Change Direction on a selection to unify edges.")
 		return false
 
 	# --- Always: mixed weighted/unweighted guard ---
 	var weight_state = graph.get_graph_weight_state()
 	if weight_state == null:
-		Notify.show_error("Mixed Weight Error: All edges must be either Weighted or Unweighted in order to run an algorithm.")
+		Notify.show_error("Mixed weights: algorithms require either all weighted or all unweighted edges. Use right-click \u2192 Weight on a selection to unify edges.")
 		return false
 
 	var reqs := get_requirements()

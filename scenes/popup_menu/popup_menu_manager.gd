@@ -169,6 +169,7 @@ func _build_menu_recursive(menu: PopupMenu, menu_def: Array) -> void:
 		var label = item[0]
 		var value = item[1] if item.size() > 1 else null # allow ["test"] too
 		var icon  = item[2] if item.size() > 2 else null # Icon
+		var disabled: bool = bool(item[3]) if item.size() > 3 else false
 
 		# Add seperator
 		if label == "---":
@@ -180,6 +181,8 @@ func _build_menu_recursive(menu: PopupMenu, menu_def: Array) -> void:
 			var idx = menu.item_count
 			menu.add_item(label)
 			menu.set_item_metadata(idx,value)
+			if disabled:
+				menu.set_item_disabled(idx, true)
 
 			if icon:
 				menu.set_item_icon(idx,icon)
@@ -189,6 +192,8 @@ func _build_menu_recursive(menu: PopupMenu, menu_def: Array) -> void:
 			var idx = menu.item_count
 			menu.add_item(label)
 			menu.set_item_metadata(idx, value) # store command object here
+			if disabled:
+				menu.set_item_disabled(idx, true)
 			
 			if icon:
 				menu.set_item_icon(idx, icon)
@@ -222,7 +227,7 @@ func _build_menu_recursive(menu: PopupMenu, menu_def: Array) -> void:
 			menu.add_item(label)
 			menu.set_item_metadata(idx, null) # no action
 			
-			if value == null:
+			if value == null or disabled:
 				menu.set_item_disabled(idx, true)
 
 
@@ -326,10 +331,16 @@ func _make_edge_menu(e: Edge) -> Array:
 		["Green",  ChangeEdgeColorCommand.new(e, Color.GREEN),  _get_swatch(Color.GREEN)]
 	]
 
+	var edge_list: Array[Edge] = [e]
+	var weight_submenu := _build_weight_submenu(edge_list)
+	var direction_submenu := _build_direction_submenu(edge_list)
+
 	# 2. Return the Main Edge Menu
 	return [		
 		# Add the submenu here
 		["Color Edge", color_edge_submenu],
+		["Weight", weight_submenu],
+		["Direction", direction_submenu],
 		["---", null],
 
 		["Delete Edge", DeleteEdgeCommand.new(graph, e.src.id, e.dst.id)],
@@ -363,7 +374,10 @@ func _make_selection_menu(clicked_vertex: Vertex, mouse_pos: Vector2) -> Array:
 		algo_submenu.append([algo_name, cmd])
 
 	var color_vertices_submenu = _build_color_vertices_selection_submenu(selection_snapshot)
-	var color_edges_submenu = _build_color_edges_selection_submenu(selection_snapshot)
+	var edges := _get_edges_within_selection(selection_snapshot)
+	var color_edges_submenu = _build_color_edges_selection_submenu_from_edges(edges)
+	var weight_submenu := _build_weight_submenu(edges)
+	var direction_submenu := _build_direction_submenu(edges)
 	var delete_selection_cmd = DeleteSelectionCommand.new(graph, selection_snapshot, controller) if not selection_snapshot.is_empty() else null
 
 	return [
@@ -375,6 +389,8 @@ func _make_selection_menu(clicked_vertex: Vertex, mouse_pos: Vector2) -> Array:
 		["---", null],
 		["Color Vertices", color_vertices_submenu],
 		["Color Edges", color_edges_submenu],
+		["Weight", weight_submenu],
+		["Direction", direction_submenu],
 		["---", null],
 		["Delete Selection", delete_selection_cmd]
 	]
@@ -393,6 +409,9 @@ func _build_color_vertices_selection_submenu(selection_vertices: Array[Vertex]) 
 
 func _build_color_edges_selection_submenu(selection_vertices: Array[Vertex]) -> Array:
 	var edges := _get_edges_within_selection(selection_vertices)
+	return _build_color_edges_selection_submenu_from_edges(edges)
+
+func _build_color_edges_selection_submenu_from_edges(edges: Array[Edge]) -> Array:
 	if edges.is_empty():
 		return [["No edges in selection", null]]
 	return [
@@ -403,6 +422,134 @@ func _build_color_edges_selection_submenu(selection_vertices: Array[Vertex]) -> 
 		["Yellow", ChangeSelectionEdgeColorCommand.new(edges, Color.YELLOW), _get_swatch(Color.YELLOW)],
 		["Green",  ChangeSelectionEdgeColorCommand.new(edges, Color.GREEN),  _get_swatch(Color.GREEN)]
 	]
+
+func _build_weight_submenu(edges: Array[Edge]) -> Array:
+	if edges.is_empty():
+		return [["No edges available", null]]
+
+	var all_weighted := _all_edges_weighted(edges)
+	var all_unweighted := _all_edges_unweighted(edges)
+	return [
+		[
+			"Convert to Weighted",
+			TransformEdgesCommand.new(graph, edges, TransformEdgesCommand.WeightMode.MAKE_WEIGHTED),
+			null,
+			all_weighted
+		],
+		[
+			"Convert to Unweighted",
+			TransformEdgesCommand.new(graph, edges, TransformEdgesCommand.WeightMode.MAKE_UNWEIGHTED),
+			null,
+			all_unweighted
+		]
+	]
+
+func _build_direction_submenu(edges: Array[Edge]) -> Array:
+	if edges.is_empty():
+		return [["No edges available", null]]
+
+	var all_l_to_r := _all_edges_match_direction_mode(edges, TransformEdgesCommand.DirectionMode.DIRECTED_L_TO_R)
+	var all_r_to_l := _all_edges_match_direction_mode(edges, TransformEdgesCommand.DirectionMode.DIRECTED_R_TO_L)
+	var all_bi := _all_edges_match_direction_mode(edges, TransformEdgesCommand.DirectionMode.BIDIRECTIONAL)
+	var all_undirected := _all_edges_match_direction_mode(edges, TransformEdgesCommand.DirectionMode.UNDIRECTED)
+
+	return [
+		[
+			"Directed L \u2192 R",
+			TransformEdgesCommand.new(graph, edges, TransformEdgesCommand.WeightMode.KEEP, TransformEdgesCommand.DirectionMode.DIRECTED_L_TO_R),
+			null,
+			all_l_to_r
+		],
+		[
+			"Directed L \u2190 R",
+			TransformEdgesCommand.new(graph, edges, TransformEdgesCommand.WeightMode.KEEP, TransformEdgesCommand.DirectionMode.DIRECTED_R_TO_L),
+			null,
+			all_r_to_l
+		],
+		[
+			"Bidirectional L \u2194 R",
+			TransformEdgesCommand.new(graph, edges, TransformEdgesCommand.WeightMode.KEEP, TransformEdgesCommand.DirectionMode.BIDIRECTIONAL),
+			null,
+			all_bi
+		],
+		[
+			"Undirected L - R",
+			TransformEdgesCommand.new(graph, edges, TransformEdgesCommand.WeightMode.KEEP, TransformEdgesCommand.DirectionMode.UNDIRECTED),
+			null,
+			all_undirected
+		],
+	]
+
+func _all_edges_weighted(edges: Array[Edge]) -> bool:
+	if edges.is_empty():
+		return false
+	for e in edges:
+		if not e.is_weighted:
+			return false
+	return true
+
+func _all_edges_unweighted(edges: Array[Edge]) -> bool:
+	if edges.is_empty():
+		return false
+	for e in edges:
+		if e.is_weighted:
+			return false
+	return true
+
+func _all_edges_match_direction_mode(edges: Array[Edge], mode: TransformEdgesCommand.DirectionMode) -> bool:
+	if edges.is_empty():
+		return false
+
+	for e in edges:
+		var src_id := e.src.id
+		var dst_id := e.dst.id
+		match mode:
+			TransformEdgesCommand.DirectionMode.DIRECTED_L_TO_R:
+				if not _edge_exists_as_directed_only(src_id, dst_id):
+					return false
+			TransformEdgesCommand.DirectionMode.DIRECTED_R_TO_L:
+				if not _edge_exists_as_directed_only(dst_id, src_id):
+					return false
+			TransformEdgesCommand.DirectionMode.BIDIRECTIONAL:
+				if not _edge_exists_as_bidirectional(src_id, dst_id):
+					return false
+			TransformEdgesCommand.DirectionMode.UNDIRECTED:
+				if not _edge_exists_as_undirected(src_id, dst_id):
+					return false
+			_:
+				return false
+
+	return true
+
+func _edge_exists_as_directed_only(src_id: int, dst_id: int) -> bool:
+	var src_v := graph.get_vertex(src_id)
+	var dst_v := graph.get_vertex(dst_id)
+	if src_v == null or dst_v == null:
+		return false
+	var forward: Edge = graph.get_edge(src_v, dst_v)
+	if forward == null or not (forward.strategy is DirectedStrategy):
+		return false
+	var reverse: Edge = graph.get_edge(dst_v, src_v)
+	return reverse == null
+
+func _edge_exists_as_bidirectional(src_id: int, dst_id: int) -> bool:
+	var src_v := graph.get_vertex(src_id)
+	var dst_v := graph.get_vertex(dst_id)
+	if src_v == null or dst_v == null:
+		return false
+	var forward: Edge = graph.get_edge(src_v, dst_v)
+	var reverse: Edge = graph.get_edge(dst_v, src_v)
+	if forward == null or reverse == null:
+		return false
+	return forward.strategy is DirectedStrategy and reverse.strategy is DirectedStrategy
+
+func _edge_exists_as_undirected(src_id: int, dst_id: int) -> bool:
+	var src_v := graph.get_vertex(src_id)
+	var dst_v := graph.get_vertex(dst_id)
+	if src_v == null or dst_v == null:
+		return false
+	var edge: Edge = graph.get_edge(src_v, dst_v)
+	return edge != null and edge.strategy is UndirectedStrategy
 
 func _get_edges_within_selection(selection_vertices: Array[Vertex]) -> Array[Edge]:
 	var unique_edges: Array[Edge] = []
