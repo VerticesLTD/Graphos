@@ -14,8 +14,8 @@ class_name PersistenceManager
 @export var graph: Graph
 @export var camera: Camera2D
 @export var grid_background: MathGridBackground
-@export var popup_menu_a: PopupMenuManager  ## GraphController/PopupMenu
-@export var popup_menu_b: PopupMenuManager  ## CanvasLayer/PopupMenuLayer
+@export var popup_menu_a: GraphContextMenuManager  ## GraphController/PopupMenu
+@export var popup_menu_b: GraphContextMenuManager  ## CanvasLayer/PopupMenuLayer
 
 var _auto_save: AutoSaveService
 ## Path of the last explicitly saved/opened file.  Empty = no named file yet.
