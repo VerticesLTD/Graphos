@@ -12,6 +12,10 @@ const EVNT_TAG = "EVENT"
 # ------------
 signal app_state_changed
 signal algorithm_key_visuals_changed
+## Emitted when the active edge strategy (directed/undirected) changes.
+signal strategy_changed
+## Emitted when weighted-mode toggles.
+signal weighted_mode_changed
 enum State {
 	SELECTION,
 	CREATE,
@@ -41,8 +45,14 @@ var algorithm_key_vertex_ids: Dictionary = {}:
 # Tool Modifiers (For CREATE state)
 # ------------
 ## Independent modifiers that determine the type of edge being drawn.
-var active_strategy: ConnectionStrategy = UndirectedStrategy.new()
-var is_weighted_mode: bool = false
+var active_strategy: ConnectionStrategy = UndirectedStrategy.new():
+	set(value):
+		active_strategy = value
+		strategy_changed.emit()
+var is_weighted_mode: bool = false:
+	set(value):
+		is_weighted_mode = value
+		weighted_mode_changed.emit()
 # Tracks the state of a vertex's edges to prevent mixing.
 enum WeightState { EMPTY, WEIGHTED, UNWEIGHTED, CORRUPTED }
 # ------------

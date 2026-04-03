@@ -1,5 +1,8 @@
 extends Camera2D
 
+## Emitted after zoom or pan ends so the persistence layer can schedule a save.
+signal view_changed
+
 # --- CONFIGURATION ---
 @export var zoom_speed: float = 0.1
 @export var min_zoom: float = 0.2
@@ -53,6 +56,7 @@ func _input(event: InputEvent) -> void:
 			if not event.pressed:
 				# Safety reset when drag ends.
 				_is_dragging = false
+				view_changed.emit()
 			# UPDATE: Trigger the cursor change immediately
 			_update_cursor_shape()
 
@@ -79,7 +83,8 @@ func _zoom_camera(factor: float) -> void:
 	
 	# COrrection: Shifting the camera by the difference keeps the cursor pinned to the same spot.
 	position += (mouse_pos_before - mouse_pos_after)
- 
+	view_changed.emit()
+
 func toggle_pan_mode(pan_enabled: bool) -> void:
 	_pan_mode_enabled = pan_enabled
 	_update_cursor_shape()
