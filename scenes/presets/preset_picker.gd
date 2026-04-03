@@ -1,9 +1,8 @@
-## Floating top-right bar: Share (accent-blue CTA) + Presets (white panel) buttons.
+## Top-right bar: Share (outlined accent) + Presets (white panel) buttons.
 extends CanvasLayer
 
 const FALLBACK_TILE_ICON: Texture2D = preload("res://assets/icons/create_tool_icon.svg")
 const LIVE_THUMB_SCENE: PackedScene = preload("res://scenes/presets/preset_live_thumbnail.tscn")
-const TOOLBAR_BG: StyleBox = preload("res://scenes/tool_bar/tool_bar_background.tres")
 
 const ACCENT       := Color(0.263, 0.38, 0.933)
 const ACCENT_HOVER := Color(0.2,   0.3,  0.85)
