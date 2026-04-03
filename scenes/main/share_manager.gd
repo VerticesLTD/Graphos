@@ -34,7 +34,7 @@ func _ready() -> void:
 # ---------------------------------------------------------------------------
 
 func _try_load_from_url() -> void:
-	var fragment: String = JavaScriptBridge.eval("window.location.hash")
+	var fragment: String = str(JavaScriptBridge.eval("window.location.hash"))
 	if fragment.is_empty() or not ShareEncoder.is_share_fragment(fragment):
 		return
 
@@ -62,7 +62,7 @@ func _register_hashchange_listener() -> void:
 
 
 func _on_hashchange(_args: Array) -> void:
-	var fragment: String = JavaScriptBridge.eval("window.location.hash")
+	var fragment: String = str(JavaScriptBridge.eval("window.location.hash"))
 	if fragment.is_empty() or not ShareEncoder.is_share_fragment(fragment):
 		return
 	var result := ShareEncoder.from_url_fragment(fragment)
@@ -88,9 +88,9 @@ func get_share_url(graph: Graph, camera: Camera2D, grid_enabled: bool) -> String
 	if not graph or not camera:
 		return ""
 	var fragment := ShareEncoder.to_url_fragment(graph, camera, grid_enabled)
-	var base_url: String = JavaScriptBridge.eval(
+	var base_url := str(JavaScriptBridge.eval(
 		"window.location.origin+window.location.pathname"
-	)
+	))
 	return base_url + fragment
 
 

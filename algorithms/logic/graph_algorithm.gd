@@ -137,7 +137,9 @@ func change_and_log_vertex_color(target_vertex: Vertex, target_color: Color, pse
 	var real_v = real_graph.get_vertex(target_vertex.id)
 	
 	if real_v:
-		timeline.append(ChangeVertexColorCommand.new(real_v, target_color))
+		var cmd := ChangeVertexColorCommand.new(real_v, target_color)
+		cmd.bypass_lock = true
+		timeline.append(cmd)
 		
 	target_vertex.color = target_color
 
@@ -156,7 +158,9 @@ func change_and_log_edge_color(target_edge: Edge, target_color: Color, pseudo_st
 	var real_edge = real_graph.get_edge(real_src, real_dst)
 	
 	if real_edge:
-		timeline.append(ChangeEdgeColorCommand.new(real_edge, target_color))
+		var cmd := ChangeEdgeColorCommand.new(real_edge, target_color)
+		cmd.bypass_lock = true
+		timeline.append(cmd)
 	else:
 		# Keep timeline length aligned with pseudo_steps when the real edge is missing.
 		timeline.append(null)
@@ -180,14 +184,14 @@ func discover_vertex_via_edge_and_log(
 	var real_edge = real_graph.get_edge(real_src, real_dst)
 
 	if real_edge and real_vertex:
-		timeline.append(
-			DiscoverVertexViaEdgeCommand.new(
-				real_edge,
-				real_vertex,
-				target_edge_color,
-				target_vertex_color
-			)
+		var cmd := DiscoverVertexViaEdgeCommand.new(
+			real_edge,
+			real_vertex,
+			target_edge_color,
+			target_vertex_color
 		)
+		cmd.bypass_lock = true
+		timeline.append(cmd)
 
 	target_edge.color = target_edge_color
 	target_vertex.color = target_vertex_color
@@ -214,7 +218,9 @@ func log_initialize_vertices(color: Color, pseudo_step = null) -> void:
 		var real_v := real_graph.get_vertex(v.id)
 		if real_v:
 			real_vertices.append(real_v)
-	timeline.append(ChangeSelectionVertexColorCommand.new(real_vertices, color))
+	var init_cmd := ChangeSelectionVertexColorCommand.new(real_vertices, color)
+	init_cmd.bypass_lock = true
+	timeline.append(init_cmd)
 	log_pseudo_step(pseudo_step)
 
 ## Sets each vertex to its own color in ONE timeline step (e.g. Kruskal make-set).
@@ -230,5 +236,7 @@ func change_and_log_vertices_per_vertex_colors(imposter_vertices: Array[Vertex],
 			real_vertices.append(rv)
 			filtered_colors.append(new_colors[i])
 	if not real_vertices.is_empty():
-		timeline.append(ChangeVerticesPerVertexColorCommand.new(real_vertices, filtered_colors))
+		var per_v_cmd := ChangeVerticesPerVertexColorCommand.new(real_vertices, filtered_colors)
+		per_v_cmd.bypass_lock = true
+		timeline.append(per_v_cmd)
 	log_pseudo_step(pseudo_step)

@@ -20,7 +20,7 @@ func _draw() -> void:
 	
 	# Corners
 	var tl = rect.position
-	var _tr = Vector2(rect.end.x, rect.position.y) # tr alone is define in Object class
+	var _tr = Vector2(rect.end.x, rect.position.y) # tr alone is defined in Object class
 	var bl = Vector2(rect.position.x, rect.end.y)
 	var br = rect.end
 	
@@ -36,6 +36,16 @@ func _draw() -> void:
 	var handle_size := _handle_world_size(ui_scale)
 	for pos in [tl, _tr, bl, br]:
 		_draw_handle(pos, handle_size, ui_scale)
+
+	# Edge midpoint handles — only shown when resize is available (>= 2 vertices).
+	if controller.selection_buffer.size() >= 2:
+		var mid_top    := Vector2((tl.x + _tr.x) * 0.5, tl.y)
+		var mid_bottom := Vector2((bl.x + br.x) * 0.5, br.y)
+		var mid_left   := Vector2(tl.x, (tl.y + bl.y) * 0.5)
+		var mid_right  := Vector2(_tr.x, (_tr.y + br.y) * 0.5)
+		var edge_size  := handle_size * 0.72
+		for pos in [mid_top, mid_bottom, mid_left, mid_right]:
+			_draw_handle(pos, edge_size, ui_scale)
 
 func _handle_world_size(ui_scale: float) -> float:
 	var target_screen_px := 8.0

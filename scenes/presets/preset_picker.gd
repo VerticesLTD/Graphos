@@ -1,8 +1,9 @@
-## Floating Presets control (top-right): compact panel matching main toolbar chrome.
+## Floating top-right panel: combined Share + Presets trigger in one bar.
 extends CanvasLayer
 
 const FALLBACK_TILE_ICON: Texture2D = preload("res://assets/icons/create_tool_icon.svg")
 const TRIGGER_TOOLBAR_ICON: Texture2D = preload("res://assets/icons/presets_toolbar.svg")
+const SHARE_TOOLBAR_ICON: Texture2D = preload("res://assets/icons/share_icon.svg")
 const LIVE_THUMB_SCENE: PackedScene = preload("res://scenes/presets/preset_live_thumbnail.tscn")
 
 const STYLE_BTN_NORMAL = preload("res://scenes/tool_bar/button_normal.tres")
@@ -14,7 +15,8 @@ const POPUP_HEIGHT := 380
 
 @export var graph_controller_path: NodePath = ^"../GraphController"
 
-@onready var _trigger: Button = $Margin/TriggerPanel/PresetsButton
+@onready var _presets_btn: Button = $Margin/TriggerPanel/HBox/PresetsButton
+@onready var _share_btn: Button = $Margin/TriggerPanel/HBox/ShareButton
 @onready var _popup: Popup = $PresetsPopup
 
 var _graph_controller: GraphController
@@ -24,15 +26,15 @@ func _ready() -> void:
 	_graph_controller = get_node_or_null(graph_controller_path) as GraphController
 	if _graph_controller == null:
 		push_warning("PresetPicker: GraphController not found at %s" % str(graph_controller_path))
-	_style_trigger_button()
-	_trigger.pressed.connect(_on_trigger_pressed)
+	_style_top_right_panel()
+	_presets_btn.pressed.connect(_on_trigger_pressed)
+	_share_btn.pressed.connect(_on_share_btn_pressed)
 	_popup.visibility_changed.connect(_on_popup_visibility_changed)
 	_build_grid()
 
 
-func _style_trigger_button() -> void:
-	## Match toolbar tool row height (52px) inside the same panel style; shrink-wrap panel (no stretch inside slot).
-	var pad := 8.0
+func _style_top_right_panel() -> void:
+	var pad := 7.0
 	var normal_sb: StyleBoxFlat = STYLE_BTN_NORMAL.duplicate() as StyleBoxFlat
 	normal_sb.content_margin_left = pad
 	normal_sb.content_margin_right = pad
@@ -44,33 +46,40 @@ func _style_trigger_button() -> void:
 	hover_sb.content_margin_top = 2
 	hover_sb.content_margin_bottom = 2
 
-	_trigger.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	_trigger.icon = TRIGGER_TOOLBAR_ICON
-	_trigger.text = "Presets"
-	_trigger.custom_minimum_size = Vector2(104, 52)
-	_trigger.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_trigger.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	var tp: PanelContainer = _trigger.get_parent() as PanelContainer
+	for btn: Button in [_share_btn, _presets_btn]:
+		btn.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		btn.custom_minimum_size = Vector2(84, 44)
+		btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		btn.focus_mode = Control.FOCUS_NONE
+		btn.flat = false
+		btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+		btn.expand_icon = false
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		btn.add_theme_constant_override("h_separation", 6)
+		btn.add_theme_constant_override("icon_max_width", 18)
+		btn.add_theme_stylebox_override("normal", normal_sb)
+		btn.add_theme_stylebox_override("hover", hover_sb)
+		btn.add_theme_stylebox_override("pressed", hover_sb)
+		btn.add_theme_stylebox_override("focus", hover_sb)
+		btn.add_theme_font_size_override("font_size", 11)
+		btn.add_theme_color_override("font_color", Color(0.118, 0.118, 0.18))
+		btn.add_theme_color_override("font_hover_color", Color(0.263, 0.38, 0.933))
+		btn.add_theme_color_override("font_pressed_color", Color(0.263, 0.38, 0.933))
+		btn.add_theme_color_override("font_focus_color", Color(0.263, 0.38, 0.933))
+
+	_share_btn.icon = SHARE_TOOLBAR_ICON
+	_presets_btn.icon = TRIGGER_TOOLBAR_ICON
+
+	var sep := $Margin/TriggerPanel/HBox/Separator as VSeparator
+	if sep:
+		sep.add_theme_color_override("color", Color(0.86, 0.86, 0.88))
+
+	var tp: PanelContainer = $Margin/TriggerPanel
 	if tp:
 		tp.size_flags_horizontal = Control.SIZE_SHRINK_END
 		tp.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	_trigger.focus_mode = Control.FOCUS_NONE
-	_trigger.flat = false
-	_trigger.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_trigger.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-	_trigger.expand_icon = false
-	_trigger.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_trigger.add_theme_constant_override("h_separation", 6)
-	_trigger.add_theme_constant_override("icon_max_width", 20)
-	_trigger.add_theme_stylebox_override("normal", normal_sb)
-	_trigger.add_theme_stylebox_override("hover", hover_sb)
-	_trigger.add_theme_stylebox_override("pressed", hover_sb)
-	_trigger.add_theme_stylebox_override("focus", hover_sb)
-	_trigger.add_theme_font_size_override("font_size", 12)
-	_trigger.add_theme_color_override("font_color", Color(0.118, 0.118, 0.18))
-	_trigger.add_theme_color_override("font_hover_color", Color(0.263, 0.38, 0.933))
-	_trigger.add_theme_color_override("font_pressed_color", Color(0.263, 0.38, 0.933))
-	_trigger.add_theme_color_override("font_focus_color", Color(0.263, 0.38, 0.933))
 
 
 func _build_grid() -> void:
@@ -173,7 +182,7 @@ func _on_preset_chosen(json_path: String) -> void:
 
 
 func _on_trigger_pressed() -> void:
-	var gp := _trigger.get_global_rect()
+	var gp := _presets_btn.get_global_rect()
 	_popup.size = Vector2i(POPUP_WIDTH, POPUP_HEIGHT)
 	var x := int(gp.position.x + gp.size.x - _popup.size.x)
 	var y := int(gp.position.y + gp.size.y + 8)
@@ -182,6 +191,12 @@ func _on_trigger_pressed() -> void:
 	y = clampi(y, 8, int(vp.y) - _popup.size.y - 8)
 	_popup.position = Vector2i(x, y)
 	_popup.popup()
+
+
+func _on_share_btn_pressed() -> void:
+	var share_panel := get_node_or_null("../SharePanel") as SharePanel
+	if share_panel:
+		share_panel.toggle_popup(_share_btn.get_global_rect())
 
 
 func _on_popup_visibility_changed() -> void:

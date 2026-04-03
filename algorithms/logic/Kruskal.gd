@@ -138,7 +138,9 @@ func run(_start_vertex: Vertex) -> Array:
 		if real_edge == null:
 			timeline.append(null)
 		else:
-			timeline.append(KruskalUnionMstCommand.new(real_recolor, winner_color, real_edge, COLOR_EDGE_MST))
+			var kruskal_cmd := KruskalUnionMstCommand.new(real_recolor, winner_color, real_edge, COLOR_EDGE_MST)
+			kruskal_cmd.bypass_lock = true
+			timeline.append(kruskal_cmd)
 
 		for iv: Vertex in to_paint:
 			iv.color = winner_color

@@ -30,6 +30,9 @@ func _create_edge_cmd(e: Edge) -> AddEdgeCommand:
 	)
 
 func execute() -> void:
+	if vertex.is_algorithm_locked:
+		Notify.show_error("Cannot delete: this vertex is part of a running algorithm.")
+		return
 	graph.delete_vertex(vertex)
 
 func undo() -> void:

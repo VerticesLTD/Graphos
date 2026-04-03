@@ -30,6 +30,10 @@ var next: Edge = null
 ## Lets the edge know if its an imposter to not emit drawing signals.
 var is_imposter: bool = false
 
+## If true, this edge is part of a currently running algorithm.
+## Delete and recolor operations initiated by the user are blocked while this is set.
+var is_algorithm_locked: bool = false
+
 ## The edge type
 var strategy: ConnectionStrategy
 

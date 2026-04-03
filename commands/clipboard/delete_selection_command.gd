@@ -17,11 +17,15 @@ func _init(g: Graph, selected_vertices: Array[Vertex], _controller: GraphControl
 		commands.append(DeleteVertexCommand.new(graph, v))
 			
 func execute() -> void:
-	# Delete data
+	# Block if any vertex in the selection belongs to a running algorithm.
+	for cmd in commands:
+		if cmd.vertex.is_algorithm_locked:
+			Notify.show_error("Cannot delete: the selection contains a vertex that is part of a running algorithm.")
+			return
+
 	for cmd in commands:
 		cmd.execute()
 	
-	# Clear selection
 	if controller:
 		controller.clear_selection_buffer()		
 		

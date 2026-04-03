@@ -1,33 +1,10 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://scenes/sharing/share_panel.gd" id="1_script"]
-[ext_resource type="StyleBox" uid="uid://bdiessvqitwl2" path="res://scenes/tool_bar/tool_bar_background.tres" id="2_bar"]
 
 [node name="SharePanel" type="CanvasLayer"]
 layer = 2
 script = ExtResource("1_script")
-
-[node name="Margin" type="MarginContainer" parent="."]
-anchors_preset = 2
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -272.0
-offset_top = 40.0
-offset_right = -156.0
-offset_bottom = 112.0
-grow_horizontal = 0
-
-[node name="TriggerPanel" type="PanelContainer" parent="Margin"]
-layout_mode = 2
-size_flags_horizontal = 8
-size_flags_vertical = 0
-theme_override_styles/panel = ExtResource("2_bar")
-
-[node name="ShareButton" type="Button" parent="Margin/TriggerPanel"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-text = "Share"
 
 [node name="SharePopup" type="Popup" parent="."]
 transparent = false
@@ -35,4 +12,4 @@ borderless = true
 popup_window = true
 unresizable = true
 visible = false
-min_size = Vector2i(360, 192)
+min_size = Vector2i(340, 155)

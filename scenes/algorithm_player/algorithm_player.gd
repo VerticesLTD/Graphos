@@ -48,6 +48,11 @@ var max_step: int
 
 var _is_algorithm_running := false
 
+## Tracks vertices and edges locked for the current algorithm run so they can be
+## cleanly unlocked when the algorithm is cancelled or restarted.
+var _locked_vertices: Array[Vertex] = []
+var _locked_edges: Array[Edge] = []
+
 func _ready() -> void:
 	pseudo_visualizer.visible = false
 	pseudo_visualizer.pseudo_layout_updated.connect(_place_visualizer_bottom_left)
@@ -57,6 +62,40 @@ func _ready() -> void:
 
 func is_algorithm_running() -> bool:
 	return _is_algorithm_running
+
+
+## Locks all real vertices in the selection and every edge of the induced subgraph
+## (i.e. edges whose both endpoints are in the selection).
+func _lock_algorithm_selection(selection_buffer: Array[Vertex]) -> void:
+	var id_set: Dictionary = {}
+	for v: Vertex in selection_buffer:
+		if is_instance_valid(v):
+			id_set[v.id] = true
+
+	for v: Vertex in selection_buffer:
+		if not is_instance_valid(v):
+			continue
+		v.is_algorithm_locked = true
+		_locked_vertices.append(v)
+
+		var e: Edge = v.edges
+		while e:
+			if id_set.has(e.dst.id):
+				e.is_algorithm_locked = true
+				_locked_edges.append(e)
+			e = e.next
+
+
+## Removes algorithm locks from every vertex and edge tracked by this run.
+func _unlock_algorithm_selection() -> void:
+	for v: Vertex in _locked_vertices:
+		if is_instance_valid(v):
+			v.is_algorithm_locked = false
+	for e: Edge in _locked_edges:
+		if is_instance_valid(e):
+			e.is_algorithm_locked = false
+	_locked_vertices.clear()
+	_locked_edges.clear()
 
 
 # Toggles auto playing on/off
@@ -173,6 +212,7 @@ func start_algorithm(
 	global_position = imposter_start_node.pos
 
 	_is_algorithm_running = true
+	_lock_algorithm_selection(selection_buffer)
 
 
 ## Modular restart-safe shutdown:
@@ -180,6 +220,9 @@ func start_algorithm(
 func _shutdown_algorithm_for_restart() -> void:
 	# Restore graph to pre-run visuals first.
 	reset_to_start()
+
+	# Unlock vertices/edges now that visuals are restored.
+	_unlock_algorithm_selection()
 
 	# Kill running UI tweens so old callbacks cannot hide new UI later.
 	if visualizer_tween:
@@ -381,6 +424,9 @@ func reset_to_start() -> void:
 func cancel_algorithm_execution() -> void:
 	# First, reset visuals to go back to the original graph.
 	reset_to_start()
+
+	# Unlock vertices/edges now that visuals are restored.
+	_unlock_algorithm_selection()
 
 	# Then clear run-time data.
 	timeline.clear()

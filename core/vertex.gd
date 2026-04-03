@@ -23,6 +23,10 @@ var edges: Edge = null
 ## If true, acts as a "Data Proxy" for algorithms (no UI signals emitted).
 var is_imposter: bool = false
 
+## If true, this vertex is part of a currently running algorithm.
+## Delete and recolor operations initiated by the user are blocked while this is set.
+var is_algorithm_locked: bool = false
+
 
 ## Initializes a new Vertex, bypassing setters to prevent initialization signal spam.
 func _init(

@@ -10,6 +10,10 @@ var graph: Graph
 ## Determines if this command should be added to the Undo Stack
 var add_to_history: bool = true
 
+## When true, this command was created by an algorithm timeline and is allowed
+## to run on locked vertices/edges (algorithm playback must never be blocked).
+var bypass_lock: bool = false
+
 ## Initialize the command, make Graph null in def so its optional.
 func _init(_graph: Graph = null):
 	self.graph = _graph

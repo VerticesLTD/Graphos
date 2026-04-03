@@ -13,6 +13,9 @@ func _init(vertex: Vertex, target_color: Color):
 	old_color = vertex.color
 
 func execute() -> void:
+	if not bypass_lock and target_vertex.is_algorithm_locked:
+		Notify.show_error("Cannot recolor: this vertex is part of a running algorithm.")
+		return
 	target_vertex.color = new_color
 
 func undo() -> void:

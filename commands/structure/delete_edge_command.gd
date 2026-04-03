@@ -15,6 +15,9 @@ var is_weighted: bool
 # Safety flag to prevent execution if the edge doesn't exist
 var is_valid: bool = false
 
+# Retained so execute() can check the algorithm lock without re-fetching
+var _edge_ref: Edge = null
+
 ## Initializes the delete edge command.
 func _init(g: Graph, src_id: int, dst_id: int):
 	super(g)
@@ -27,6 +30,7 @@ func _init(g: Graph, src_id: int, dst_id: int):
 	var edge = graph.get_edge(v_src, v_dst)
 	
 	if edge:
+		_edge_ref = edge
 		previous_weight = edge.weight
 		strategy = edge.strategy
 		is_weighted = edge.is_weighted
@@ -38,6 +42,9 @@ func _init(g: Graph, src_id: int, dst_id: int):
 
 func execute() -> void:
 	if not is_valid: return
+	if _edge_ref and _edge_ref.is_algorithm_locked:
+		Notify.show_error("Cannot delete: this edge is part of a running algorithm.")
+		return
 	graph.delete_edge(from_id, to_id)
 
 func undo() -> void:

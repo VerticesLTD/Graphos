@@ -40,11 +40,29 @@ func _init(
 
 
 func execute() -> void:
+	if not bypass_lock and _any_snapshot_edge_locked(_before):
+		Notify.show_error("Cannot modify: one or more edges are part of a running algorithm.")
+		return
 	_apply_state(_after)
 
 
 func undo() -> void:
 	_apply_state(_before)
+
+
+func _any_snapshot_edge_locked(snapshots: Array[Dictionary]) -> bool:
+	for snap in snapshots:
+		var src_v := graph.get_vertex(int(snap["src_id"]))
+		var dst_v := graph.get_vertex(int(snap["dst_id"]))
+		if src_v == null or dst_v == null:
+			continue
+		var e: Edge = graph.get_edge(src_v, dst_v)
+		if e and e.is_algorithm_locked:
+			return true
+		var e2: Edge = graph.get_edge(dst_v, src_v)
+		if e2 and e2.is_algorithm_locked:
+			return true
+	return false
 
 
 func _apply_state(state: Array[Dictionary]) -> void:

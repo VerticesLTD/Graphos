@@ -22,6 +22,9 @@ func _init(edge: Edge, target_color: Color):
 			current = current.next
 
 func execute() -> void:
+	if not bypass_lock and target_edge.is_algorithm_locked:
+		Notify.show_error("Cannot recolor: this edge is part of a running algorithm.")
+		return
 	target_edge.color = new_color
 	if twin_edge:
 		twin_edge.color = new_color
