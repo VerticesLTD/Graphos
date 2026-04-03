@@ -70,6 +70,7 @@ func _on_hashchange(_args: Array) -> void:
 		return
 	if _persistence_manager:
 		_persistence_manager.apply_document(result)
+		_persistence_manager.suspend_autosave()
 	JavaScriptBridge.eval(
 		"history.replaceState(null,'',window.location.pathname+window.location.search)"
 	)

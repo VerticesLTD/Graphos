@@ -43,10 +43,14 @@ func _ready() -> void:
 	Globals.strategy_changed.connect(_auto_save.mark_dirty)
 	Globals.weighted_mode_changed.connect(_auto_save.mark_dirty)
 
-	# Skip autosave restore if ShareManager already loaded a graph from a URL.
 	var loaded_from_url := _share_manager != null and _share_manager.loaded_from_url
 	if not loaded_from_url:
 		_try_load_autosave()
+	else:
+		# Graph came from a share URL — treat it as a temporary sandbox.
+		# The user can edit freely but nothing is written to their IndexedDB,
+		# so closing the tab leaves their own graph completely untouched.
+		_auto_save.pause()
 
 
 func _input(event: InputEvent) -> void:
@@ -110,6 +114,14 @@ func _load(path: String) -> void:
 	if path != GraphDocumentIO.AUTOSAVE_PATH:
 		_current_path = path
 	apply_document(result)
+
+
+## Permanently pause autosave for this session.
+## Called by ShareManager when a graph is loaded from a URL hash so the
+## user's own IndexedDB is never overwritten by a shared graph.
+func suspend_autosave() -> void:
+	if _auto_save:
+		_auto_save.pause()
 
 
 ## Apply a fully-parsed document dictionary to the scene.
