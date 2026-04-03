@@ -92,12 +92,12 @@ theme_override_styles/panel = ExtResource("2_u1pd4")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer" unique_id=2079157308]
 layout_mode = 2
-theme_override_constants/separation = 25
+theme_override_constants/separation = 18
 script = ExtResource("1_uiivm")
 
 [node name="Selection" type="Button" parent="PanelContainer/HBoxContainer" unique_id=1013943299]
 texture_filter = 4
-custom_minimum_size = Vector2(52, 52)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
@@ -114,10 +114,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/margin_left = 5
-theme_override_constants/margin_top = 5
-theme_override_constants/margin_right = 5
-theme_override_constants/margin_bottom = 5
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
 
 [node name="Icon" type="TextureRect" parent="PanelContainer/HBoxContainer/Selection/MarginContainer" unique_id=1192355074]
 layout_mode = 2
@@ -128,7 +128,7 @@ stretch_mode = 5
 
 [node name="Create" type="Button" parent="PanelContainer/HBoxContainer" unique_id=11624605]
 texture_filter = 4
-custom_minimum_size = Vector2(52, 52)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
@@ -145,10 +145,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/margin_left = 5
-theme_override_constants/margin_top = 5
-theme_override_constants/margin_right = 5
-theme_override_constants/margin_bottom = 5
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
 
 [node name="Icon" type="TextureRect" parent="PanelContainer/HBoxContainer/Create/MarginContainer" unique_id=937000166]
 layout_mode = 2
@@ -160,7 +160,7 @@ metadata/_edit_use_anchors_ = true
 
 [node name="Pan" type="Button" parent="PanelContainer/HBoxContainer" unique_id=726100111]
 texture_filter = 4
-custom_minimum_size = Vector2(52, 52)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
@@ -177,10 +177,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/margin_left = 5
-theme_override_constants/margin_top = 5
-theme_override_constants/margin_right = 5
-theme_override_constants/margin_bottom = 5
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
 
 [node name="Icon" type="TextureRect" parent="PanelContainer/HBoxContainer/Pan/MarginContainer" unique_id=726100113]
 layout_mode = 2

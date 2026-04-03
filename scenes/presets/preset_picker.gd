@@ -1,13 +1,13 @@
-## Floating top-right panel: combined Share + Presets trigger in one bar.
+## Floating top-right bar: Share (accent-blue CTA) + Presets (white panel) buttons.
 extends CanvasLayer
 
 const FALLBACK_TILE_ICON: Texture2D = preload("res://assets/icons/create_tool_icon.svg")
-const TRIGGER_TOOLBAR_ICON: Texture2D = preload("res://assets/icons/presets_toolbar.svg")
-const SHARE_TOOLBAR_ICON: Texture2D = preload("res://assets/icons/share_icon.svg")
 const LIVE_THUMB_SCENE: PackedScene = preload("res://scenes/presets/preset_live_thumbnail.tscn")
+const TOOLBAR_BG: StyleBox = preload("res://scenes/tool_bar/tool_bar_background.tres")
 
-const STYLE_BTN_NORMAL = preload("res://scenes/tool_bar/button_normal.tres")
-const STYLE_BTN_HOVER = preload("res://scenes/tool_bar/button_hover.tres")
+const ACCENT       := Color(0.263, 0.38, 0.933)
+const ACCENT_HOVER := Color(0.2,   0.3,  0.85)
+const DARK         := Color(0.118, 0.118, 0.18)
 
 ## Scroll area sized so ~3 tile rows + label fit without clipping the bottom row.
 const POPUP_WIDTH := 328
@@ -15,8 +15,8 @@ const POPUP_HEIGHT := 380
 
 @export var graph_controller_path: NodePath = ^"../GraphController"
 
-@onready var _presets_btn: Button = $Margin/TriggerPanel/HBox/PresetsButton
-@onready var _share_btn: Button = $Margin/TriggerPanel/HBox/ShareButton
+@onready var _presets_btn: Button = $Margin/HBox/PresetsButton
+@onready var _share_btn: Button = $Margin/HBox/ShareButton
 @onready var _popup: Popup = $PresetsPopup
 
 var _graph_controller: GraphController
@@ -26,60 +26,80 @@ func _ready() -> void:
 	_graph_controller = get_node_or_null(graph_controller_path) as GraphController
 	if _graph_controller == null:
 		push_warning("PresetPicker: GraphController not found at %s" % str(graph_controller_path))
-	_style_top_right_panel()
+	_style_top_right_bar()
 	_presets_btn.pressed.connect(_on_trigger_pressed)
 	_share_btn.pressed.connect(_on_share_btn_pressed)
 	_popup.visibility_changed.connect(_on_popup_visibility_changed)
 	_build_grid()
 
 
-func _style_top_right_panel() -> void:
-	var pad := 7.0
-	var normal_sb: StyleBoxFlat = STYLE_BTN_NORMAL.duplicate() as StyleBoxFlat
-	normal_sb.content_margin_left = pad
-	normal_sb.content_margin_right = pad
-	normal_sb.content_margin_top = 2
-	normal_sb.content_margin_bottom = 2
-	var hover_sb: StyleBoxFlat = STYLE_BTN_HOVER.duplicate() as StyleBoxFlat
-	hover_sb.content_margin_left = pad
-	hover_sb.content_margin_right = pad
-	hover_sb.content_margin_top = 2
-	hover_sb.content_margin_bottom = 2
+func _style_top_right_bar() -> void:
+	# --- Share button: solid accent-blue CTA (Excalidraw-style) ---
+	_share_btn.text = "Share"
+	_share_btn.icon = null
+	_share_btn.custom_minimum_size = Vector2(76, 36)
+	_share_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_share_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_share_btn.focus_mode = Control.FOCUS_NONE
+	_share_btn.flat = false
+	_share_btn.alignment = HORIZONTAL_ALIGNMENT_CENTER
 
-	for btn: Button in [_share_btn, _presets_btn]:
-		btn.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-		btn.custom_minimum_size = Vector2(84, 44)
-		btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		btn.focus_mode = Control.FOCUS_NONE
-		btn.flat = false
-		btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-		btn.expand_icon = false
-		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		btn.add_theme_constant_override("h_separation", 6)
-		btn.add_theme_constant_override("icon_max_width", 18)
-		btn.add_theme_stylebox_override("normal", normal_sb)
-		btn.add_theme_stylebox_override("hover", hover_sb)
-		btn.add_theme_stylebox_override("pressed", hover_sb)
-		btn.add_theme_stylebox_override("focus", hover_sb)
-		btn.add_theme_font_size_override("font_size", 11)
-		btn.add_theme_color_override("font_color", Color(0.118, 0.118, 0.18))
-		btn.add_theme_color_override("font_hover_color", Color(0.263, 0.38, 0.933))
-		btn.add_theme_color_override("font_pressed_color", Color(0.263, 0.38, 0.933))
-		btn.add_theme_color_override("font_focus_color", Color(0.263, 0.38, 0.933))
+	var sn := StyleBoxFlat.new()
+	sn.bg_color = ACCENT
+	sn.set_corner_radius_all(8)
+	sn.content_margin_left = 14
+	sn.content_margin_right = 14
+	sn.content_margin_top = 0
+	sn.content_margin_bottom = 0
+	var sh := sn.duplicate() as StyleBoxFlat
+	sh.bg_color = ACCENT_HOVER
+	_share_btn.add_theme_stylebox_override("normal",  sn)
+	_share_btn.add_theme_stylebox_override("hover",   sh)
+	_share_btn.add_theme_stylebox_override("pressed", sh)
+	_share_btn.add_theme_stylebox_override("focus",   sn)
+	_share_btn.add_theme_font_size_override("font_size", 13)
+	_share_btn.add_theme_color_override("font_color",         Color.WHITE)
+	_share_btn.add_theme_color_override("font_hover_color",   Color.WHITE)
+	_share_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	_share_btn.add_theme_color_override("font_focus_color",   Color.WHITE)
 
-	_share_btn.icon = SHARE_TOOLBAR_ICON
-	_presets_btn.icon = TRIGGER_TOOLBAR_ICON
+	# --- Presets button: white panel style matching the app chrome ---
+	_presets_btn.text = "Presets"
+	_presets_btn.icon = null
+	_presets_btn.custom_minimum_size = Vector2(84, 36)
+	_presets_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_presets_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_presets_btn.focus_mode = Control.FOCUS_NONE
+	_presets_btn.flat = false
+	_presets_btn.alignment = HORIZONTAL_ALIGNMENT_CENTER
 
-	var sep := $Margin/TriggerPanel/HBox/Separator as VSeparator
-	if sep:
-		sep.add_theme_color_override("color", Color(0.86, 0.86, 0.88))
-
-	var tp: PanelContainer = $Margin/TriggerPanel
-	if tp:
-		tp.size_flags_horizontal = Control.SIZE_SHRINK_END
-		tp.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	var pn := StyleBoxFlat.new()
+	pn.bg_color = Color(1.0, 1.0, 1.0, 1.0)
+	pn.border_width_left   = 1
+	pn.border_width_top    = 1
+	pn.border_width_right  = 1
+	pn.border_width_bottom = 1
+	pn.border_color = Color(0.878, 0.878, 0.878)
+	pn.set_corner_radius_all(8)
+	pn.shadow_color  = Color(0, 0, 0, 0.12)
+	pn.shadow_size   = 6
+	pn.shadow_offset = Vector2(0, 2)
+	pn.content_margin_left = 14
+	pn.content_margin_right = 14
+	pn.content_margin_top = 0
+	pn.content_margin_bottom = 0
+	var ph := pn.duplicate() as StyleBoxFlat
+	ph.bg_color = Color(0.94, 0.94, 0.98)
+	ph.shadow_size = 2
+	_presets_btn.add_theme_stylebox_override("normal",  pn)
+	_presets_btn.add_theme_stylebox_override("hover",   ph)
+	_presets_btn.add_theme_stylebox_override("pressed", ph)
+	_presets_btn.add_theme_stylebox_override("focus",   pn)
+	_presets_btn.add_theme_font_size_override("font_size", 13)
+	_presets_btn.add_theme_color_override("font_color",         DARK)
+	_presets_btn.add_theme_color_override("font_hover_color",   ACCENT)
+	_presets_btn.add_theme_color_override("font_pressed_color", ACCENT)
+	_presets_btn.add_theme_color_override("font_focus_color",   DARK)
 
 
 func _build_grid() -> void:

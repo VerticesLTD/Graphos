@@ -141,6 +141,8 @@ func _handle_left_click(event: InputEventMouseButton):
 		var handle := _get_handle_at(mouse_global_pos)
 		if handle != ResizeHandle.NONE:
 			_start_resize(handle)
+			# Consume the event so GlobalUI does NOT also start its marquee/hold timer.
+			get_viewport().set_input_as_handled()
 			return
 
 	# Multi-drag: only when not using Ctrl+connect (otherwise we never reach _handle_path_connection).
@@ -344,12 +346,15 @@ func _handle_hover(_mouse_global_pos: Vector2) -> void:
 ## BOUNDING-BOX RESIZE
 ## -----------------------------------------------------------------------
 
-## World-space grab zone that maps to ~10 screen pixels.
+## World-space grab zone sized to match the drawn handle.
+## Targets ~10 screen-pixels but is capped to half a vertex radius in world space,
+## so it never extends beyond the visible handle even when zoomed in/out.
 func _get_grab_zone_world() -> float:
 	var cam := controller.graph.get_viewport().get_camera_2d()
-	if cam:
-		return 10.0 / maxf(cam.zoom.x, 0.001)
-	return 10.0
+	if cam == null:
+		return Globals.VERTEX_RADIUS * 0.5
+	var ui_scale := 1.0 / maxf(cam.zoom.x, 0.001)
+	return minf(10.0 * ui_scale, Globals.VERTEX_RADIUS * 0.55)
 
 
 ## Returns which resize handle (if any) the given world pos is over.
@@ -407,6 +412,7 @@ func _get_cursor_for_handle(handle: ResizeHandle) -> DisplayServer.CursorShape:
 
 func _start_resize(handle: ResizeHandle) -> void:
 	_is_resizing = true
+	controller.is_resizing = true
 	_resize_handle = handle
 	_resize_initial_bounds = controller.selection_bounds
 	_resize_center = _resize_initial_bounds.get_center()
@@ -471,6 +477,7 @@ func _stop_resize() -> void:
 	if not _is_resizing:
 		return
 	_is_resizing = false
+	controller.is_resizing = false
 
 	var has_moved := false
 	for v: Vertex in _resize_snapshot.keys():

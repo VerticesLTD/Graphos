@@ -65,6 +65,8 @@ var _last_tool_state: int = -1
 ## Stores { Vertex: Vector2_Initial_Pos } for whatever is being dragged
 var drag_snapshot: Dictionary = {}
 var is_dragging: bool = false
+## Set by MouseActions when a bounding-box resize is in progress.
+var is_resizing: bool = false
 
 ## Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -93,9 +95,8 @@ func _process(delta: float) -> void:
 			animation_manager.clear_all_selection_hovers()
 		_last_tool_state = Globals.current_state
 
-	# If we are currently dragging nodes, we do not want to touch
-	# the selection buffer.
-	if Globals.is_mass_select and not is_dragging:
+	# If we are currently dragging or resizing nodes, do not touch the selection buffer.
+	if Globals.is_mass_select and not is_dragging and not is_resizing:
 		_populate_selection_buffer()
 	_process_algorithm_key_hold(delta)
 	_process_history_key_hold(delta)

@@ -12,4 +12,3 @@ borderless = true
 popup_window = true
 unresizable = true
 visible = false
-min_size = Vector2i(340, 155)

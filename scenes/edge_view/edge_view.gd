@@ -567,6 +567,11 @@ func _commit_inline_weight_edit(new_text: String) -> void:
 	if Globals.active_weight_editor != weight_edit:
 		return
 
+	if edge_data.is_algorithm_locked:
+		Notify.show_error("Cannot change weight: this edge is part of a running algorithm.")
+		_finish_inline_weight_edit()
+		return
+
 	var parsed := new_text.strip_edges().replace(",", ".")
 	if parsed.is_valid_int() or parsed.is_valid_float():
 		var cmd = ChangeEdgeWeightCommand.new(edge_data, parsed.to_float())

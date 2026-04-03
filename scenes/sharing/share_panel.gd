@@ -14,7 +14,7 @@ const DARK         := Color(0.118, 0.118, 0.18)
 const MUTED        := Color(0.44,  0.44, 0.55)
 
 const POPUP_WIDTH  := 340
-const POPUP_HEIGHT := 140
+const POPUP_HEIGHT := 116
 const COPY_RESET_SECS := 2.0
 
 @onready var _popup: Popup = $SharePopup
@@ -31,6 +31,18 @@ var _current_url: String = ""
 
 func _ready() -> void:
 	_build_popup()
+	# Pre-warm: force layout to be calculated before first user click,
+	# so the popup opens at the correct size immediately.
+	call_deferred("_prewarm_popup")
+
+
+func _prewarm_popup() -> void:
+	_popup.position = Vector2i(-9999, -9999)
+	_popup.min_size = Vector2i(POPUP_WIDTH, POPUP_HEIGHT)
+	_popup.max_size = Vector2i(POPUP_WIDTH, POPUP_HEIGHT)
+	_popup.popup()
+	await get_tree().process_frame
+	_popup.hide()
 
 
 # ---------------------------------------------------------------------------
@@ -58,6 +70,8 @@ func toggle_popup(trigger_rect: Rect2) -> void:
 		_url_field.placeholder_text = "Could not generate link."
 		_copy_btn.disabled = true
 
+	_popup.min_size = Vector2i(POPUP_WIDTH, POPUP_HEIGHT)
+	_popup.max_size = Vector2i(POPUP_WIDTH, POPUP_HEIGHT)
 	_popup.size = Vector2i(POPUP_WIDTH, POPUP_HEIGHT)
 	var x := int(trigger_rect.position.x + trigger_rect.size.x - POPUP_WIDTH)
 	var y := int(trigger_rect.position.y + trigger_rect.size.y + 8)
@@ -151,14 +165,6 @@ func _build_popup() -> void:
 	_copy_btn = _make_accent_button("Copy link", ACCENT, ACCENT_HOVER)
 	_copy_btn.pressed.connect(_on_copy_pressed)
 	url_row.add_child(_copy_btn)
-
-	# — Note ------------------------------------------------------------------
-	var note := Label.new()
-	note.text = "Anyone with this link can open and edit this graph."
-	note.add_theme_font_size_override("font_size", 10)
-	note.add_theme_color_override("font_color", MUTED)
-	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	vbox.add_child(note)
 
 	# — Copy-reset timer ------------------------------------------------------
 	_copy_timer = Timer.new()
