@@ -18,6 +18,12 @@ func update_selected_elements_hover_animations() -> void:
 	# and all edges whose dst and src are in selection.
 	# Also takes care of stopping highlights.
 
+	var current_ids := {}
+	for v in current_selection:
+		current_ids[v.id] = true
+	var started_edges := {}
+	var stopped_edges := {}
+
 	# Start animations for the CURRENT selection
 	for v in current_selection:
 		# Tell the Brain to request an animation from its View
@@ -26,8 +32,11 @@ func update_selected_elements_hover_animations() -> void:
 		var e = v.edges
 		while e:
 			# If the destination is ALSO selected, light up the edge between them
-			if e.dst in current_selection:
-				e.animation_requested.emit("hover_start")
+			if current_ids.has(e.dst.id):
+				var edge_id := e.get_instance_id()
+				if not started_edges.has(edge_id):
+					started_edges[edge_id] = true
+					e.animation_requested.emit("hover_start")
 			e = e.next
 			
 	# Stop animations for elements that are NO LONGER selected
@@ -37,13 +46,18 @@ func update_selected_elements_hover_animations() -> void:
 			continue
 
 		# If it survived, but is no longer in the active selection, turn it off
-		if v not in current_selection:
+		if not current_ids.has(v.id):
 			v.animation_requested.emit("hover_stop")
 			
 			var e = v.edges
 			while e:
 				# Turn off the connected edges as well
 				if is_instance_valid(e):
+					var stop_edge_id := e.get_instance_id()
+					if stopped_edges.has(stop_edge_id):
+						e = e.next
+						continue
+					stopped_edges[stop_edge_id] = true
 					e.animation_requested.emit("hover_stop")
 				e = e.next
 

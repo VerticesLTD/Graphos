@@ -456,13 +456,25 @@ func is_weakly_connected() -> bool:
 	return visited.size() == n
 
 
-## Helper: Returns a flat array containing every unique edge object in the graph.
+## Helper: Returns a flat list of logical edges (one entry per directed arc or undirected pair).
+## Important: `Array.has(edge)` is O(n) per check — on dense graphs that becomes ~O(E²).
+## Undirected edges are stored as two Edge objects (A→B and B→A); we key by sorted endpoints
+## so strategy/weight checks see each undirected connection once (same idea as `UndirectedStrategy.clone_edges`).
 func _get_unique_edges() -> Array[Edge]:
 	var list: Array[Edge] = []
+	var seen: Dictionary = {}
 	for v in vertices.values():
-		var e = v.edges
+		var e: Edge = v.edges
 		while e:
-			if not list.has(e):
+			var key: String
+			if e.strategy is UndirectedStrategy:
+				var a: int = mini(e.src.id, e.dst.id)
+				var b: int = maxi(e.src.id, e.dst.id)
+				key = "U:%d:%d" % [a, b]
+			else:
+				key = "D:%d:%d" % [e.src.id, e.dst.id]
+			if not seen.has(key):
+				seen[key] = true
 				list.append(e)
 			e = e.next
 	return list

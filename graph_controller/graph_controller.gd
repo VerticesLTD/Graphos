@@ -288,8 +288,9 @@ func sync_link_session_from_order() -> void:
 ## to buffer.
 ## This function preserves the order of selection, which is important for animations.
 func _populate_selection_buffer() -> void:
-	# OPTIMIZE: Lookups can be O(1) with dicts
 	var new_selection: Array[Vertex] = []
+	var new_selection_ids := {}
+	var old_selection_ids := {}
 
 	# Check what is selected
 	var rect = Rect2(Globals.selection_rectangle)
@@ -299,16 +300,20 @@ func _populate_selection_buffer() -> void:
 			v.z_idx = VERTEX_ON_TOP
 
 			new_selection.append(v)
+			new_selection_ids[v.id] = true
 	
+	for old_v in selection_buffer:
+		old_selection_ids[old_v.id] = true
+
 	# Check what needs to be removed from the previous selection state and update
 	# Iterating BACKWARDS to preserve order
 	for i in range(selection_buffer.size() -1, -1, -1):
 		var v = selection_buffer[i]
-		if v not in new_selection:
+		if not new_selection_ids.has(v.id):
 			selection_buffer.remove_at(i)
 
 	for v in new_selection:
-		if v not in selection_buffer:
+		if not old_selection_ids.has(v.id):
 			selection_buffer.append(v)
 
 	animation_manager.update_current_selection(selection_buffer)

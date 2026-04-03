@@ -26,6 +26,11 @@ var is_hovered: bool = false
 var is_manual_hover: bool = false
 var _tween: Tween
 var _weight_mid_local: Vector2 = Vector2.ZERO
+var _last_src_pos: Vector2 = Vector2.INF
+var _last_dst_pos: Vector2 = Vector2.INF
+var _last_is_weighted := false
+var _last_strategy_id := 0
+var _last_curve_mode := false
 const BIDIRECTIONAL_CURVE_FACTOR := 0.18
 const BIDIRECTIONAL_CURVE_MIN := 22.0
 const BIDIRECTIONAL_CURVE_MAX := 56.0
@@ -74,11 +79,13 @@ func _ready() -> void:
 func refresh() -> void:
 	if not is_instance_valid(edge_data): return
 
+	_refresh_visual_style()
+	_refresh_geometry_if_needed()
+
+func _refresh_visual_style() -> void:
 	weight_label.text = _format_weight(edge_data.weight)
 	weight_gap = 43.0 if weight_label.text.length() >= 3 else 30.0
-	
 	var fixed_width = Globals.EDGE_WIDTH
-	
 	if is_hovered:
 		line_1.default_color = draw_color_hovered
 		line_2.default_color = draw_color_hovered
@@ -92,8 +99,28 @@ func refresh() -> void:
 		line_2.width = fixed_width
 		arrowhead.color = edge_data.color
 
+func _refresh_geometry_if_needed() -> void:
+	var graph := get_parent() as Graph
+	var src_pos := edge_data.src.pos
+	var dst_pos := edge_data.dst.pos
+	var curve_mode := EdgeGeometry.should_draw_bidirectional_curve(edge_data, graph)
+	var strategy_id := edge_data.strategy.get_instance_id() if edge_data.strategy else 0
+	var needs_geometry := (
+		src_pos != _last_src_pos
+		or dst_pos != _last_dst_pos
+		or edge_data.is_weighted != _last_is_weighted
+		or strategy_id != _last_strategy_id
+		or curve_mode != _last_curve_mode
+	)
+	if not needs_geometry:
+		return
 	_setup_lines_and_weight()
 	_setup_detection_area()
+	_last_src_pos = src_pos
+	_last_dst_pos = dst_pos
+	_last_is_weighted = edge_data.is_weighted
+	_last_strategy_id = strategy_id
+	_last_curve_mode = curve_mode
 
 # --- Animations & Interaction ---
 
@@ -142,8 +169,8 @@ func _start_hover_animation() -> void:
 	_tween.tween_property(self, "draw_width_hovered", Globals.EDGE_WIDTH * Globals.EDGE_HOVER_SCALE, Globals.EDGE_TWEEN_TIME)
 	_tween.tween_property(self, "draw_color_hovered", Globals.EDGE_HOVER_COLOR, Globals.EDGE_TWEEN_TIME)
 	
-	# Forces the Line2D nodes to visually update frame-by-frame
-	_tween.tween_method(func(_val): refresh(), 0.0, 1.0, Globals.EDGE_TWEEN_TIME)
+	# Keep hover smooth without rebuilding geometry/hitbox every frame.
+	_tween.tween_method(func(_val): _refresh_visual_style(), 0.0, 1.0, Globals.EDGE_TWEEN_TIME)
 
 ## Tweens the edge safely back to its underlying data-driven state.
 func _stop_hover_animation() -> void:
@@ -154,7 +181,7 @@ func _stop_hover_animation() -> void:
 	_tween.tween_property(self, "draw_width_hovered", Globals.EDGE_WIDTH, Globals.EDGE_TWEEN_TIME)
 	_tween.tween_property(self, "draw_color_hovered", edge_data.color, Globals.EDGE_TWEEN_TIME)
 	
-	_tween.tween_method(func(_val): refresh(), 0.0, 1.0, Globals.EDGE_TWEEN_TIME)
+	_tween.tween_method(func(_val): _refresh_visual_style(), 0.0, 1.0, Globals.EDGE_TWEEN_TIME)
 
 	_tween.chain().tween_callback(func(): 
 		is_hovered = false
