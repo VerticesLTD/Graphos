@@ -15,6 +15,8 @@
 [ext_resource type="Script" uid="uid://dldtmuvu7cxha" path="res://controller/ghost_edge_preview.gd" id="13_ghost_edge"]
 [ext_resource type="PackedScene" path="res://scenes/presets/preset_picker.tscn" id="14_preset_picker"]
 [ext_resource type="Script" path="res://scenes/main/persistence_manager.gd" id="15_persistence"]
+[ext_resource type="Script" path="res://scenes/main/share_manager.gd" id="16_share_manager"]
+[ext_resource type="PackedScene" path="res://scenes/sharing/share_panel.tscn" id="17_share_panel"]
 
 [node name="Main" type="Node2D" unique_id=446252932]
 script = ExtResource("1_yyfjg")
@@ -71,6 +73,11 @@ script = ExtResource("6_th5th")
 [node name="PopupMenuLayer" parent="CanvasLayer" unique_id=665487505 instance=ExtResource("8_raeie")]
 
 [node name="PresetPickerRoot" parent="." unique_id=1015688362 instance=ExtResource("14_preset_picker")]
+
+[node name="ShareManager" type="Node" parent="." unique_id=161718192]
+script = ExtResource("16_share_manager")
+
+[node name="SharePanel" parent="." unique_id=202122232 instance=ExtResource("17_share_panel")]
 
 [node name="PersistenceManager" type="Node" parent="." unique_id=987654321 node_paths=PackedStringArray("graph", "camera", "grid_background", "popup_menu_a", "popup_menu_b")]
 script = ExtResource("15_persistence")
