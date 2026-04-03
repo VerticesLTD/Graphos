@@ -1,10 +1,19 @@
-## Lightweight spatial hash for fast vertex hit-testing.
+## Spatial hash that speeds up "which vertex is under the cursor?" checks.
+##
+## The world is divided into square cells of _cell_size units. Each vertex
+## lives in exactly one cell. When picking, we check the 3×3 neighbourhood
+## of the cursor cell so we never miss a vertex that straddles a cell boundary.
+##
+## Time complexity:
+##   track / untrack  — O(1) average
+##   on_vertex_moved  — O(1) when the cell doesn't change (the common case)
+##   get_candidates   — O(1) — at most 9 cells × a tiny bucket each
 class_name GraphVertexSpatialIndex
 extends RefCounted
 
 var _cell_size: float
-var _grid: Dictionary = {}       ## "cx:cy" -> Array[int]
-var _cell_by_id: Dictionary = {} ## vertex id -> "cx:cy"
+var _grid: Dictionary = {}       ## "cx:cy" -> Array[int]   (the spatial buckets)
+var _cell_by_id: Dictionary = {} ## vertex_id -> "cx:cy"    (reverse map for fast moves)
 
 
 func _init(cell_size: float) -> void:
@@ -16,10 +25,12 @@ func clear() -> void:
 	_cell_by_id.clear()
 
 
+## Register a vertex at the given world position.
 func track_vertex(vertex_id: int, pos: Vector2) -> void:
 	_insert(vertex_id, _cell_key_from_pos(pos))
 
 
+## Remove a vertex from the index entirely.
 func untrack_vertex(vertex_id: int) -> void:
 	var cell := _cell_by_id.get(vertex_id, "") as String
 	if cell.is_empty():
@@ -28,15 +39,18 @@ func untrack_vertex(vertex_id: int) -> void:
 	_cell_by_id.erase(vertex_id)
 
 
+## Call this whenever a vertex moves — keeps the bucket membership in sync.
 func on_vertex_moved(vertex_id: int, old_pos: Vector2, new_pos: Vector2) -> void:
 	var from_cell := _cell_key_from_pos(old_pos)
 	var to_cell := _cell_key_from_pos(new_pos)
 	if from_cell == to_cell:
-		return
+		return  # Same cell, nothing to update.
 	_remove_from_bucket(vertex_id, from_cell)
 	_insert(vertex_id, to_cell)
 
 
+## Returns all vertex IDs that could possibly contain pos (3×3 neighbourhood).
+## The caller still needs to do a radius check on each candidate.
 func get_candidate_ids(pos: Vector2) -> Array:
 	var out: Array = []
 	var base := _cell_coord(pos)

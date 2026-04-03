@@ -1,9 +1,9 @@
 # Headless micro-benchmarks for Graphos hot paths (data + graph helpers).
 #
 # Run (autoloads load correctly when using a scene):
-#   godot --path . --headless res://scenes/dev/profile_benchmark.tscn
+#   godot --path . --headless res://dev/profile_benchmark.tscn
 #
-# Safe to delete `scripts/dev/` + `scenes/dev/` benchmark files if unwanted.
+# Safe to delete the dev/ folder if you don't need benchmarking.
 
 extends Node
 

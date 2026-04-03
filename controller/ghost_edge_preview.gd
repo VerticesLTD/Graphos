@@ -2,7 +2,7 @@ extends Node2D
 ## Preview for Ctrl+click edge chains in Create mode: stroke in _draw(), arrow + optional placement disk as children.
 class_name GhostEdgePreview
 
-const _PHYS_CTRL_R := 4194328
+const _PHYS_CTRL_R: Key = 4194328 as Key  ## Right Ctrl physical keycode
 const LINE_ALPHA := 0.42
 const GHOST_DISK_ALPHA := 0.22
 ## Placement hint only — smaller than a real vertex so it reads lighter than committed nodes.

@@ -142,15 +142,15 @@ func _make_preset_tile(display_name: String, json_path: String, tex: Texture2D, 
 		vb.add_child(cap)
 		vb.add_child(live)
 	else:
-		var tr := TextureRect.new()
-		tr.texture = tex
-		tr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-		tr.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tr.custom_minimum_size = Vector2(0, 58)
-		tr.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		var tex_rect := TextureRect.new()
+		tex_rect.texture = tex
+		tex_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		tex_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex_rect.custom_minimum_size = Vector2(0, 58)
+		tex_rect.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		vb.add_child(cap)
-		vb.add_child(tr)
+		vb.add_child(tex_rect)
 
 	root.add_child(vb)
 

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="PseudoCodeData" format=3 uid="uid://chwkrpy8dpkfk"]
 
-[ext_resource type="Script" uid="uid://c8h8cvjik2tcu" path="res://scripts/algorithms/pseudo_code/pseudo_code_resource.gd" id="1_g18le"]
+[ext_resource type="Script" uid="uid://c8h8cvjik2tcu" path="res://algorithms/pseudo_code/pseudo_code_resource.gd" id="1_g18le"]
 
 [resource]
 script = ExtResource("1_g18le")

@@ -73,7 +73,11 @@ func _add_snapshot_edge(snap: Dictionary) -> void:
 	var weight: float = snap["weight"]
 	var is_weighted: bool = snap["is_weighted"]
 	var color: Color = snap["color"]
-	var strategy: ConnectionStrategy = DirectedStrategy.new() if snap["is_directed"] else UndirectedStrategy.new()
+	var strategy: ConnectionStrategy
+	if snap["is_directed"]:
+		strategy = DirectedStrategy.new()
+	else:
+		strategy = UndirectedStrategy.new()
 
 	graph.add_edge(src_id, dst_id, weight, strategy, is_weighted, true)
 

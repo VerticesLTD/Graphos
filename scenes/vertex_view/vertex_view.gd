@@ -75,7 +75,7 @@ func refresh() -> void:
 func _draw() -> void:
 	var radius: float = draw_radius_hovered if is_hovered else Globals.VERTEX_RADIUS
 	var color: Color = draw_color_hovered if is_hovered else vertex_data.color
-	draw_circle(Vector2.ZERO, radius, color)
+	draw_circle(Vector2.ZERO, radius, color, true, -1.0, true)  # antialiased=true
 
 func _update_key_badge() -> void:
 	if not _should_show_key():

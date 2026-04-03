@@ -1,10 +1,16 @@
-## Centralized edge indexes used by Graph.
-## Keeps direct lookup (src->dst) and incoming lists in sync.
+## Centralized edge lookup tables for Graph.
+##
+## Two indexes are maintained in lockstep:
+##   _edge_by_key           — O(1) "does edge A→B exist?" (used by has_edge / get_edge)
+##   _incoming_by_vertex_id — O(1) "what points at V?" (used by get_incoming_edges)
+##
+## Both are updated by the connection strategies via Graph._on_edge_added/removed.
+## Graph itself never touches the raw dictionaries directly.
 class_name GraphEdgeIndex
 extends RefCounted
 
 var _incoming_by_vertex_id: Dictionary = {} ## dst_id -> Array[Edge]
-var _edge_by_key: Dictionary = {} ## "src:dst" -> Edge
+var _edge_by_key: Dictionary = {}           ## "src_id:dst_id" -> Edge
 
 
 func clear() -> void:

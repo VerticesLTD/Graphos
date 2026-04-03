@@ -36,6 +36,17 @@ var graph: Graph
 var controller: GraphController 
 
 
+## Curated vertex/edge color palette — matches the app's existing color language.
+## White removed (invisible on white background). Dark is the app's native default.
+const COLOR_PALETTE := [
+	["Default", Color("1e1e2e")],  ## The app's own dark — resets to native look
+	["Blue",    Color("4361ee")],  ## App accent / hover blue
+	["Red",     Color("ef233c")],  ## App error red
+	["Teal",    Color("06d6a0")],  ## Algorithm chain green
+	["Pink",    Color("f72585")],  ## Algorithm chain head
+	["Orange",  Color("f4a261")],  ## Warm contrast
+]
+
 const ALGORITHM_MENU_ITEMS := [
 	{"label": "BFS", "id": AlgorithmPlayer.ALGORITHMS.BFS},
 	{"label": "DFS", "id": AlgorithmPlayer.ALGORITHMS.DFS},
@@ -307,14 +318,9 @@ func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
 	if buffer_snapshot.is_empty() and v:
 		buffer_snapshot = [v]
 
-	var color_vertex_submenu = [
-	["Black",  ChangeVertexColorCommand.new(v, Color.BLACK),  _get_swatch(Color.BLACK)],
-	["Red",    ChangeVertexColorCommand.new(v, Color.RED),    _get_swatch(Color.RED)],
-	["Blue",   ChangeVertexColorCommand.new(v, Color.BLUE),   _get_swatch(Color.BLUE)],
-	["White",  ChangeVertexColorCommand.new(v, Color.WHITE),  _get_swatch(Color.WHITE)],
-	["Yellow", ChangeVertexColorCommand.new(v, Color.YELLOW), _get_swatch(Color.YELLOW)],
-	["Green",  ChangeVertexColorCommand.new(v, Color.GREEN),  _get_swatch(Color.GREEN)]
-	]	
+	var color_vertex_submenu: Array = []
+	for entry in COLOR_PALETTE:
+		color_vertex_submenu.append([entry[0], ChangeVertexColorCommand.new(v, entry[1]), _get_swatch(entry[1])])
 
 
 	return [
@@ -336,14 +342,9 @@ func _make_vertex_menu(v: Vertex, mouse_pos: Vector2) -> Array:
 
 func _make_edge_menu(e: Edge) -> Array:
 	# 1. Create the Submenu for Colors
-	var color_edge_submenu = [
-		["Black",  ChangeEdgeColorCommand.new(e, Color.BLACK),  _get_swatch(Color.BLACK)],
-		["Red",    ChangeEdgeColorCommand.new(e, Color.RED),    _get_swatch(Color.RED)],
-		["Blue",   ChangeEdgeColorCommand.new(e, Color.BLUE),   _get_swatch(Color.BLUE)],
-		["White",  ChangeEdgeColorCommand.new(e, Color.WHITE),  _get_swatch(Color.WHITE)],
-		["Yellow", ChangeEdgeColorCommand.new(e, Color.YELLOW), _get_swatch(Color.YELLOW)],
-		["Green",  ChangeEdgeColorCommand.new(e, Color.GREEN),  _get_swatch(Color.GREEN)]
-	]
+	var color_edge_submenu: Array = []
+	for entry in COLOR_PALETTE:
+		color_edge_submenu.append([entry[0], ChangeEdgeColorCommand.new(e, entry[1]), _get_swatch(entry[1])])
 
 	var edge_list: Array[Edge] = [e]
 	var edge_analysis := _analyze_edges(edge_list)
@@ -414,14 +415,10 @@ func _make_selection_menu(clicked_vertex: Vertex, mouse_pos: Vector2) -> Array:
 func _build_color_vertices_selection_submenu(selection_vertices: Array[Vertex]) -> Array:
 	if selection_vertices.is_empty():
 		return [["No vertices in selection", null]]
-	return [
-		["Black",  ChangeSelectionVertexColorCommand.new(selection_vertices, Color.BLACK),  _get_swatch(Color.BLACK)],
-		["Red",    ChangeSelectionVertexColorCommand.new(selection_vertices, Color.RED),    _get_swatch(Color.RED)],
-		["Blue",   ChangeSelectionVertexColorCommand.new(selection_vertices, Color.BLUE),   _get_swatch(Color.BLUE)],
-		["White",  ChangeSelectionVertexColorCommand.new(selection_vertices, Color.WHITE),  _get_swatch(Color.WHITE)],
-		["Yellow", ChangeSelectionVertexColorCommand.new(selection_vertices, Color.YELLOW), _get_swatch(Color.YELLOW)],
-		["Green",  ChangeSelectionVertexColorCommand.new(selection_vertices, Color.GREEN),  _get_swatch(Color.GREEN)]
-	]
+	var out: Array = []
+	for entry in COLOR_PALETTE:
+		out.append([entry[0], ChangeSelectionVertexColorCommand.new(selection_vertices, entry[1]), _get_swatch(entry[1])])
+	return out
 
 func _build_color_edges_selection_submenu(selection_vertices: Array[Vertex]) -> Array:
 	var edges := _get_edges_within_selection(selection_vertices)
@@ -430,14 +427,10 @@ func _build_color_edges_selection_submenu(selection_vertices: Array[Vertex]) -> 
 func _build_color_edges_selection_submenu_from_edges(edges: Array[Edge]) -> Array:
 	if edges.is_empty():
 		return [["No edges in selection", null]]
-	return [
-		["Black",  ChangeSelectionEdgeColorCommand.new(edges, Color.BLACK),  _get_swatch(Color.BLACK)],
-		["Red",    ChangeSelectionEdgeColorCommand.new(edges, Color.RED),    _get_swatch(Color.RED)],
-		["Blue",   ChangeSelectionEdgeColorCommand.new(edges, Color.BLUE),   _get_swatch(Color.BLUE)],
-		["White",  ChangeSelectionEdgeColorCommand.new(edges, Color.WHITE),  _get_swatch(Color.WHITE)],
-		["Yellow", ChangeSelectionEdgeColorCommand.new(edges, Color.YELLOW), _get_swatch(Color.YELLOW)],
-		["Green",  ChangeSelectionEdgeColorCommand.new(edges, Color.GREEN),  _get_swatch(Color.GREEN)]
-	]
+	var out: Array = []
+	for entry in COLOR_PALETTE:
+		out.append([entry[0], ChangeSelectionEdgeColorCommand.new(edges, entry[1]), _get_swatch(entry[1])])
+	return out
 
 func _build_weight_submenu(edges: Array[Edge], edge_analysis: Dictionary) -> Array:
 	if edges.is_empty():
