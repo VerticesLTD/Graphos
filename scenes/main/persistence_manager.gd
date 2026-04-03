@@ -17,6 +17,9 @@ class_name PersistenceManager
 @export var popup_menu_a: GraphContextMenuManager  ## GraphController/PopupMenu
 @export var popup_menu_b: GraphContextMenuManager  ## CanvasLayer/PopupMenuLayer
 
+## Resolved at _ready() — ShareManager runs its _ready() first (scene order).
+@onready var _share_manager: ShareManager = get_node_or_null("../ShareManager") as ShareManager
+
 var _auto_save: AutoSaveService
 ## Path of the last explicitly saved/opened file.  Empty = no named file yet.
 var _current_path: String = ""
@@ -27,24 +30,23 @@ func _ready() -> void:
 	add_child(_auto_save)
 	_auto_save.save_requested.connect(_on_auto_save_requested)
 
-	# Graph mutations (only add_to_history commands, not algorithm steps).
 	CommandManager.state_changed.connect(_auto_save.mark_dirty)
 
-	# Camera pan / zoom end.
 	if camera:
 		camera.view_changed.connect(_auto_save.mark_dirty)
 
-	# Grid toggle from either popup instance.
 	if popup_menu_a:
 		popup_menu_a.toggle_grid_requested.connect(_on_grid_toggled)
 	if popup_menu_b:
 		popup_menu_b.toggle_grid_requested.connect(_on_grid_toggled)
 
-	# Strategy and weighted-mode switches.
 	Globals.strategy_changed.connect(_auto_save.mark_dirty)
 	Globals.weighted_mode_changed.connect(_auto_save.mark_dirty)
 
-	_try_load_autosave()
+	# Skip autosave restore if ShareManager already loaded a graph from a URL.
+	var loaded_from_url := _share_manager != null and _share_manager.loaded_from_url
+	if not loaded_from_url:
+		_try_load_autosave()
 
 
 func _input(event: InputEvent) -> void:
@@ -101,19 +103,29 @@ func _load(path: String) -> void:
 	if not graph or not camera or not grid_background:
 		push_error("PersistenceManager: missing node refs — cannot load.")
 		return
-
 	var result := GraphDocumentIO.load(path)
 	if result.is_empty():
 		push_error("PersistenceManager: failed to load '%s'." % path)
 		return
+	if path != GraphDocumentIO.AUTOSAVE_PATH:
+		_current_path = path
+	apply_document(result)
 
-	# Pause auto-save to avoid partial-state saves during restore.
-	_auto_save.pause()
 
-	# 1. Restore graph structure.
+## Apply a fully-parsed document dictionary to the scene.
+## Called by _load() for file-based loading, and by ShareManager when
+## restoring from a URL hash.  Safe to call before _auto_save is initialised.
+func apply_document(result: Dictionary) -> void:
+	if not graph or not camera or not grid_background:
+		push_error("PersistenceManager: missing node refs — cannot apply document.")
+		return
+
+	# _auto_save may be null when called by ShareManager before our own _ready().
+	if _auto_save != null:
+		_auto_save.pause()
+
 	GraphSerializer.from_dictionary(result["graph_data"], graph)
 
-	# 2. Restore view state.
 	var state: Dictionary = result["app_state"]
 
 	camera.position = state["camera_position"]
@@ -134,14 +146,11 @@ func _load(path: String) -> void:
 		Globals.active_strategy = UndirectedStrategy.new()
 	Globals.is_weighted_mode = state["is_weighted_mode"]
 
-	# Reset transient session state.
 	Globals.current_state = Globals.State.SELECTION
 	CommandManager.clear_history()
 
-	if path != GraphDocumentIO.AUTOSAVE_PATH:
-		_current_path = path
-
-	_auto_save.resume()
+	if _auto_save != null:
+		_auto_save.resume()
 
 
 # ---------------------------------------------------------------------------
