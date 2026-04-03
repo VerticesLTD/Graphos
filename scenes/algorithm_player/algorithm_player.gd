@@ -91,9 +91,7 @@ func start_algorithm(
 	) -> void:
 
 	if _is_algorithm_running:
-		cancel_algorithm_execution()
-		if visualizer_tween:
-			await visualizer_tween.finished
+		_shutdown_algorithm_for_restart()
 
 	var imposter_graph = graph.create_induced_subgraph_from_vertices(selection_buffer)
 	if imposter_graph.vertices.is_empty():
@@ -175,6 +173,39 @@ func start_algorithm(
 	global_position = imposter_start_node.pos
 
 	_is_algorithm_running = true
+
+
+## Modular restart-safe shutdown:
+## fully close current algorithm run (state + UI) before opening the next one.
+func _shutdown_algorithm_for_restart() -> void:
+	# Restore graph to pre-run visuals first.
+	reset_to_start()
+
+	# Kill running UI tweens so old callbacks cannot hide new UI later.
+	if visualizer_tween:
+		visualizer_tween.kill()
+		visualizer_tween = null
+	if controls_tween:
+		controls_tween.kill()
+		controls_tween = null
+
+	# Fully reset algorithm state.
+	timeline.clear()
+	pseudo_steps.clear()
+	data_updates = []
+	max_step = 0
+	current_step_index = 0
+	_is_algorithm_running = false
+
+	# Fully reset controls + pseudo UI.
+	algorithm_controls.reset()
+	algorithm_controls.visible = false
+	algorithm_controls.scale = Vector2.ONE
+	pseudo_visualizer.data = null
+	pseudo_visualizer.visible = false
+	pseudo_visualizer.scale = Vector2.ONE
+
+	_set_vertex_key_visuals(false, [])
 
 # Animation to show visualizer
 func _expose_visualizer() -> void:
@@ -348,20 +379,25 @@ func reset_to_start() -> void:
 
 ## Clear all data and collapse pseudo visualizer/controls
 func cancel_algorithm_execution() -> void:
-	# First, reset visuals to go back to the original graph
+	# First, reset visuals to go back to the original graph.
 	reset_to_start()
 
-	# Then clear the data
+	# Then clear run-time data.
 	timeline.clear()
 	pseudo_steps.clear()
+	data_updates = []
+	max_step = 0
+	current_step_index = 0
+	_is_algorithm_running = false
+
+	# Stop controls immediately to avoid any timer activity while collapsing.
+	algorithm_controls.reset()
+	_set_vertex_key_visuals(false, [])
+
+	# Finally animate the UI out.
 	_collapse_visualizer()
 	_collapse_controls()
 	pseudo_visualizer.data = null
-	current_step_index = 0
-	algorithm_controls.reset()
-
-	_is_algorithm_running = false
-	_set_vertex_key_visuals(false, [])
 
 func _sync_optional_step_data() -> void:
 	if algorithm_controls == null:

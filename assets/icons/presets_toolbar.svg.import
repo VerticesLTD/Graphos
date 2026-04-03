@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://do01q8xkl5d70"
-path="res://.godot/imported/presets_toolbar.svg-21bd6a457d374bbdcb60e22ecf526a9d.ctex"
+path="res://.godot/imported/presets_toolbar.svg-58505a7f2e020f2d37b4a8d7b96d2044.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/icons/presets_toolbar.svg"
-dest_files=["res://.godot/imported/presets_toolbar.svg-21bd6a457d374bbdcb60e22ecf526a9d.ctex"]
+dest_files=["res://.godot/imported/presets_toolbar.svg-58505a7f2e020f2d37b4a8d7b96d2044.ctex"]
 
 [params]
 

@@ -2,6 +2,9 @@
 class_name Kruskal
 extends GraphAlgorithm
 
+const COLOR_EDGE_CANDIDATE := Color("f39237") # warm Graphos orange: edge under consideration
+const COLOR_EDGE_MST := Color("06d6a0") # mint green: accepted MST edge
+
 func get_requirements() -> Dictionary:
 	return {
 		"weighted": true,
@@ -74,7 +77,7 @@ func run(_start_vertex: Vertex) -> Array:
 	else:
 		# Sort (pseudo 2): always a visible edge recolor (lightest edge), not a no-op timeline slot.
 		var e0: Edge = edge_list[0]["edge"]
-		change_and_log_edge_color(e0, COLOR_VISITING, 2)
+		change_and_log_edge_color(e0, COLOR_EDGE_CANDIDATE, 2)
 		data_updates.append({&"mst_weight": mst_weight})
 
 	for ei: int in range(edge_list.size()):
@@ -85,11 +88,11 @@ func run(_start_vertex: Vertex) -> Array:
 		var w: float = item["w"]
 
 		if ei > 0:
-			change_and_log_edge_color(e, COLOR_VISITING, 3)
+			change_and_log_edge_color(e, COLOR_EDGE_CANDIDATE, 3)
 			data_updates.append({&"mst_weight": mst_weight})
 		else:
 			# First edge: already VISITING from the sort step; re-apply as pseudo 3 ("for") so this step still runs a Command.
-			change_and_log_edge_color(e, COLOR_VISITING, 3)
+			change_and_log_edge_color(e, COLOR_EDGE_CANDIDATE, 3)
 			data_updates.append({&"mst_weight": mst_weight})
 
 		var ru := _find(parent, u.id)
@@ -135,11 +138,11 @@ func run(_start_vertex: Vertex) -> Array:
 		if real_edge == null:
 			timeline.append(null)
 		else:
-			timeline.append(KruskalUnionMstCommand.new(real_recolor, winner_color, real_edge, COLOR_EDGE_PATH))
+			timeline.append(KruskalUnionMstCommand.new(real_recolor, winner_color, real_edge, COLOR_EDGE_MST))
 
 		for iv: Vertex in to_paint:
 			iv.color = winner_color
-		e.color = COLOR_EDGE_PATH
+		e.color = COLOR_EDGE_MST
 
 		log_pseudo_step(6)
 		data_updates.append({&"mst_weight": mst_weight})
