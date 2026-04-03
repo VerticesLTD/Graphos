@@ -6,20 +6,18 @@ class_name Graph
 
 const EDGE_VIEW_SCENE = preload("uid://bmti1ysdlhopk")
 const VERTEX_VIEW_SCENE = preload("uid://cxt6f2vgtos0c")
+const VERTEX_SPATIAL_INDEX_SCRIPT = preload("res://graphs/core/graph_vertex_spatial_index.gd")
+const EDGE_INDEX_SCRIPT = preload("res://graphs/core/graph_edge_index.gd")
 
 var vertices: Dictionary = {} # int -> Vertex
 var free_ids: Array[int] = []
 var _next_vertex_id: int = 0
 
-# Spatial index for fast point->vertex lookups (used heavily during mouse interactions).
+# Vertex pick grid: world position -> small set of candidate vertex ids for get_vertex_id_at().
 const _VERTEX_GRID_CELL_SIZE := 64.0
-var _vertex_grid: Dictionary = {}       # "cx:cy" -> Array[int] vertex ids
-var _vertex_cell_by_id: Dictionary = {} # int -> "cx:cy"
-
-# Incoming adjacency cache: dst_id -> Array[Edge]
-var _incoming_by_vertex_id: Dictionary = {}
-# Direct edge index for O(1) get_edge / has_edge lookups: "src:dst" -> Edge
-var _edge_by_key: Dictionary = {}
+var _vertex_spatial_index = VERTEX_SPATIAL_INDEX_SCRIPT.new(_VERTEX_GRID_CELL_SIZE)
+# Edge indexes (direct lookup + incoming adjacency cache).
+var _edge_index = EDGE_INDEX_SCRIPT.new()
 
 var num_edges: int = 0
 var num_vertices: int:
@@ -29,10 +27,6 @@ var num_vertices: int:
 ## True when the active create-tool strategy is directed (matches toolbar / new edges).
 func is_directed() -> bool:
 	return Globals.active_strategy is DirectedStrategy
-
-
-func _ready() -> void:
-	pass
 
 # Pops the lowest available ID from the pool
 func get_next_available_id() -> int:
@@ -54,7 +48,7 @@ func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR
 func _register_and_visualize(v: Vertex) -> void:
 	vertices[v.id] = v
 	_next_vertex_id = maxi(_next_vertex_id, v.id + 1)
-	_incoming_by_vertex_id[v.id] = []
+	_edge_index.register_vertex(v.id)
 	_track_vertex_in_spatial_index(v)
 	_connect_vertex_movement_signal(v)
 	
@@ -95,7 +89,7 @@ func delete_vertex(v: Vertex) -> void:
 	
 	_untrack_vertex_from_spatial_index(v.id)
 	_disconnect_vertex_movement_signal(v)
-	_incoming_by_vertex_id.erase(v.id)
+	_edge_index.unregister_vertex(v.id)
 	v.vanished.emit(v) # View hears this and deletes itself
 	vertices.erase(v.id)
 
@@ -156,36 +150,22 @@ func get_vertex(id: int) -> Vertex:
 	
 ## Returns the edge connecting u and v, or null if none exists.
 func get_edge(u: Vertex, v: Vertex) -> Edge:
-	var indexed: Edge = _edge_by_key.get(_edge_key(u.id, v.id))
-	if indexed != null:
-		return indexed
-	var e = u.edges
-	while e:
-		if e.dst == v: return e
-		e = e.next
-	return null
+	return _edge_index.get_edge(u.id, v.id)
 	
 ## Returns a vertex "touching" the given position, or null if none exist
 func get_vertex_id_at(pos: Vector2) -> int:
 	var radius_sq := Globals.VERTEX_RADIUS * Globals.VERTEX_RADIUS
-	var base_cell := _cell_from_pos(pos)
-
-	# Check current cell and 8 neighbors to capture boundary hits.
-	for dy in range(-1, 2):
-		for dx in range(-1, 2):
-			var key := _cell_key(base_cell.x + dx, base_cell.y + dy)
-			var ids: Array = _vertex_grid.get(key, [])
-			for id in ids:
-				var v: Vertex = vertices.get(id)
-				if v == null:
-					continue
-				if (v.pos - pos).length_squared() <= radius_sq:
-					return v.id
+	for id in _vertex_spatial_index.get_candidate_ids(pos):
+		var v: Vertex = vertices.get(id)
+		if v == null:
+			continue
+		if (v.pos - pos).length_squared() <= radius_sq:
+			return v.id
 	return Globals.NOT_FOUND
 
 ## Returns true if an edge exists between two vertices.
 func has_edge(src_id: int, dst_id: int) -> bool:
-	return _edge_by_key.has(_edge_key(src_id, dst_id))
+	return _edge_index.has_edge(src_id, dst_id)
 
 ## Returns the closest Edge under the mouse, or null if none is close enough.
 ## threshold is in world units (same coordinate space as Vertex.pos).
@@ -196,40 +176,23 @@ func get_edge_at(mouse_pos: Vector2, threshold: float = 12.0) -> Edge:
 	for v: Vertex in vertices.values():
 		var e: Edge = v.edges
 		while e:
-				var a: Vector2 = e.src.pos
-				var b: Vector2 = e.dst.pos
-				var closest: Vector2 = Geometry2D.get_closest_point_to_segment(mouse_pos, a, b)
-				var d2: float = (mouse_pos - closest).length_squared()
-				# Strictly less than (<). If we check the reverse edge later and it's
-				# the exact same distance, it just ignores it.
-				if d2 < best_d2:
-					best_d2 = d2
-					best = e
-				e = e.next
+			var a: Vector2 = e.src.pos
+			var b: Vector2 = e.dst.pos
+			var closest: Vector2 = Geometry2D.get_closest_point_to_segment(mouse_pos, a, b)
+			var d2: float = (mouse_pos - closest).length_squared()
+			# Strictly less than (<). If we check the reverse edge later and it's
+			# the exact same distance, it just ignores it.
+			if d2 < best_d2:
+				best_d2 = d2
+				best = e
+			e = e.next
 
 	return best
 	
 ## Returns all edges in the graph that point TO the given vertex.
 ## Useful for directed graph operations without complex data structures.
 func get_incoming_edges(target: Vertex) -> Array[Edge]:
-	var cached: Array = _incoming_by_vertex_id.get(target.id, [])
-	if not cached.is_empty():
-		var result: Array[Edge] = []
-		for e in cached:
-			if e != null:
-				result.append(e as Edge)
-		return result
-	if _incoming_by_vertex_id.has(target.id):
-		return []
-	# Fallback path for ad-hoc imposter graphs that bypass _register_and_visualize.
-	var incoming: Array[Edge] = []
-	for v in vertices.values():
-		var e = v.edges
-		while e:
-			if e.dst == target:
-				incoming.append(e)
-			e = e.next
-	return incoming
+	return _edge_index.get_incoming_edges(target.id)
 		
 		
 ## Returns the shared strategy of the vertex.
@@ -294,59 +257,6 @@ func get_vertex_weight_state(v: Vertex) -> Globals.WeightState:
 		
 	return Globals.WeightState.WEIGHTED if shared_weight else Globals.WeightState.UNWEIGHTED
 	
-## Validates if a single vertex can accept the target connection strategy.
-func _validate_vertex_strategy(v: Vertex, target_strategy: ConnectionStrategy) -> String:
-	var strat = get_vertex_strategy(v)
-	
-	if strat is ErrorStrategy:
-		return "Graph Error: This vertex has mixed edge types. Clear its edges to fix it."
-		
-	if not strat is EmptyStrategy and strat.get_script() != target_strategy.get_script():
-		return "Type Clash: You can't mix Directed and Undirected edges."
-		
-	return ""
-	
-## Validates if a single vertex can accept the target weight state.
-func _validate_vertex_weight(v: Vertex, is_weighted: bool) -> String:
-	var weight_state = get_vertex_weight_state(v)
-	var target_weight_state = Globals.WeightState.WEIGHTED if is_weighted else Globals.WeightState.UNWEIGHTED
-	
-	if weight_state == Globals.WeightState.CORRUPTED:
-		return "Weight Error: This vertex is confused. It has both weighted and unweighted edges."
-		
-	if weight_state != Globals.WeightState.EMPTY and weight_state != target_weight_state:
-		return "Weight Clash: You can't mix Weighted and Unweighted edges on the same vertex."
-		
-	return ""
-	
-## Runs all safety checks on a single vertex.
-func _validate_vertex(v: Vertex, target_strategy: ConnectionStrategy, is_weighted: bool) -> String:
-	var strat_error = _validate_vertex_strategy(v, target_strategy)
-	if strat_error != "": return strat_error
-	
-	var weight_error = _validate_vertex_weight(v, is_weighted)
-	if weight_error != "": return weight_error
-	
-	return ""
-	
-## Checks if a new connection breaks any connection rules.
-func _validate_connection(v_src: Vertex, v_dst: Vertex, target_strategy: ConnectionStrategy, is_weighted: bool) -> String:
-	# Validates vertices against the current global state, 
-	# thus, from transitivity, we're gurenteed the conenction is safe. 
-	# Check Source
-	var src_error = _validate_vertex(v_src, target_strategy, is_weighted)
-	if src_error != "": return src_error
-	
-	# Check Destination
-	var dst_error = _validate_vertex(v_dst, target_strategy, is_weighted)
-	if dst_error != "": return dst_error
-
-	# Ask the strategy if the connection is legal.
-	var specific_error = target_strategy.get_connection_error(self, v_src, v_dst)
-	if specific_error != "": return specific_error
-
-	return ""
-		
 ## Validates that all edges in the selection share the same strategy.
 ## Returns the shared ConnectionStrategy, or null if the selection is mixed.
 func get_selection_strategy(source_vertices: Array[Vertex]) -> ConnectionStrategy:
@@ -532,10 +442,8 @@ func reset_keys(value: float = Globals.INF) -> void:
 ## Removes all vertices and edges from the graph.
 func clear() -> void:
 	vertices.clear()
-	_vertex_grid.clear()
-	_vertex_cell_by_id.clear()
-	_incoming_by_vertex_id.clear()
-	_edge_by_key.clear()
+	_vertex_spatial_index.clear()
+	_edge_index.clear()
 	_next_vertex_id = 0
 	free_ids.clear()
 	num_edges = 0
@@ -549,10 +457,8 @@ func _notification(what: int) -> void:
 				_disconnect_vertex_movement_signal(v)
 				v.vanished.emit(v) # Ensure UI views die first
 		vertices.clear()
-		_vertex_grid.clear()
-		_vertex_cell_by_id.clear()
-		_incoming_by_vertex_id.clear()
-		_edge_by_key.clear()
+		_vertex_spatial_index.clear()
+		_edge_index.clear()
 		free_ids.clear()
 				
 		# We don't need to manually queue_free children.
@@ -561,24 +467,10 @@ func _notification(what: int) -> void:
 
 # Edge lifecycle hooks called by connection strategies.
 func _on_edge_added(edge: Edge) -> void:
-	if edge == null or edge.dst == null:
-		return
-	var dst_id := edge.dst.id
-	if not _incoming_by_vertex_id.has(dst_id):
-		_incoming_by_vertex_id[dst_id] = []
-	(_incoming_by_vertex_id[dst_id] as Array).append(edge)
-	_edge_by_key[_edge_key(edge.src.id, edge.dst.id)] = edge
+	_edge_index.on_edge_added(edge)
 
 func _on_edge_removed(edge: Edge) -> void:
-	if edge == null or edge.dst == null:
-		return
-	var dst_id := edge.dst.id
-	var incoming: Array = _incoming_by_vertex_id.get(dst_id, [])
-	if incoming.is_empty():
-		return
-	incoming.erase(edge)
-	_incoming_by_vertex_id[dst_id] = incoming
-	_edge_by_key.erase(_edge_key(edge.src.id, edge.dst.id))
+	_edge_index.on_edge_removed(edge)
 
 func _connect_vertex_movement_signal(v: Vertex) -> void:
 	if v == null or v.is_imposter:
@@ -593,52 +485,12 @@ func _disconnect_vertex_movement_signal(v: Vertex) -> void:
 		v.position_changed.disconnect(_on_vertex_position_changed)
 
 func _on_vertex_position_changed(v: Vertex, old_pos: Vector2, new_pos: Vector2) -> void:
-	var old_key := _cell_key_from_pos(old_pos)
-	var new_key := _cell_key_from_pos(new_pos)
-	if old_key == new_key:
-		return
-	_remove_vertex_id_from_cell(v.id, old_key)
-	var list: Array = _vertex_grid.get(new_key, [])
-	list.append(v.id)
-	_vertex_grid[new_key] = list
-	_vertex_cell_by_id[v.id] = new_key
+	_vertex_spatial_index.on_vertex_moved(v.id, old_pos, new_pos)
 
 func _track_vertex_in_spatial_index(v: Vertex) -> void:
-	var key := _cell_key_from_pos(v.pos)
-	var list: Array = _vertex_grid.get(key, [])
-	list.append(v.id)
-	_vertex_grid[key] = list
-	_vertex_cell_by_id[v.id] = key
+	_vertex_spatial_index.track_vertex(v.id, v.pos)
 
 func _untrack_vertex_from_spatial_index(vertex_id: int) -> void:
-	var key: String = _vertex_cell_by_id.get(vertex_id, "")
-	if key == "":
-		return
-	_remove_vertex_id_from_cell(vertex_id, key)
-	_vertex_cell_by_id.erase(vertex_id)
+	_vertex_spatial_index.untrack_vertex(vertex_id)
 
-func _remove_vertex_id_from_cell(vertex_id: int, key: String) -> void:
-	var list: Array = _vertex_grid.get(key, [])
-	if list.is_empty():
-		return
-	list.erase(vertex_id)
-	if list.is_empty():
-		_vertex_grid.erase(key)
-	else:
-		_vertex_grid[key] = list
 
-func _cell_from_pos(pos: Vector2) -> Vector2i:
-	return Vector2i(
-		int(floor(pos.x / _VERTEX_GRID_CELL_SIZE)),
-		int(floor(pos.y / _VERTEX_GRID_CELL_SIZE))
-	)
-
-func _cell_key_from_pos(pos: Vector2) -> String:
-	var cell := _cell_from_pos(pos)
-	return _cell_key(cell.x, cell.y)
-
-func _cell_key(cx: int, cy: int) -> String:
-	return "%d:%d" % [cx, cy]
-
-func _edge_key(src_id: int, dst_id: int) -> String:
-	return "%d:%d" % [src_id, dst_id]
