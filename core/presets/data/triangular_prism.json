@@ -1,0 +1,22 @@
+{
+  "format_version": 1,
+  "vertices": [
+    { "id": 0, "pos": [   0, -100], "color": [0.118, 0.118, 0.18, 1.0] },
+    { "id": 1, "pos": [  87,   50], "color": [0.118, 0.118, 0.18, 1.0] },
+    { "id": 2, "pos": [ -87,   50], "color": [0.118, 0.118, 0.18, 1.0] },
+    { "id": 3, "pos": [   0,  -45], "color": [0.118, 0.118, 0.18, 1.0] },
+    { "id": 4, "pos": [  39,   22], "color": [0.118, 0.118, 0.18, 1.0] },
+    { "id": 5, "pos": [ -39,   22], "color": [0.118, 0.118, 0.18, 1.0] }
+  ],
+  "edges": [
+    { "from": 0, "to": 1, "strategy": "undirected", "weighted": false, "weight": 1.0, "color": [0.29, 0.31, 0.34, 1.0] },
+    { "from": 1, "to": 2, "strategy": "undirected", "weighted": false, "weight": 1.0, "color": [0.29, 0.31, 0.34, 1.0] },
+    { "from": 2, "to": 0, "strategy": "undirected", "weighted": false, "weight": 1.0, "color": [0.29, 0.31, 0.34, 1.0] },
+    { "from": 3, "to": 4, "strategy": "undirected", "weighted": false, "weight": 1.0, "color": [0.29, 0.31, 0.34, 1.0] },
+    { "from": 4, "to": 5, "strategy": "undirected", "weighted": false, "weight": 1.0, "color": [0.29, 0.31, 0.34, 1.0] },
+    { "from": 5, "to": 3, "strategy": "undirected", "weighted": false, "weight": 1.0, "color": [0.29, 0.31, 0.34, 1.0] },
+    { "from": 0, "to": 3, "strategy": "undirected", "weighted": false, "weight": 1.0, "color": [0.29, 0.31, 0.34, 1.0] },
+    { "from": 1, "to": 4, "strategy": "undirected", "weighted": false, "weight": 1.0, "color": [0.29, 0.31, 0.34, 1.0] },
+    { "from": 2, "to": 5, "strategy": "undirected", "weighted": false, "weight": 1.0, "color": [0.29, 0.31, 0.34, 1.0] }
+  ]
+}
