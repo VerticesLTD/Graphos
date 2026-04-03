@@ -36,9 +36,6 @@ var _current_url: String = ""
 
 
 func _ready() -> void:
-	if not OS.has_feature("web"):
-		$Margin.visible = false
-		return
 	_style_trigger()
 	_build_popup()
 	_trigger.pressed.connect(_on_trigger_pressed)
@@ -241,12 +238,19 @@ func _on_trigger_pressed() -> void:
 
 	_current_url = ""
 	_url_field.text = ""
-	_url_field.placeholder_text = "Generating link…"
 	_reset_copy_button()
 
-	if _share_manager and _graph and _camera and _grid:
+	if not OS.has_feature("web"):
+		_url_field.placeholder_text = "Share links only work in the browser."
+		_copy_btn.disabled = true
+	elif _share_manager and _graph and _camera and _grid:
+		_url_field.placeholder_text = "Generating link…"
+		_copy_btn.disabled = false
 		_current_url = _share_manager.get_share_url(_graph, _camera, _grid.grid_enabled)
 		_url_field.text = _current_url
+	else:
+		_url_field.placeholder_text = "Could not generate link."
+		_copy_btn.disabled = true
 
 	_popup.size = Vector2i(POPUP_WIDTH, POPUP_HEIGHT)
 
