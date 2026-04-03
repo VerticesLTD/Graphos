@@ -27,7 +27,7 @@ func _draw() -> void:
 	var vp := get_viewport() as SubViewport
 	var vw: float = float(vp.size.x) if vp else 128.0
 	var vh: float = float(vp.size.y) if vp else 88.0
-	draw_rect(Rect2(Vector2.ZERO, Vector2(vw, vh)), Color(0.976, 0.98, 0.996))
+	draw_rect(Rect2(Vector2.ZERO, Vector2(vw, vh)), Color.WHITE)
 
 	if _graph == null or _graph.vertices.is_empty():
 		return
@@ -44,7 +44,7 @@ func _draw() -> void:
 			bb = bb.expand(p)
 		pts[v.id] = p
 
-	var pad := 10.0
+	var pad := 8.0
 	var bw := maxf(bb.size.x, 1.0)
 	var bh := maxf(bb.size.y, 1.0)
 	var sx := (vw - 2.0 * pad) / bw
@@ -53,8 +53,9 @@ func _draw() -> void:
 	var ctr := bb.get_center()
 	var origin := Vector2(vw * 0.5, vh * 0.5)
 
-	var lw := clampf(Globals.EDGE_WIDTH * 0.14, 1.1, 2.4)
-	var rr := clampf(Globals.VERTEX_RADIUS * 0.24, 3.2, 6.5)
+	# Smaller vertices let edge structure show through; slightly thicker edges compensate.
+	var lw := clampf(Globals.EDGE_WIDTH * 0.18, 1.4, 2.8)
+	var rr := clampf(Globals.VERTEX_RADIUS * 0.17, 2.2, 4.5)
 
 	for v: Vertex in _graph.vertices.values():
 		var e: Edge = v.edges
@@ -63,15 +64,15 @@ func _draw() -> void:
 				var a: Vector2 = _map_pt(pts[v.id], origin, ctr, sc)
 				var b: Vector2 = _map_pt(pts[e.dst.id], origin, ctr, sc)
 				var ec: Color = Globals.EDGE_COLOR
-				draw_line(a, b, ec, lw)
+				draw_line(a, b, ec, lw, true)
 				if e.strategy is DirectedStrategy:
 					_draw_arrow_head(a, b, ec, lw)
 			e = e.next
 
 	for v: Vertex in _graph.vertices.values():
 		var c: Vector2 = _map_pt(pts[v.id], origin, ctr, sc)
-		draw_circle(c, rr + 1.1, Color(1, 1, 1, 0.92))
-		draw_circle(c, rr, v.color)
+		draw_circle(c, rr + 1.4, Color(1, 1, 1, 0.95), true, -1.0, true)
+		draw_circle(c, rr, v.color, true, -1.0, true)
 
 
 func _draw_arrow_head(from: Vector2, to: Vector2, col: Color, _lw: float) -> void:

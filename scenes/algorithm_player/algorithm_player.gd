@@ -4,8 +4,8 @@ extends Node2D
 const LOG_TAG = "ALG_PLAYER"
 const PSEUDO_MARGIN := 24.0
 
-const _PrimScript := preload("res://scripts/algorithms/logic/Prim.gd")
-const _KruskalScript := preload("res://scripts/algorithms/logic/Kruskal.gd")
+const _PrimScript    := preload("uid://eprimlgc7m2q")
+const _KruskalScript := preload("uid://bfse1fdag2ksp")
 
 @onready var algorithm_controls: AlgorithmControls = $UILayer/AlgorithmControls
 @onready var pseudo_visualizer: PanelContainer = $UILayer/PseudoVisualizer
@@ -27,9 +27,9 @@ var controls_tween: Tween
 var _algorithm_map: Dictionary = {
 	ALGORITHMS.BFS : [BFS.new(),preload("uid://b6pr3p6u5gqym")],
 	ALGORITHMS.DFS : [DFS.new(), preload("uid://chwkrpy8dpkfk")],
-	ALGORITHMS.DIJKSTRA : [Dijkstra.new(), preload("res://scripts/algorithms/pseudo_code/Dijkstra.tres")],
-	ALGORITHMS.PRIM : [_PrimScript.new(), preload("res://scripts/algorithms/pseudo_code/Prim.tres")],
-	ALGORITHMS.KRUSKAL : [_KruskalScript.new(), preload("res://scripts/algorithms/pseudo_code/Kruskal.tres")],
+	ALGORITHMS.DIJKSTRA : [Dijkstra.new(), preload("uid://c6o8phkpw1txx")],
+	ALGORITHMS.PRIM     : [_PrimScript.new(), preload("uid://caqpr1m0dres0")],
+	ALGORITHMS.KRUSKAL  : [_KruskalScript.new(), preload("res://algorithms/pseudo_code/Kruskal.tres")],
 }
 
 ## Stores the events by order of the algorithm's execution.
