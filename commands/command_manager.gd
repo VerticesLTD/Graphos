@@ -38,11 +38,12 @@ func redo() -> void:
 	history_changed.emit()
 	state_changed.emit()
 
-## Push new command to stack
+## Push an already-executed command to the history stack (e.g. live-drag moves).
 func push_to_stack(cmd) -> void:
 	if cmd.add_to_history:
 		undo_stack.append(cmd)
 		redo_stack.clear()
+		state_changed.emit()
 
 ## Clear undo/redo history (called after loading a document).
 func clear_history() -> void:

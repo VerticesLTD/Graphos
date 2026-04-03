@@ -48,6 +48,9 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	# File dialogs are desktop-only — on web the OS filesystem is not accessible.
+	if OS.has_feature("web"):
+		return
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
 	if event.is_action_pressed("save_file_as"):
@@ -95,6 +98,10 @@ func _try_load_autosave() -> void:
 
 
 func _load(path: String) -> void:
+	if not graph or not camera or not grid_background:
+		push_error("PersistenceManager: missing node refs — cannot load.")
+		return
+
 	var result := GraphDocumentIO.load(path)
 	if result.is_empty():
 		push_error("PersistenceManager: failed to load '%s'." % path)
