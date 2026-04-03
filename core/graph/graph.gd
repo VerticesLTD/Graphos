@@ -299,7 +299,18 @@ func _get_unique_edges() -> Array[Edge]:
 # ------------------------------------------------------------------
 
 ## Wipes all graph state — vertices, edges, indexes, ID pool.
+## Also signals all live view nodes (UIEdgeView, UIVertexView) to queue_free()
+## so that a subsequent restore doesn't leave ghost visuals on screen.
 func clear() -> void:
+	for v: Vertex in vertices.values():
+		# Walk the outgoing edge list and signal each arc's view to self-destruct.
+		# queue_free() is deferred so the linked list remains valid during iteration.
+		var e: Edge = v.edges
+		while e:
+			e.vanished.emit(v)
+			e = e.next
+		_disconnect_vertex_movement_signal(v)
+		v.vanished.emit(v)
 	vertices.clear()
 	_vertex_spatial_index.clear()
 	_edge_index.clear()

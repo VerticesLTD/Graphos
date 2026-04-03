@@ -101,15 +101,23 @@ static func from_dictionary(data: Dictionary, graph: Graph) -> bool:
 			var weighted := bool(item.get("weighted", false))
 			var w := float(item.get("weight", 1.0))
 			var ecol := _parse_color(item.get("color", null), Globals.EDGE_COLOR)
+
+			# shout=false suppresses error toasts but also skips spawn_edge_view
+			# inside the strategy.  We add the data silently, then spawn the view
+			# ourselves — this keeps error-free restoration AND correct visuals.
 			graph.add_edge(a, b, w, strat, weighted, false)
-			# Restore color on both arc directions (undirected = two arcs).
+
 			var va: Vertex = graph.vertices[a]
 			var vb: Vertex = graph.vertices[b]
-			var e1 = graph.get_edge(va, vb)
+			# Primary arc: always the from→to direction stored in the file.
+			var e1: Edge = graph.get_edge(va, vb)
 			if e1:
 				e1.color = ecol
-			var e2 = graph.get_edge(vb, va)
-			if e2:
+				graph.spawn_edge_view(e1)
+				graph.num_edges += 1
+			# Reverse arc: exists for undirected edges; color it but no second view.
+			var e2: Edge = graph.get_edge(vb, va)
+			if e2 and e2 != e1:
 				e2.color = ecol
 
 	return true
