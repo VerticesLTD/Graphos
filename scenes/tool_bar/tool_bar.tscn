@@ -164,6 +164,7 @@ metadata/_edit_use_anchors_ = true
 texture_filter = 4
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+size_flags_vertical = 4
 focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
