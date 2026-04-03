@@ -125,7 +125,7 @@ layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
 tooltip_text = "Select
-Click or drag to select and move vertices"
+Click or drag to select and move"
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -159,7 +159,7 @@ layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
 tooltip_text = "Draw
-Click to place vertices · drag between them to connect"
+Click to place vertices · Ctrl+click two vertices to connect"
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -194,7 +194,7 @@ layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
 tooltip_text = "Pan
-Drag to move around the canvas"
+Drag to pan"
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -233,7 +233,7 @@ theme_override_constants/separation = 2
 [node name="DirectedBtn" type="Button" parent="PanelContainer/HBoxContainer/Modifiers" unique_id=1608271324]
 layout_mode = 2
 tooltip_text = "Directed edges
-Arrows show the direction of each connection"
+Arrows show edge direction"
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
 theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
@@ -251,7 +251,7 @@ text = "Directed"
 [node name="WeightedBtn" type="Button" parent="PanelContainer/HBoxContainer/Modifiers" unique_id=1787136133]
 layout_mode = 2
 tooltip_text = "Weighted edges
-Assign numeric values to connections"
+Edges carry numeric weights"
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
 theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
