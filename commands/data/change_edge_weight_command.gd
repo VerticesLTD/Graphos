@@ -12,9 +12,7 @@ func _init(edge: Edge, target_weight: float):
 	old_weight = edge.weight
 
 func execute() -> void:
-	if not bypass_lock and target_edge.is_algorithm_locked:
-		Notify.show_error("Cannot change weight: this edge is part of a running algorithm.")
-		return
+	if _edge_locked(target_edge, "change weight on"): return
 	target_edge.weight = new_weight
 
 func undo() -> void:

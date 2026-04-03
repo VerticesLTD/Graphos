@@ -65,7 +65,9 @@ var _last_tool_state: int = -1
 ## Stores { Vertex: Vector2_Initial_Pos } for whatever is being dragged
 var drag_snapshot: Dictionary = {}
 var is_dragging: bool = false
-## Set by MouseActions when a bounding-box resize is in progress.
+
+## Mirrors _is_resizing from MouseActions so other systems (GlobalUI, _process)
+## can gate their logic without coupling directly to MouseActions.
 var is_resizing: bool = false
 
 ## Called when the node enters the scene tree for the first time.
@@ -468,6 +470,22 @@ func _pick_smallest_id_vertex(vertices: Array[Vertex]) -> Vertex:
 		if v and v.id < best.id:
 			best = v
 	return best
+
+## Returns the world-space distance that counts as "on top of" a resize handle.
+## Lives here so MouseActions and GlobalUI always use the exact same value —
+## no duplicated formula, no subtle drift between the two.
+##
+## Formula: target ~10 screen pixels, capped to a fraction of VERTEX_RADIUS so
+## the grab zone never visually overshoots the drawn handle square at any zoom.
+func get_resize_grab_zone() -> float:
+	if graph == null:
+		return Globals.VERTEX_RADIUS * 0.5
+	var cam := graph.get_viewport().get_camera_2d()
+	if cam == null:
+		return Globals.VERTEX_RADIUS * 0.5
+	var ui_scale := 1.0 / maxf(cam.zoom.x, 0.001)
+	return minf(10.0 * ui_scale, Globals.VERTEX_RADIUS * 0.55)
+
 
 func update_selection_bounds(radius_scale: float = Globals.VERTEX_HOVER_SCALE) -> void:
 	if selection_buffer.is_empty():

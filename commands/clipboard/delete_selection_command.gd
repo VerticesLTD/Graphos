@@ -1,10 +1,11 @@
-## Command to remove a selected area based on a group of vertices.
-
+## Removes every vertex in the current selection (and their incident edges) as
+## one undoable step.  Delegates to a DeleteVertexCommand per vertex so each
+## one can be restored individually on undo.
 class_name DeleteSelectionCommand
 extends Command
 
 var commands: Array[Command] = []
-var controller: GraphController # <--- ADD THIS
+var controller: GraphController
 
 func _init(g: Graph, selected_vertices: Array[Vertex], _controller: GraphController):
 	super(g)
@@ -17,15 +18,15 @@ func _init(g: Graph, selected_vertices: Array[Vertex], _controller: GraphControl
 		commands.append(DeleteVertexCommand.new(graph, v))
 			
 func execute() -> void:
-	# Block if any vertex in the selection belongs to a running algorithm.
+	# Collect the target vertices so the shared batch-guard helper can inspect them.
+	var vertices: Array[Vertex] = []
 	for cmd in commands:
-		if cmd.vertex.is_algorithm_locked:
-			Notify.show_error("Cannot delete: the selection contains a vertex that is part of a running algorithm.")
-			return
+		vertices.append(cmd.vertex)
+	if _any_vertex_locked(vertices, "delete"): return
 
 	for cmd in commands:
 		cmd.execute()
-	
+
 	if controller:
 		controller.clear_selection_buffer()		
 		

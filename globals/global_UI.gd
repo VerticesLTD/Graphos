@@ -40,12 +40,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		and Globals.current_state == Globals.State.SELECTION:
 		var mouse_world_pos := graph_controller.graph.get_global_mouse_position()
 		if event.is_pressed():
-			
-			# Check if we're inside the bounds rect
-			if graph_controller.selection_buffer.size() > 1 and \
-				graph_controller.selection_bounds.has_point(mouse_world_pos):
-					return 
-			
+
+			# Don't start a marquee when the click is inside the selection or
+			# within the resize-handle grab zone on its boundary.
+			# grow() expands the rect by the same distance MouseActions uses,
+			# so GlobalUI and MouseActions always agree on what counts as "on a handle".
+			if graph_controller.selection_buffer.size() > 1:
+				var gz := graph_controller.get_resize_grab_zone()
+				if graph_controller.selection_bounds.grow(gz).has_point(mouse_world_pos):
+					return
+
 			# Mouse down, start timer
 			_monitoring_input = true
 			_press_timer = 0.0

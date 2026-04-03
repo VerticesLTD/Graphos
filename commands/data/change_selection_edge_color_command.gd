@@ -14,11 +14,7 @@ func _init(edges: Array[Edge], target_color: Color):
 			_old_colors.append(e.color)
 
 func execute() -> void:
-	if not bypass_lock:
-		for e in _edges:
-			if e.is_algorithm_locked:
-				Notify.show_error("Cannot recolor: the selection contains an edge that is part of a running algorithm.")
-				return
+	if _any_edge_locked(_edges, "recolor"): return
 	for e in _edges:
 		e.color = _new_color
 

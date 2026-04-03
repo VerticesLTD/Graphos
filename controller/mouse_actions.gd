@@ -1,10 +1,15 @@
 extends Node
 
+# Corners scale both axes; edges scale one axis only.
 enum ResizeHandle {
 	NONE,
-	TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT,
-	TOP, BOTTOM, LEFT, RIGHT,
+	TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT,  # diagonal
+	TOP, BOTTOM, LEFT, RIGHT,                         # single-axis
 }
+
+# ----------------------------------------------------------------------------
+# State
+# ----------------------------------------------------------------------------
 
 var controller: GraphController
 var _ghost_preview: GhostEdgePreview
@@ -12,12 +17,16 @@ var _last_mouse_world_pos: Vector2 = Vector2.ZERO
 var _has_last_mouse_world_pos := false
 var _bounds_scale_tween: Tween
 
-# Bounding-box resize state
+# Resize session — only meaningful while _is_resizing is true.
 var _is_resizing := false
 var _resize_handle: ResizeHandle = ResizeHandle.NONE
-var _resize_initial_bounds: Rect2
-var _resize_center: Vector2
-var _resize_snapshot: Dictionary  # Vertex -> Vector2 initial pos
+var _resize_initial_bounds: Rect2  # bounds captured at drag start
+var _resize_center: Vector2        # pivot point — center of the initial bounds
+var _resize_snapshot: Dictionary   # { Vertex -> Vector2 } positions at drag start
+
+# ----------------------------------------------------------------------------
+# Input routing
+# ----------------------------------------------------------------------------
 
 var action_map: Dictionary = {
 	&"left_click" : [_handle_left_click, _handle_left_release],
@@ -105,6 +114,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 
 
+# ----------------------------------------------------------------------------
+# Ghost edge preview
+# ----------------------------------------------------------------------------
+
 func _sync_ghost_edge_preview() -> void:
 	if _ghost_preview == null or controller == null or controller.graph == null:
 		return
@@ -136,12 +149,14 @@ func _handle_left_click(event: InputEventMouseButton):
 		or event.meta_pressed
 	)
 
-	# Resize handle: check BEFORE vertex or bounds so edge/corner zones win.
+	# Resize handles live on the selection boundary — check them first so they
+	# win over any vertex or drag-bounds hit beneath them.
+	# Consuming the event prevents GlobalUI (which sees _unhandled_input before
+	# us) from also spawning a marquee rect on the same click.
 	if not is_ctrl:
 		var handle := _get_handle_at(mouse_global_pos)
 		if handle != ResizeHandle.NONE:
 			_start_resize(handle)
-			# Consume the event so GlobalUI does NOT also start its marquee/hold timer.
 			get_viewport().set_input_as_handled()
 			return
 
@@ -190,19 +205,19 @@ func _handle_right_release(_event: InputEventMouseButton):
 	_cleanup_after_release()
 
 func _cleanup_after_release() -> void:
-	# Finish resize first (before stop_dragging so we don't double-push).
+	# Always stop resize before stop_dragging — both may push to the undo stack
+	# and we only ever want one entry per user gesture.
 	if _is_resizing:
 		_stop_resize()
 
-	# Stop dragging
 	controller.stop_dragging()
 	_has_last_mouse_world_pos = false
 
-	# Stop selection hover visuals to reduce screen clutter.
+	# Drop the hover-scale animations that were running while the button was held.
 	if controller.animation_manager:
 		controller.animation_manager.clear_all_selection_hovers()
 
-	# Shrink bounds in sync with vertex shrink animation.
+	# Animate the bounding box padding back to rest size (hover scale → 1.0).
 	if not controller.selection_buffer.is_empty():
 		if _bounds_scale_tween:
 			_bounds_scale_tween.kill()
@@ -299,14 +314,13 @@ func _handle_right_click(event: InputEventMouseButton):
 	if popup_menu:
 		popup_menu.open_for_canvas(mouse_global_pos, mouse_screen_pos)
 
-## Handle mouse movement
-func _handle_mouse_movement(_event: InputEventMouseMotion):
+func _handle_mouse_movement(_event: InputEventMouseMotion) -> void:
 	var mouse_world_pos := controller.graph.get_global_mouse_position()
 
-	# LANE 1: PASSIVE (Hovering)
+	# Cursor feedback every frame regardless of interaction mode.
 	_handle_hover(mouse_world_pos)
 
-	# LANE 2: ACTIVE — resize takes priority over normal drag.
+	# Active interaction — resize beats normal drag; they can't both be true.
 	if _is_resizing:
 		_apply_resize(mouse_world_pos)
 	elif controller.is_dragging and _has_last_mouse_world_pos:
@@ -317,48 +331,52 @@ func _handle_mouse_movement(_event: InputEventMouseMotion):
 
 	_sync_ghost_edge_preview()
 
-func _handle_dragging(world_delta: Vector2):
-	# Move by world-space delta so dragging remains correct with camera zoom/pan.
+
+func _handle_dragging(world_delta: Vector2) -> void:
+	# Use world-space delta so the drag feels identical at any zoom level.
 	for v in controller.drag_snapshot.keys():
 		v.pos += world_delta
 		v.z_idx = controller.VERTEX_ON_TOP
-	
 	controller.update_selection_bounds()
 
-func _handle_hover(_mouse_global_pos: Vector2) -> void:
-	# Resize handles take priority over everything else.
-	var handle := _get_handle_at(_mouse_global_pos)
+
+func _handle_hover(mouse_world_pos: Vector2) -> void:
+	# Resize handles sit on the selection boundary — check them before vertices.
+	var handle := _get_handle_at(mouse_world_pos)
 	if handle != ResizeHandle.NONE:
 		DisplayServer.cursor_set_shape(_get_cursor_for_handle(handle))
 		return
 
-	var is_over_vertex = controller.graph.get_vertex_id_at(_mouse_global_pos) != Globals.NOT_FOUND
-	var is_over_selection = not controller.selection_buffer.is_empty() and \
-							controller.selection_bounds.has_point(_mouse_global_pos)
+	var over_vertex    := controller.graph.get_vertex_id_at(mouse_world_pos) != Globals.NOT_FOUND
+	var over_selection := not controller.selection_buffer.is_empty() and \
+						  controller.selection_bounds.has_point(mouse_world_pos)
 
-	if is_over_vertex or is_over_selection:
+	if over_vertex or over_selection:
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_MOVE)
 	else:
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
 
 
-## -----------------------------------------------------------------------
-## BOUNDING-BOX RESIZE
-## -----------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Bounding-box resize
+# ----------------------------------------------------------------------------
+#
+# The user grabs a corner or edge handle on the selection bounding box and
+# drags to scale all selected vertex POSITIONS relative to the box center.
+# Vertex sizes never change — only their coordinates.
+#
+# Key design choices:
+#   • Positions are always re-derived from the snapshot each frame, never
+#     accumulated from deltas, so there is zero floating-point drift.
+#   • On release a single MoveSelectionCommand is pushed, making the whole
+#     resize one undo step.
+#   • The click event is consumed (set_input_as_handled) so GlobalUI cannot
+#     accidentally start a marquee rect on the same click.
+#   • The grab-zone formula lives in GraphController.get_resize_grab_zone()
+#     so MouseActions and GlobalUI always agree on which area is "on a handle".
 
-## World-space grab zone sized to match the drawn handle.
-## Targets ~10 screen-pixels but is capped to half a vertex radius in world space,
-## so it never extends beyond the visible handle even when zoomed in/out.
-func _get_grab_zone_world() -> float:
-	var cam := controller.graph.get_viewport().get_camera_2d()
-	if cam == null:
-		return Globals.VERTEX_RADIUS * 0.5
-	var ui_scale := 1.0 / maxf(cam.zoom.x, 0.001)
-	return minf(10.0 * ui_scale, Globals.VERTEX_RADIUS * 0.55)
-
-
-## Returns which resize handle (if any) the given world pos is over.
-## Requires >= 2 selected vertices so there is something to scale.
+## Returns which handle the given world position is over, or NONE.
+## Requires ≥ 2 selected vertices — a single vertex has no relative layout to scale.
 func _get_handle_at(world_pos: Vector2) -> ResizeHandle:
 	if controller.selection_buffer.size() < 2:
 		return ResizeHandle.NONE
@@ -366,50 +384,42 @@ func _get_handle_at(world_pos: Vector2) -> ResizeHandle:
 	if bounds == Rect2():
 		return ResizeHandle.NONE
 
-	var gz := _get_grab_zone_world()
+	var gz := controller.get_resize_grab_zone()
 	var tl := bounds.position
 	var tr := Vector2(bounds.end.x, bounds.position.y)
 	var bl := Vector2(bounds.position.x, bounds.end.y)
 	var br := bounds.end
 
-	# Corners first (square grab region).
-	if abs(world_pos.x - tl.x) <= gz and abs(world_pos.y - tl.y) <= gz:
-		return ResizeHandle.TOP_LEFT
-	if abs(world_pos.x - tr.x) <= gz and abs(world_pos.y - tr.y) <= gz:
-		return ResizeHandle.TOP_RIGHT
-	if abs(world_pos.x - bl.x) <= gz and abs(world_pos.y - bl.y) <= gz:
-		return ResizeHandle.BOTTOM_LEFT
-	if abs(world_pos.x - br.x) <= gz and abs(world_pos.y - br.y) <= gz:
-		return ResizeHandle.BOTTOM_RIGHT
+	# Corners take priority — check them before edges.
+	if abs(world_pos.x - tl.x) <= gz and abs(world_pos.y - tl.y) <= gz: return ResizeHandle.TOP_LEFT
+	if abs(world_pos.x - tr.x) <= gz and abs(world_pos.y - tr.y) <= gz: return ResizeHandle.TOP_RIGHT
+	if abs(world_pos.x - bl.x) <= gz and abs(world_pos.y - bl.y) <= gz: return ResizeHandle.BOTTOM_LEFT
+	if abs(world_pos.x - br.x) <= gz and abs(world_pos.y - br.y) <= gz: return ResizeHandle.BOTTOM_RIGHT
 
-	# Edges (within gz of the line, inside the bounding extent).
-	var in_x_range := world_pos.x >= tl.x - gz and world_pos.x <= tr.x + gz
-	var in_y_range := world_pos.y >= tl.y - gz and world_pos.y <= bl.y + gz
-	if abs(world_pos.y - tl.y) <= gz and in_x_range:
-		return ResizeHandle.TOP
-	if abs(world_pos.y - bl.y) <= gz and in_x_range:
-		return ResizeHandle.BOTTOM
-	if abs(world_pos.x - tl.x) <= gz and in_y_range:
-		return ResizeHandle.LEFT
-	if abs(world_pos.x - tr.x) <= gz and in_y_range:
-		return ResizeHandle.RIGHT
+	# Edges: within gz perpendicular to the line, anywhere along its length.
+	var in_x := world_pos.x >= tl.x - gz and world_pos.x <= tr.x + gz
+	var in_y := world_pos.y >= tl.y - gz and world_pos.y <= bl.y + gz
+	if abs(world_pos.y - tl.y) <= gz and in_x: return ResizeHandle.TOP
+	if abs(world_pos.y - bl.y) <= gz and in_x: return ResizeHandle.BOTTOM
+	if abs(world_pos.x - tl.x) <= gz and in_y: return ResizeHandle.LEFT
+	if abs(world_pos.x - tr.x) <= gz and in_y: return ResizeHandle.RIGHT
 
 	return ResizeHandle.NONE
 
 
+## Maps each handle to the standard OS resize cursor so users know what
+## direction they're about to drag before they press the mouse button.
 func _get_cursor_for_handle(handle: ResizeHandle) -> DisplayServer.CursorShape:
 	match handle:
-		ResizeHandle.TOP_LEFT, ResizeHandle.BOTTOM_RIGHT:
-			return DisplayServer.CURSOR_FDIAGSIZE
-		ResizeHandle.TOP_RIGHT, ResizeHandle.BOTTOM_LEFT:
-			return DisplayServer.CURSOR_BDIAGSIZE
-		ResizeHandle.LEFT, ResizeHandle.RIGHT:
-			return DisplayServer.CURSOR_HSIZE
-		ResizeHandle.TOP, ResizeHandle.BOTTOM:
-			return DisplayServer.CURSOR_VSIZE
+		ResizeHandle.TOP_LEFT,  ResizeHandle.BOTTOM_RIGHT: return DisplayServer.CURSOR_FDIAGSIZE
+		ResizeHandle.TOP_RIGHT, ResizeHandle.BOTTOM_LEFT:  return DisplayServer.CURSOR_BDIAGSIZE
+		ResizeHandle.LEFT,      ResizeHandle.RIGHT:         return DisplayServer.CURSOR_HSIZE
+		ResizeHandle.TOP,       ResizeHandle.BOTTOM:        return DisplayServer.CURSOR_VSIZE
 	return DisplayServer.CURSOR_ARROW
 
 
+## Locks in the starting state for the drag: which handle, the initial bounds,
+## the pivot center, and a position snapshot of every selected vertex.
 func _start_resize(handle: ResizeHandle) -> void:
 	_is_resizing = true
 	controller.is_resizing = true
@@ -421,58 +431,52 @@ func _start_resize(handle: ResizeHandle) -> void:
 		_resize_snapshot[v] = v.pos
 
 
-## Re-computes all vertex positions from the original snapshot each frame,
-## so the transform is always relative to the drag start (no accumulation error).
-func _apply_resize(mouse_world_pos: Vector2) -> void:
-	const MIN_SCALE := 0.05
-	var bounds := _resize_initial_bounds
-	var c := _resize_center
-	var half_w := bounds.end.x - c.x
-	var half_h := bounds.end.y - c.y
-	var sx := 1.0
-	var sy := 1.0
+## Converts a mouse offset (distance from pivot) along one axis into a scale factor.
+## Returns 1.0 on a degenerate (zero-width/height) axis so it stays unchanged.
+func _scale_from_mouse(mouse_offset: float, half_extent: float) -> float:
+	const MIN_SCALE := 0.05  # prevents collapsing to a point or flipping
+	if half_extent < 0.5:
+		return 1.0
+	return clampf(mouse_offset / half_extent, MIN_SCALE, 100.0)
 
+
+## Resolves the (sx, sy) scale pair for the active handle.
+## Pre-computes the four directional offsets so each match arm stays readable.
+func _compute_resize_scale(mouse_pos: Vector2, c: Vector2, hw: float, hh: float) -> Vector2:
+	var rx := mouse_pos.x - c.x  # right of center
+	var lx := c.x - mouse_pos.x  # left of center (inverted for left-side handles)
+	var by := mouse_pos.y - c.y  # below center
+	var ty := c.y - mouse_pos.y  # above center (inverted for top-side handles)
 	match _resize_handle:
-		ResizeHandle.RIGHT:
-			if half_w > 0.5:
-				sx = clampf((mouse_world_pos.x - c.x) / half_w, MIN_SCALE, 100.0)
-		ResizeHandle.LEFT:
-			if half_w > 0.5:
-				sx = clampf((c.x - mouse_world_pos.x) / half_w, MIN_SCALE, 100.0)
-		ResizeHandle.BOTTOM:
-			if half_h > 0.5:
-				sy = clampf((mouse_world_pos.y - c.y) / half_h, MIN_SCALE, 100.0)
-		ResizeHandle.TOP:
-			if half_h > 0.5:
-				sy = clampf((c.y - mouse_world_pos.y) / half_h, MIN_SCALE, 100.0)
-		ResizeHandle.BOTTOM_RIGHT:
-			if half_w > 0.5:
-				sx = clampf((mouse_world_pos.x - c.x) / half_w, MIN_SCALE, 100.0)
-			if half_h > 0.5:
-				sy = clampf((mouse_world_pos.y - c.y) / half_h, MIN_SCALE, 100.0)
-		ResizeHandle.BOTTOM_LEFT:
-			if half_w > 0.5:
-				sx = clampf((c.x - mouse_world_pos.x) / half_w, MIN_SCALE, 100.0)
-			if half_h > 0.5:
-				sy = clampf((mouse_world_pos.y - c.y) / half_h, MIN_SCALE, 100.0)
-		ResizeHandle.TOP_RIGHT:
-			if half_w > 0.5:
-				sx = clampf((mouse_world_pos.x - c.x) / half_w, MIN_SCALE, 100.0)
-			if half_h > 0.5:
-				sy = clampf((c.y - mouse_world_pos.y) / half_h, MIN_SCALE, 100.0)
-		ResizeHandle.TOP_LEFT:
-			if half_w > 0.5:
-				sx = clampf((c.x - mouse_world_pos.x) / half_w, MIN_SCALE, 100.0)
-			if half_h > 0.5:
-				sy = clampf((c.y - mouse_world_pos.y) / half_h, MIN_SCALE, 100.0)
+		ResizeHandle.RIGHT:        return Vector2(_scale_from_mouse(rx, hw), 1.0)
+		ResizeHandle.LEFT:         return Vector2(_scale_from_mouse(lx, hw), 1.0)
+		ResizeHandle.BOTTOM:       return Vector2(1.0, _scale_from_mouse(by, hh))
+		ResizeHandle.TOP:          return Vector2(1.0, _scale_from_mouse(ty, hh))
+		ResizeHandle.BOTTOM_RIGHT: return Vector2(_scale_from_mouse(rx, hw), _scale_from_mouse(by, hh))
+		ResizeHandle.BOTTOM_LEFT:  return Vector2(_scale_from_mouse(lx, hw), _scale_from_mouse(by, hh))
+		ResizeHandle.TOP_RIGHT:    return Vector2(_scale_from_mouse(rx, hw), _scale_from_mouse(ty, hh))
+		ResizeHandle.TOP_LEFT:     return Vector2(_scale_from_mouse(lx, hw), _scale_from_mouse(ty, hh))
+	return Vector2.ONE
+
+
+## Repositions every selected vertex by applying the current scale to its
+## offset from the pivot. Re-derived from the snapshot each frame (not delta-
+## accumulated) so there is no floating-point drift over long drags.
+func _apply_resize(mouse_world_pos: Vector2) -> void:
+	var c  := _resize_center
+	var hw := _resize_initial_bounds.end.x - c.x  # half-width at drag start
+	var hh := _resize_initial_bounds.end.y - c.y  # half-height at drag start
+	var scale := _compute_resize_scale(mouse_world_pos, c, hw, hh)
 
 	for v: Vertex in _resize_snapshot.keys():
 		var rel: Vector2 = _resize_snapshot[v] - c
-		v.pos = c + Vector2(rel.x * sx, rel.y * sy)
+		v.pos = c + Vector2(rel.x * scale.x, rel.y * scale.y)
 
 	controller.update_selection_bounds()
 
 
+## Finalises the resize: clears the session and records an undo entry only
+## if vertices actually moved (a click-without-drag should leave history clean).
 func _stop_resize() -> void:
 	if not _is_resizing:
 		return

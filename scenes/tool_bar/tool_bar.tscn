@@ -83,7 +83,7 @@ offset_left = -28.0
 offset_right = 28.0
 offset_bottom = 40.0
 grow_horizontal = 2
-theme_override_constants/margin_top = 40
+theme_override_constants/margin_top = 22
 script = ExtResource("1_gdu6t")
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=1805701736]
@@ -97,7 +97,7 @@ script = ExtResource("1_uiivm")
 
 [node name="Selection" type="Button" parent="PanelContainer/HBoxContainer" unique_id=1013943299]
 texture_filter = 4
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
@@ -128,7 +128,7 @@ stretch_mode = 5
 
 [node name="Create" type="Button" parent="PanelContainer/HBoxContainer" unique_id=11624605]
 texture_filter = 4
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
@@ -160,7 +160,7 @@ metadata/_edit_use_anchors_ = true
 
 [node name="Pan" type="Button" parent="PanelContainer/HBoxContainer" unique_id=726100111]
 texture_filter = 4
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")

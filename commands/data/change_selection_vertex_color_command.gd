@@ -14,11 +14,7 @@ func _init(vertices: Array[Vertex], target_color: Color):
 			_old_colors.append(v.color)
 
 func execute() -> void:
-	if not bypass_lock:
-		for v in _vertices:
-			if v.is_algorithm_locked:
-				Notify.show_error("Cannot recolor: the selection contains a vertex that is part of a running algorithm.")
-				return
+	if _any_vertex_locked(_vertices, "recolor"): return
 	for v in _vertices:
 		v.color = _new_color
 

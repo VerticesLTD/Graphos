@@ -8,6 +8,8 @@ const TOOLBAR_BG: StyleBox = preload("res://scenes/tool_bar/tool_bar_background.
 const ACCENT       := Color(0.263, 0.38, 0.933)
 const ACCENT_HOVER := Color(0.2,   0.3,  0.85)
 const DARK         := Color(0.118, 0.118, 0.18)
+## Softer blue for the Share outlined button — same family, less vivid.
+const SHARE_BLUE   := Color(0.36, 0.48, 0.88)
 
 ## Scroll area sized so ~3 tile rows + label fit without clipping the bottom row.
 const POPUP_WIDTH := 328
@@ -34,7 +36,7 @@ func _ready() -> void:
 
 
 func _style_top_right_bar() -> void:
-	# --- Share button: solid accent-blue CTA (Excalidraw-style) ---
+	# --- Share button: outlined style — primary accent without visual dominance ---
 	_share_btn.text = "Share"
 	_share_btn.icon = null
 	_share_btn.custom_minimum_size = Vector2(76, 36)
@@ -45,23 +47,32 @@ func _style_top_right_bar() -> void:
 	_share_btn.alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 	var sn := StyleBoxFlat.new()
-	sn.bg_color = ACCENT
+	sn.bg_color = Color(1.0, 1.0, 1.0, 1.0)
+	sn.border_width_left   = 2
+	sn.border_width_top    = 2
+	sn.border_width_right  = 2
+	sn.border_width_bottom = 2
+	sn.border_color = SHARE_BLUE
 	sn.set_corner_radius_all(8)
+	sn.shadow_color  = Color(0.36, 0.48, 0.88, 0.15)
+	sn.shadow_size   = 4
+	sn.shadow_offset = Vector2(0, 1)
 	sn.content_margin_left = 14
 	sn.content_margin_right = 14
 	sn.content_margin_top = 0
 	sn.content_margin_bottom = 0
 	var sh := sn.duplicate() as StyleBoxFlat
-	sh.bg_color = ACCENT_HOVER
+	sh.bg_color = Color(0.94, 0.95, 0.99)
+	sh.shadow_size = 0
 	_share_btn.add_theme_stylebox_override("normal",  sn)
 	_share_btn.add_theme_stylebox_override("hover",   sh)
 	_share_btn.add_theme_stylebox_override("pressed", sh)
 	_share_btn.add_theme_stylebox_override("focus",   sn)
 	_share_btn.add_theme_font_size_override("font_size", 13)
-	_share_btn.add_theme_color_override("font_color",         Color.WHITE)
-	_share_btn.add_theme_color_override("font_hover_color",   Color.WHITE)
-	_share_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
-	_share_btn.add_theme_color_override("font_focus_color",   Color.WHITE)
+	_share_btn.add_theme_color_override("font_color",         SHARE_BLUE)
+	_share_btn.add_theme_color_override("font_hover_color",   SHARE_BLUE)
+	_share_btn.add_theme_color_override("font_pressed_color", Color(0.25, 0.36, 0.78))
+	_share_btn.add_theme_color_override("font_focus_color",   SHARE_BLUE)
 
 	# --- Presets button: white panel style matching the app chrome ---
 	_presets_btn.text = "Presets"

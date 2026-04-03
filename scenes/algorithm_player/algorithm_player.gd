@@ -48,8 +48,9 @@ var max_step: int
 
 var _is_algorithm_running := false
 
-## Tracks vertices and edges locked for the current algorithm run so they can be
-## cleanly unlocked when the algorithm is cancelled or restarted.
+## Every vertex/edge touched by the active algorithm run is recorded here so
+## _unlock_algorithm_selection() can release them all in O(n) without scanning
+## the whole graph.
 var _locked_vertices: Array[Vertex] = []
 var _locked_edges: Array[Edge] = []
 
@@ -64,9 +65,15 @@ func is_algorithm_running() -> bool:
 	return _is_algorithm_running
 
 
-## Locks all real vertices in the selection and every edge of the induced subgraph
-## (i.e. edges whose both endpoints are in the selection).
+## Marks every vertex in the selection — and every edge whose BOTH endpoints
+## are inside the selection — as algorithm-locked.
+##
+## Why only edges with both endpoints inside?
+## An edge is part of the algorithm's induced subgraph only when both sides
+## participate.  Edges that cross the selection boundary are untouched, so the
+## user can still modify that "outside" part of the graph freely.
 func _lock_algorithm_selection(selection_buffer: Array[Vertex]) -> void:
+	# Build a fast membership set so the edge scan below is O(degree) not O(n²).
 	var id_set: Dictionary = {}
 	for v: Vertex in selection_buffer:
 		if is_instance_valid(v):
@@ -78,6 +85,9 @@ func _lock_algorithm_selection(selection_buffer: Array[Vertex]) -> void:
 		v.is_algorithm_locked = true
 		_locked_vertices.append(v)
 
+		# Lock every adjacency-list edge whose destination is also in the selection.
+		# For undirected graphs both half-edges (v→w and w→v) are visited here,
+		# so both directions end up locked automatically.
 		var e: Edge = v.edges
 		while e:
 			if id_set.has(e.dst.id):
@@ -86,7 +96,9 @@ func _lock_algorithm_selection(selection_buffer: Array[Vertex]) -> void:
 			e = e.next
 
 
-## Removes algorithm locks from every vertex and edge tracked by this run.
+## Releases all locks set by _lock_algorithm_selection().
+## Always called after reset_to_start() so the undo-based visual restore can
+## run freely before the locks come off.
 func _unlock_algorithm_selection() -> void:
 	for v: Vertex in _locked_vertices:
 		if is_instance_valid(v):

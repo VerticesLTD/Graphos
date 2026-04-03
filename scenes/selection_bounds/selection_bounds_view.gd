@@ -30,14 +30,17 @@ func _draw() -> void:
 	draw_dashed_line(br, bl, color, line_width, dash_gap)
 	draw_dashed_line(bl, tl, color, line_width, dash_gap)
 	
-	# Corner handles: "constant screen px" would be `8 * ui_scale`, but when zoomed out
-	# vertices shrink on screen while 8px handles stay fat — they dwarf the nodes.
-	# Cap world size so handles stay roughly comparable to vertex silhouette.
+	# Handle size is capped so handles stay proportional to vertices when zoomed out.
+	# A pure "8 * ui_scale" would make them dwarf the nodes at low zoom levels.
 	var handle_size := _handle_world_size(ui_scale)
+
+	# Corner handles — always drawn; signal diagonal (two-axis) resize.
 	for pos in [tl, _tr, bl, br]:
 		_draw_handle(pos, handle_size, ui_scale)
 
-	# Edge midpoint handles — only shown when resize is available (>= 2 vertices).
+	# Edge-midpoint handles — only drawn when ≥ 2 vertices are selected,
+	# because single-vertex resize is undefined and we don't want phantom affordances.
+	# Slightly smaller than corners to visually hint that they scale one axis only.
 	if controller.selection_buffer.size() >= 2:
 		var mid_top    := Vector2((tl.x + _tr.x) * 0.5, tl.y)
 		var mid_bottom := Vector2((bl.x + br.x) * 0.5, br.y)

@@ -10,13 +10,11 @@ func _init(vertices: Array[Vertex], component_color: Color, mst_edge: Edge, mst_
 	_edge_cmd = ChangeEdgeColorCommand.new(mst_edge, mst_edge_color)
 
 func execute() -> void:
-	_vertex_cmd.bypass_lock = bypass_lock
-	_edge_cmd.bypass_lock = bypass_lock
+	_relay_bypass([_vertex_cmd, _edge_cmd])
 	_vertex_cmd.execute()
 	_edge_cmd.execute()
 
 func undo() -> void:
-	_edge_cmd.bypass_lock = bypass_lock
-	_vertex_cmd.bypass_lock = bypass_lock
+	_relay_bypass([_vertex_cmd, _edge_cmd])
 	_edge_cmd.undo()
 	_vertex_cmd.undo()

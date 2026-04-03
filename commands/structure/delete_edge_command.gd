@@ -42,9 +42,7 @@ func _init(g: Graph, src_id: int, dst_id: int):
 
 func execute() -> void:
 	if not is_valid: return
-	if _edge_ref and _edge_ref.is_algorithm_locked:
-		Notify.show_error("Cannot delete: this edge is part of a running algorithm.")
-		return
+	if _edge_ref and _edge_locked(_edge_ref, "delete"): return
 	graph.delete_edge(from_id, to_id)
 
 func undo() -> void:
