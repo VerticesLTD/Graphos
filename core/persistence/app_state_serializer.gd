@@ -32,7 +32,7 @@ static func from_dictionary(data: Dictionary) -> Dictionary:
 	return {
 		"camera_position": cam_pos,
 		"camera_zoom": float(data.get("camera_zoom", 1.0)),
-		"grid_enabled": bool(data.get("grid_enabled", false)),
+		"grid_enabled": bool(data.get("grid_enabled", true)),
 		"active_strategy": str(data.get("active_strategy", "undirected")),
 		"is_weighted_mode": bool(data.get("is_weighted_mode", false)),
 	}

@@ -91,7 +91,7 @@ func _ready() -> void:
 		push_warning("GraphController: popup manager not assigned in Inspector.")
 
 	if math_grid_background:
-		math_grid_background.set_grid_enabled(false)
+		math_grid_background.set_grid_enabled(true)
 
 
 func _on_app_state_changed() -> void:

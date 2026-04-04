@@ -16,6 +16,7 @@ const MOBILE_MODIFIER_FONT := 15
 @onready var selection_btn: Button   = $PanelContainer/HBoxContainer/Selection
 @onready var create_btn: Button      = $PanelContainer/HBoxContainer/Create
 @onready var edge_btn: Button        = $PanelContainer/HBoxContainer/Edge
+@onready var eraser_btn: Button      = $PanelContainer/HBoxContainer/Eraser
 
 var _mobile_layout_active := false
 
@@ -48,6 +49,7 @@ func _ready() -> void:
 	selection_btn.button_group = tool_group
 	create_btn.button_group    = tool_group
 	edge_btn.button_group      = tool_group
+	eraser_btn.button_group    = tool_group
 	_sync_tool_buttons()
 
 	directed_btn.button_pressed = Globals.active_strategy is DirectedStrategy
@@ -126,7 +128,7 @@ func _enter_mobile_layout() -> void:
 	add_theme_constant_override("margin_left", 0)
 	add_theme_constant_override("margin_right", 0)
 	tool_row.add_theme_constant_override("separation", MOBILE_HBOX_SEP)
-	for btn in [pan_btn, selection_btn, create_btn, edge_btn]:
+	for btn in [pan_btn, selection_btn, create_btn, edge_btn, eraser_btn]:
 		btn.custom_minimum_size = MOBILE_TOOL_BTN_SIZE
 		var mc := btn.get_node("MarginContainer") as MarginContainer
 		for side in ["margin_left", "margin_top", "margin_right", "margin_bottom"]:
@@ -148,7 +150,7 @@ func _enter_desktop_layout() -> void:
 	remove_theme_constant_override("margin_left")
 	remove_theme_constant_override("margin_right")
 	tool_row.add_theme_constant_override("separation", _desktop_tool_row_separation)
-	for btn in [pan_btn, selection_btn, create_btn, edge_btn]:
+	for btn in [pan_btn, selection_btn, create_btn, edge_btn, eraser_btn]:
 		btn.custom_minimum_size = _desktop_tool_btn_min
 		var mc := btn.get_node("MarginContainer") as MarginContainer
 		for side in ["margin_left", "margin_top", "margin_right", "margin_bottom"]:
@@ -207,6 +209,7 @@ func _sync_tool_buttons() -> void:
 	selection_btn.button_pressed = Globals.current_state == Globals.State.SELECTION
 	create_btn.button_pressed    = Globals.current_state == Globals.State.CREATE
 	edge_btn.button_pressed      = Globals.current_state == Globals.State.EDGE
+	eraser_btn.button_pressed    = Globals.current_state == Globals.State.ERASER
 
 
 ## Blocks signals during sync to prevent re-entrant toggle loops.

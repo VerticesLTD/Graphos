@@ -10,6 +10,11 @@ enum ResizeHandle {
 ## Right Control physical keycode (not always == KEY_CTRL across backends).
 const _PHYS_CTRL_R := 4194328
 
+# Eraser tool visual constants.
+const ERASER_PENDING_COLOR    := Color(0.74, 0.74, 0.78)
+const ERASER_TRAIL_MAX_POINTS := 22
+const ERASER_TRAIL_WIDTH      := 7.0
+
 # ----------------------------------------------------------------------------
 # State
 # ----------------------------------------------------------------------------
@@ -20,12 +25,32 @@ var _last_mouse_world_pos: Vector2 = Vector2.ZERO
 var _has_last_mouse_world_pos := false
 var _bounds_scale_tween: Tween
 
+# Eraser session — only meaningful while _eraser_active is true.
+var _eraser_active                  := false
+var _eraser_pending_vertices: Array[Vertex] = []
+var _eraser_pending_edges:    Array[Edge]   = []
+## Vertex IDs already marked so we don't double-process them.
+var _eraser_vertex_id_set:           Dictionary = {}
+## "minId_maxId" keys so undirected edges are de-duplicated.
+var _eraser_edge_key_set:            Dictionary = {}
+## Per-object original colors, restored on cancel or commit.
+var _eraser_original_vertex_colors:  Dictionary = {}
+var _eraser_original_edge_colors:    Dictionary = {}
+var _eraser_trail:                   PackedVector2Array = PackedVector2Array()
+var _eraser_trail_line:              Line2D = null
+
 # Resize session — only meaningful while _is_resizing is true.
 var _is_resizing := false
 var _resize_handle: ResizeHandle = ResizeHandle.NONE
 var _resize_initial_bounds: Rect2  # bounds captured at drag start
 var _resize_center: Vector2        # pivot point — center of the initial bounds
 var _resize_snapshot: Dictionary   # { Vertex -> Vector2 } positions at drag start
+
+# Edge-mode deferred click: when the user presses on a vertex in edge mode we
+# start dragging immediately (so they can reposition the vertex), then commit
+# the edge logic on release only if the vertex was not actually moved.
+var _edge_mode_pending_id: int = Globals.NOT_FOUND
+var _edge_mode_pending_click_pos: Vector2 = Vector2.ZERO
 
 # ----------------------------------------------------------------------------
 # Input routing
@@ -45,10 +70,13 @@ func _ready() -> void:
 	if par_node is not GraphController:
 		push_error("Mouse actions node must be a child of the graph controller!")
 		queue_free()
-	
+
 	controller = par_node
 	if controller.graph:
 		_ghost_preview = controller.graph.get_node_or_null("GhostEdgePreview") as GhostEdgePreview
+
+	# Cancel any in-progress erase stroke if the user switches tools externally.
+	Globals.app_state_changed.connect(_on_app_state_changed_eraser)
 
 
 func _on_ctrl_action_released(event: InputEvent) -> void:
@@ -58,6 +86,12 @@ func _on_ctrl_action_released(event: InputEvent) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Escape cancels an active eraser stroke without deleting anything.
+	if event is InputEventKey and event.is_action_pressed("ui_cancel") and _eraser_active:
+		_cancel_eraser_session()
+		get_viewport().set_input_as_handled()
+		return
+
 	if Globals.current_state == Globals.State.PAN:
 		# In pan mode, keep right-click context menu working.
 		if event is InputEventMouseButton:
@@ -132,7 +166,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _sync_ghost_edge_preview() -> void:
 	if _ghost_preview == null or controller == null or controller.graph == null:
 		return
-	if controller.is_dragging:
+	if controller.is_dragging or Globals.current_state == Globals.State.ERASER:
 		_ghost_preview.hide_preview()
 		return
 	_ghost_preview.sync_preview(controller.graph, controller, controller.graph.get_global_mouse_position())
@@ -150,6 +184,12 @@ func _handle_left_click(event: InputEventMouseButton):
 	_last_mouse_world_pos = mouse_global_pos
 	_has_last_mouse_world_pos = true
 
+	# Eraser: start a new stroke.  Every other mode falls through below.
+	if Globals.current_state == Globals.State.ERASER:
+		_start_eraser_session(mouse_global_pos)
+		get_viewport().set_input_as_handled()
+		return
+
 	var id = graph.get_vertex_id_at(mouse_global_pos)
 	# Combine Input + event: modifier on the mouse event can lag or be missing on some OS/backends.
 	var is_ctrl: bool = (
@@ -159,9 +199,16 @@ func _handle_left_click(event: InputEventMouseButton):
 		or event.meta_pressed
 	)
 
-	# Edge mode without Ctrl: simple two-vertex connect (no Create-style path).
+	# Edge mode without Ctrl: defer edge logic to release so vertex drag works.
 	if Globals.current_state == Globals.State.EDGE and not is_ctrl:
-		_handle_edge_mode_left_click(mouse_global_pos)
+		if id != Globals.NOT_FOUND:
+			# Vertex pressed — begin a potential drag; edge click fires on release.
+			_edge_mode_pending_id = id
+			_edge_mode_pending_click_pos = mouse_global_pos
+			controller.start_dragging(id)
+		else:
+			# Empty canvas — no drag possible, process edge click immediately.
+			_handle_edge_mode_left_click(mouse_global_pos)
 		get_viewport().set_input_as_handled()
 		return
 
@@ -224,6 +271,9 @@ func _handle_left_click(event: InputEventMouseButton):
 func _handle_left_release(_event: InputEventMouseButton):
 	# Do not clear the Ctrl-connect chain here — was flaky between clicks.
 	# Path ends on Ctrl/Meta key release (_unhandled_input) or on non-ctrl click (above).
+	if _eraser_active:
+		_commit_eraser_session()
+		return
 	_cleanup_after_release()
 
 func _handle_right_release(_event: InputEventMouseButton):
@@ -235,8 +285,24 @@ func _cleanup_after_release() -> void:
 	if _is_resizing:
 		_stop_resize()
 
+	# Edge-mode deferred click: check whether the vertex was actually dragged
+	# BEFORE stop_dragging() clears the snapshot.
+	var _pending_edge_id := _edge_mode_pending_id
+	var _pending_edge_pos := _edge_mode_pending_click_pos
+	_edge_mode_pending_id = Globals.NOT_FOUND
+
+	var _edge_was_dragged := false
+	if _pending_edge_id != Globals.NOT_FOUND:
+		var pv := controller.graph.get_vertex(_pending_edge_id)
+		if pv and controller.drag_snapshot.has(pv):
+			_edge_was_dragged = (pv.pos != controller.drag_snapshot[pv])
+
 	controller.stop_dragging()
 	_has_last_mouse_world_pos = false
+
+	# If the press was on a vertex and the user did not drag it, fire the edge click now.
+	if _pending_edge_id != Globals.NOT_FOUND and not _edge_was_dragged:
+		_handle_edge_mode_left_click(_pending_edge_pos)
 
 	# Drop the hover-scale animations that were running while the button was held.
 	if controller.animation_manager:
@@ -302,11 +368,105 @@ func _handle_edge_mode_left_click(mouse_global_pos: Vector2) -> void:
 		controller.clear_selection_buffer()
 		return
 
-	if controller.should_add_connection(head_id, id):
-		CommandManager.execute(AddEdgeCommand.new(graph, head_id, id))
+	_handle_edge_between(head_id, id)
 
 	controller.clear_link_context(null)
 	controller.clear_selection_buffer()
+
+
+## Decides what to do when the user selects two distinct vertices in edge mode.
+##
+## • No edge:              add a new edge (normal behaviour).
+## • Forward edge exists (head→id):
+##     - Settings match global  → delete (toggle off).
+##     - Settings differ        → update edge to current global settings.
+## • Only reverse edge (id→head, always directed):
+##     - Settings match global  → add forward edge (make bidirectional).
+##     - Settings differ        → update reverse edge to match global settings.
+func _handle_edge_between(head_id: int, id: int) -> void:
+	var graph := controller.graph
+	var head_v := graph.get_vertex(head_id)
+	var id_v   := graph.get_vertex(id)
+	if head_v == null or id_v == null:
+		return
+
+	var has_forward := graph.has_edge(head_id, id)
+	var has_reverse := graph.has_edge(id, head_id)
+
+	if not has_forward and not has_reverse:
+		CommandManager.execute(AddEdgeCommand.new(graph, head_id, id))
+		return
+
+	if has_forward:
+		var fwd: Edge = graph.get_edge(head_v, id_v)
+		if fwd == null:
+			return
+		if _edge_matches_global(fwd):
+			# Same direction, same settings → toggle off (delete).
+			CommandManager.execute(DeleteEdgeCommand.new(graph, head_id, id))
+		else:
+			# Settings differ → replace with current global settings.
+			var edges: Array[Edge] = [fwd]
+			CommandManager.execute(TransformEdgesCommand.new(
+				graph, edges,
+				_weight_mode_for(fwd),
+				_dir_mode_for_forward(fwd)
+			))
+		return
+
+	# Only the reverse arc exists (undirected always sets both, so this is directed id→head).
+	var rev: Edge = graph.get_edge(id_v, head_v)
+	if rev == null:
+		return
+	if _edge_matches_global(rev):
+		# Opposite direction, same settings → add forward arc (bidirectional).
+		CommandManager.execute(AddEdgeCommand.new(graph, head_id, id))
+	else:
+		# Settings differ → update reverse arc to match global (keep id→head direction).
+		var edges: Array[Edge] = [rev]
+		CommandManager.execute(TransformEdgesCommand.new(
+			graph, edges,
+			_weight_mode_for(rev),
+			_dir_mode_for_reverse()
+		))
+
+
+## Returns true when the edge already matches the current global strategy type and weighted flag.
+func _edge_matches_global(edge: Edge) -> bool:
+	var strategy_matches: bool = (
+		(edge.strategy is DirectedStrategy   and Globals.active_strategy is DirectedStrategy) or
+		(edge.strategy is UndirectedStrategy and Globals.active_strategy is UndirectedStrategy)
+	)
+	return strategy_matches and (edge.is_weighted == Globals.is_weighted_mode)
+
+
+## Returns the WeightMode needed to align the edge with the current global weighted flag.
+func _weight_mode_for(edge: Edge) -> TransformEdgesCommand.WeightMode:
+	if Globals.is_weighted_mode and not edge.is_weighted:
+		return TransformEdgesCommand.WeightMode.MAKE_WEIGHTED
+	if not Globals.is_weighted_mode and edge.is_weighted:
+		return TransformEdgesCommand.WeightMode.MAKE_UNWEIGHTED
+	return TransformEdgesCommand.WeightMode.KEEP
+
+
+## DirectionMode for a forward edge (head→id) whose settings need updating.
+func _dir_mode_for_forward(edge: Edge) -> TransformEdgesCommand.DirectionMode:
+	if Globals.active_strategy is UndirectedStrategy:
+		return TransformEdgesCommand.DirectionMode.UNDIRECTED
+	# Target is directed.
+	if edge.strategy is UndirectedStrategy:
+		# Undirected → directed: keep src→dst as-is (head→id).
+		return TransformEdgesCommand.DirectionMode.DIRECTED_L_TO_R
+	# Already directed head→id, only weight changed.
+	return TransformEdgesCommand.DirectionMode.KEEP
+
+
+## DirectionMode for the reverse arc (id→head) when settings need updating.
+## We always keep the existing id→head direction; strategy type may change.
+func _dir_mode_for_reverse() -> TransformEdgesCommand.DirectionMode:
+	if Globals.active_strategy is UndirectedStrategy:
+		return TransformEdgesCommand.DirectionMode.UNDIRECTED
+	return TransformEdgesCommand.DirectionMode.KEEP
 
 
 ## Ctrl+click connect: next edge is always (link_head -> clicked vertex). Session/head live on GraphController.
@@ -395,8 +555,16 @@ func _handle_mouse_movement(_event: InputEventMouseMotion) -> void:
 	# Cursor feedback every frame regardless of interaction mode.
 	_handle_hover(mouse_world_pos)
 
+	# Eraser stroke: update the fading trail and mark items under the brush.
+	if _eraser_active:
+		_eraser_trail.append(mouse_world_pos)
+		if _eraser_trail.size() > ERASER_TRAIL_MAX_POINTS:
+			_eraser_trail.remove_at(0)
+		_update_eraser_trail_line()
+		_eraser_check_at(mouse_world_pos)
+
 	# Active interaction — resize beats normal drag; they can't both be true.
-	if _is_resizing:
+	elif _is_resizing:
 		_apply_resize(mouse_world_pos)
 	elif controller.is_dragging and _has_last_mouse_world_pos:
 		_handle_dragging(mouse_world_pos - _last_mouse_world_pos)
@@ -416,6 +584,11 @@ func _handle_dragging(world_delta: Vector2) -> void:
 
 
 func _handle_hover(mouse_world_pos: Vector2) -> void:
+	# Eraser mode always shows the crosshair regardless of what's underneath.
+	if Globals.current_state == Globals.State.ERASER:
+		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_CROSS)
+		return
+
 	# Resize handles sit on the selection boundary — check them before vertices.
 	var handle := _get_handle_at(mouse_world_pos)
 	if handle != ResizeHandle.NONE:
@@ -569,3 +742,194 @@ func _stop_resize() -> void:
 
 	_resize_snapshot.clear()
 	_resize_handle = ResizeHandle.NONE
+
+
+# ============================================================================
+# Eraser tool
+# ============================================================================
+#
+# Behaviour (Excalidraw-style):
+#   • LMB down   → begin eraser stroke; check item under cursor.
+#   • Mouse move → check item under cursor, paint a fading trail line.
+#   • LMB up     → restore all preview-grey, execute BulkEraseCommand.
+#   • Escape     → restore preview-grey, switch to SELECTION, nothing deleted.
+#   • Tool switch→ silently cancel (colours restored, nothing deleted).
+#
+# Items are "greyed" by temporarily changing vertex/edge data colours so that
+# every listener (UIVertexView, UIEdgeView) repaints immediately without needing
+# any changes to the view layer.
+
+func _on_app_state_changed_eraser() -> void:
+	if _eraser_active and Globals.current_state != Globals.State.ERASER:
+		_cancel_eraser_session_silent()
+
+
+func _start_eraser_session(pos: Vector2) -> void:
+	_eraser_active = true
+	_eraser_pending_vertices.clear()
+	_eraser_pending_edges.clear()
+	_eraser_vertex_id_set.clear()
+	_eraser_edge_key_set.clear()
+	_eraser_original_vertex_colors.clear()
+	_eraser_original_edge_colors.clear()
+	_eraser_trail = PackedVector2Array()
+	_eraser_trail.append(pos)
+	_create_eraser_trail_line()
+	_eraser_check_at(pos)
+
+
+## Checks the position under the eraser brush and marks any new item it touches.
+func _eraser_check_at(pos: Vector2) -> void:
+	var graph := controller.graph
+
+	# Vertex takes priority over edge.
+	var v_id := graph.get_vertex_id_at(pos)
+	if v_id != Globals.NOT_FOUND:
+		if not _eraser_vertex_id_set.has(v_id):
+			var v := graph.get_vertex(v_id)
+			if v:
+				_mark_vertex_for_erasure(v)
+		return  # Whether or not we just marked it, don't also mark an edge.
+
+	# No vertex — check for an edge.
+	var edge := graph.get_edge_at(pos)
+	if edge:
+		_mark_edge_for_erasure(edge)
+
+
+func _mark_vertex_for_erasure(v: Vertex) -> void:
+	_eraser_vertex_id_set[v.id] = true
+	_eraser_original_vertex_colors[v] = v.color
+	_eraser_pending_vertices.append(v)
+	v.color = ERASER_PENDING_COLOR
+
+	# Grey incident edges visually so the whole connected bundle fades together.
+	var e: Edge = v.edges
+	while e:
+		_set_eraser_edge_color(e)
+		e = e.next
+	for inc_e in controller.graph.get_incoming_edges(v):
+		_set_eraser_edge_color(inc_e)
+
+
+func _mark_edge_for_erasure(edge: Edge) -> void:
+	var key := _eraser_edge_key(edge.src.id, edge.dst.id)
+	if _eraser_edge_key_set.has(key):
+		return
+	_eraser_edge_key_set[key] = true
+	_eraser_pending_edges.append(edge)
+
+	# Grey both directions for undirected edges.
+	_set_eraser_edge_color(edge)
+	if not (edge.strategy is DirectedStrategy):
+		var rev := controller.graph.get_edge(edge.dst, edge.src)
+		if rev:
+			_set_eraser_edge_color(rev)
+
+
+## Stores the original colour of an edge object and paints it grey for preview.
+func _set_eraser_edge_color(edge: Edge) -> void:
+	if not _eraser_original_edge_colors.has(edge):
+		_eraser_original_edge_colors[edge] = edge.color
+		edge.color = ERASER_PENDING_COLOR
+
+
+## Restores all greyed item colours without deleting anything.
+func _eraser_restore_colors() -> void:
+	for v in _eraser_original_vertex_colors:
+		if is_instance_valid(v):
+			v.color = _eraser_original_vertex_colors[v]
+	for e in _eraser_original_edge_colors:
+		if is_instance_valid(e):
+			e.color = _eraser_original_edge_colors[e]
+
+
+func _cancel_eraser_session_silent() -> void:
+	_eraser_active = false
+	_eraser_restore_colors()
+	_clear_eraser_state()
+	_destroy_eraser_trail_line()
+
+
+## Escape: cancel stroke and switch back to selection — nothing is deleted.
+func _cancel_eraser_session() -> void:
+	_cancel_eraser_session_silent()
+	Globals.current_state = Globals.State.SELECTION
+
+
+## LMB release: restore preview colours then execute the bulk delete in one command.
+func _commit_eraser_session() -> void:
+	_eraser_active = false
+	_destroy_eraser_trail_line()
+
+	if _eraser_pending_vertices.is_empty() and _eraser_pending_edges.is_empty():
+		_clear_eraser_state()
+		return
+
+	# Restore colours BEFORE building commands so snapshots capture original state.
+	_eraser_restore_colors()
+
+	# Standalone edges: only those whose BOTH endpoints are not being erased.
+	# Vertex commands will cascade-delete the rest.
+	var standalone: Array[Edge] = []
+	for e in _eraser_pending_edges:
+		if not _eraser_vertex_id_set.has(e.src.id) and not _eraser_vertex_id_set.has(e.dst.id):
+			standalone.append(e)
+
+	var cmd := BulkEraseCommand.new(
+		controller.graph,
+		_eraser_pending_vertices,
+		standalone,
+		controller
+	)
+	CommandManager.execute(cmd)
+	_clear_eraser_state()
+
+
+func _clear_eraser_state() -> void:
+	_eraser_pending_vertices.clear()
+	_eraser_pending_edges.clear()
+	_eraser_vertex_id_set.clear()
+	_eraser_edge_key_set.clear()
+	_eraser_original_vertex_colors.clear()
+	_eraser_original_edge_colors.clear()
+	_eraser_trail = PackedVector2Array()
+
+
+## Canonical key for an undirected pair so A–B and B–A map to the same bucket.
+func _eraser_edge_key(a: int, b: int) -> String:
+	return str(min(a, b)) + "_" + str(max(a, b))
+
+
+# --- Eraser trail (fading Line2D drawn in world-space on the graph node) ---
+
+func _create_eraser_trail_line() -> void:
+	if is_instance_valid(_eraser_trail_line):
+		_eraser_trail_line.queue_free()
+
+	_eraser_trail_line = Line2D.new()
+	_eraser_trail_line.width = ERASER_TRAIL_WIDTH
+	_eraser_trail_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	_eraser_trail_line.end_cap_mode   = Line2D.LINE_CAP_ROUND
+	_eraser_trail_line.z_index = 10
+
+	var grad := Gradient.new()
+	grad.set_color(0, Color(0.62, 0.62, 0.68, 0.0))   # transparent tail
+	grad.set_color(1, Color(0.62, 0.62, 0.68, 0.72))  # solid brush head
+	_eraser_trail_line.gradient = grad
+
+	controller.graph.add_child(_eraser_trail_line)
+
+
+func _update_eraser_trail_line() -> void:
+	if not is_instance_valid(_eraser_trail_line):
+		return
+	_eraser_trail_line.clear_points()
+	for p in _eraser_trail:
+		_eraser_trail_line.add_point(p)
+
+
+func _destroy_eraser_trail_line() -> void:
+	if is_instance_valid(_eraser_trail_line):
+		_eraser_trail_line.queue_free()
+	_eraser_trail_line = null
