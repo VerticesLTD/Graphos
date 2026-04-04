@@ -20,6 +20,8 @@ func _ready() -> void:
 	controller = par_node
 
 func _unhandled_input(event: InputEvent) -> void:
+	if AppInputPolicy.is_text_field_focused():
+		return
 	for action: StringName in action_map.keys():
 		# Callables from action map
 		var pressed_handler = action_map[action].get(0)

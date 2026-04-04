@@ -38,6 +38,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if not event.pressed:
 		return
+	if AppInputPolicy.is_text_field_focused():
+		return
 	if not event.is_command_or_control_pressed():
 		return
 
@@ -55,6 +57,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
+		var wheel: bool = (
+			event.button_index == MOUSE_BUTTON_WHEEL_UP
+			or event.button_index == MOUSE_BUTTON_WHEEL_DOWN
+		)
+		if wheel and AppInputPolicy.is_pointer_over_blocking_control():
+			return
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_zoom_camera(1.0 + zoom_speed, true)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
@@ -62,6 +70,8 @@ func _input(event: InputEvent) -> void:
 
 		var is_middle: bool = event.button_index == MOUSE_BUTTON_MIDDLE
 		var is_left_pan: bool = event.button_index == MOUSE_BUTTON_LEFT and _pan_mode_enabled
+		if (is_middle or is_left_pan) and event.pressed and AppInputPolicy.is_pointer_over_blocking_control():
+			return
 		if is_middle or is_left_pan:
 			_is_dragging = event.pressed
 			if not event.pressed:
