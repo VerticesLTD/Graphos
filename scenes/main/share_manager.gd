@@ -86,7 +86,7 @@ func _try_load_from_url() -> void:
 			pending_conflict = {"graph_id": effective_id, "shared_doc": result}
 			# Keep ?graphId= in the URL but clear the hash right away so
 			# reloads do not re-trigger the conflict dialog.
-			_set_url_graph_id(effective_id, clear_hash: true)
+			_set_url_graph_id(effective_id, true)
 			return
 
 		# No conflict: save the shared graph locally and make it active.
@@ -95,7 +95,7 @@ func _try_load_from_url() -> void:
 			_persistence_manager.apply_document(result)
 			_persistence_manager.set_active_graph_id(effective_id)
 		loaded_from_url = true
-		_set_url_graph_id(effective_id, clear_hash: true)
+		_set_url_graph_id(effective_id, true)
 
 
 # ---------------------------------------------------------------------------
@@ -127,7 +127,7 @@ func _on_hashchange(_args: Array) -> void:
 	if _persistence_manager:
 		_persistence_manager.apply_document(result)
 		_persistence_manager.set_active_graph_id(decoded_id)
-	_set_url_graph_id(decoded_id, clear_hash: true)
+	_set_url_graph_id(decoded_id, true)
 
 
 # ---------------------------------------------------------------------------
