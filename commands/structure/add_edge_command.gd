@@ -9,6 +9,8 @@ var weight: float
 var strategy: ConnectionStrategy
 var is_weighted: bool
 var edge_color: Color = Globals.EDGE_COLOR
+## True when this edge comes from preset/clipboard paste.
+var from_clipboard_paste: bool = false
 
 ## Initializes the command. If s or w_mode are null, it snapshots Globals.
 func _init(
@@ -18,13 +20,15 @@ func _init(
 		w: float = 1.0,
 		s: ConnectionStrategy = null,
 		w_mode = null,
-		_edge_color: Color = Globals.EDGE_COLOR
+		_edge_color: Color = Globals.EDGE_COLOR,
+		_from_clipboard_paste: bool = false
 	):
 	super(g)
 	from_id = src_id
 	to_id = dst_id
 	weight = w
 	edge_color = _edge_color
+	from_clipboard_paste = _from_clipboard_paste
 
 	# If a strategy/weight is provided, use it.
 	# Otherwise, snapshot the current tool in the player's hand.

@@ -5,11 +5,19 @@ extends Command
 var pos: Vector2
 var vertex: Vertex
 var vertex_color: Color = Globals.VERTEX_COLOR
+## True when this vertex comes from preset/clipboard paste (not a direct user click).
+var from_clipboard_paste: bool = false
 
-func _init(g: Graph, mouse_pos: Vector2, _vertex_color: Color = Globals.VERTEX_COLOR):
+func _init(
+		g: Graph,
+		mouse_pos: Vector2,
+		_vertex_color: Color = Globals.VERTEX_COLOR,
+		_from_clipboard_paste: bool = false
+	):
 	super(g)
 	pos = mouse_pos
 	vertex_color = _vertex_color
+	from_clipboard_paste = _from_clipboard_paste
 
 func execute() -> void:
 	if vertex == null:

@@ -46,6 +46,8 @@ script = ExtResource("12_math_grid")
 
 [node name="Camera" parent="." unique_id=603822564 instance=ExtResource("11_camera")]
 
+[node name="WelcomeLayer" parent="." instance=ExtResource("19_welcome")]
+
 [node name="GraphController" type="Node" parent="." unique_id=1509094021 node_paths=PackedStringArray("graph")]
 script = ExtResource("2_b1x3f")
 graph = NodePath("../UndirectedGraph")
@@ -102,5 +104,3 @@ camera = NodePath("../Camera")
 grid_background = NodePath("../MathGridBackground")
 popup_menu_a = NodePath("../GraphController/PopupMenu")
 popup_menu_b = NodePath("../CanvasLayer/PopupMenuLayer")
-
-[node name="WelcomeOverlay" parent="." instance=ExtResource("19_welcome")]
