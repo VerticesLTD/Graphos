@@ -35,6 +35,7 @@ antialiased = true
 
 [node name="Weight" type="Label" parent="." unique_id=152968238]
 texture_filter = 2
+mouse_filter = 2
 offset_right = 40.0
 offset_bottom = 23.0
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
@@ -46,6 +47,7 @@ vertical_alignment = 1
 
 [node name="WeightEdit" type="LineEdit" parent="." unique_id=918274631]
 visible = false
+mouse_filter = 2
 offset_right = 56.0
 offset_bottom = 30.0
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)

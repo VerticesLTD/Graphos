@@ -46,3 +46,9 @@ func prepare_from_json_path(json_path: String) -> void:
 func refresh() -> void:
 	if _ren:
 		_ren.refresh()
+
+
+func set_mini_background(color: Color) -> void:
+	if _ren:
+		_ren.background_color = color
+		_ren.refresh()

@@ -289,7 +289,7 @@ func clear_link_context(_event: InputEvent) -> void:
 	link_session.clear()
 	link_order.clear()
 	link_head = Globals.NOT_FOUND
-
+	notify_tool_hint_context()
 
 func sync_link_session_from_order() -> void:
 	link_session.clear()
@@ -330,6 +330,7 @@ func _populate_selection_buffer() -> void:
 
 	animation_manager.update_current_selection(selection_buffer)
 	update_selection_bounds()
+	notify_tool_hint_context()
 
 ## Manually sets the selection buffer to a specific set of vertices.
 ## Useful for PasteCommand.
@@ -344,6 +345,7 @@ func select_vertices(vertices_to_select: Array[Vertex]) -> void:
 	
 	# Update the box
 	update_selection_bounds()
+	notify_tool_hint_context()
 
 		
 ## Drops selection entries that no longer exist on the graph (e.g. after undo removes a vertex).
@@ -368,6 +370,11 @@ func clear_selection_buffer() -> void:
 	selection_buffer.clear()
 	animation_manager.update_current_selection(selection_buffer)
 	update_selection_bounds()
+	notify_tool_hint_context()
+
+## Emits when selection or edge-link state changes so the toolbar hint can update.
+func notify_tool_hint_context() -> void:
+	Globals.tool_hint_context_changed.emit()
 
 ## Refreshes chain / head colors from link_session + link_head.
 func refresh_link_buffer_colors() -> void:

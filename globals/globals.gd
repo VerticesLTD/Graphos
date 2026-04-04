@@ -11,6 +11,8 @@ const EVNT_TAG = "EVENT"
 # App states
 # ------------
 signal app_state_changed
+## Selection buffer or edge link head changed — refresh contextual toolbar hints.
+signal tool_hint_context_changed
 signal algorithm_key_visuals_changed
 ## Emitted when the active edge strategy (directed/undirected) changes.
 signal strategy_changed

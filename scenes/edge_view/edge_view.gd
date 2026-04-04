@@ -54,8 +54,8 @@ func _ready() -> void:
 		if not mouse_detection_area.mouse_entered.is_connected(_on_mouse_entered):
 			mouse_detection_area.mouse_entered.connect(_on_mouse_entered)
 		if not mouse_detection_area.mouse_exited.is_connected(_on_mouse_exited):
-			mouse_detection_area.mouse_exited.connect(_on_mouse_exited)		
-			
+			mouse_detection_area.mouse_exited.connect(_on_mouse_exited)
+
 		# Algorithm support
 		if not edge_data.animation_requested.is_connected(_on_animation_requested):
 			edge_data.animation_requested.connect(_on_animation_requested)
@@ -545,6 +545,7 @@ func _start_inline_weight_edit() -> void:
 	weight_edit.custom_minimum_size = Vector2(max(22.0, weight_label.size.x + 8.0), max(22.0, weight_label.size.y + 4.0))
 	_position_inline_weight_editor()
 	weight_edit.visible = true
+	weight_edit.mouse_filter = Control.MOUSE_FILTER_STOP
 	weight_label.visible = false
 	Globals.active_weight_editor = weight_edit
 	weight_edit.grab_focus()
@@ -582,6 +583,7 @@ func _commit_inline_weight_edit(new_text: String) -> void:
 func _finish_inline_weight_edit() -> void:
 	weight_edit.release_focus()
 	weight_edit.visible = false
+	weight_edit.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	weight_label.visible = true
 	Globals.active_weight_editor = null
 	refresh()

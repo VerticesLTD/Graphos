@@ -1,5 +1,8 @@
 extends Node
 
+const _EraserStroke := preload("res://controller/eraser_stroke.gd")
+const _EraserCursor := preload("res://controller/eraser_cursor.gd")
+
 # Corners scale both axes; edges scale one axis only.
 enum ResizeHandle {
 	NONE,
@@ -10,11 +13,6 @@ enum ResizeHandle {
 ## Right Control physical keycode (not always == KEY_CTRL across backends).
 const _PHYS_CTRL_R := 4194328
 
-# Eraser tool visual constants.
-const ERASER_PENDING_COLOR    := Color(0.74, 0.74, 0.78)
-const ERASER_TRAIL_MAX_POINTS := 22
-const ERASER_TRAIL_WIDTH      := 7.0
-
 # ----------------------------------------------------------------------------
 # State
 # ----------------------------------------------------------------------------
@@ -24,20 +22,7 @@ var _ghost_preview: GhostEdgePreview
 var _last_mouse_world_pos: Vector2 = Vector2.ZERO
 var _has_last_mouse_world_pos := false
 var _bounds_scale_tween: Tween
-
-# Eraser session — only meaningful while _eraser_active is true.
-var _eraser_active                  := false
-var _eraser_pending_vertices: Array[Vertex] = []
-var _eraser_pending_edges:    Array[Edge]   = []
-## Vertex IDs already marked so we don't double-process them.
-var _eraser_vertex_id_set:           Dictionary = {}
-## "minId_maxId" keys so undirected edges are de-duplicated.
-var _eraser_edge_key_set:            Dictionary = {}
-## Per-object original colors, restored on cancel or commit.
-var _eraser_original_vertex_colors:  Dictionary = {}
-var _eraser_original_edge_colors:    Dictionary = {}
-var _eraser_trail:                   PackedVector2Array = PackedVector2Array()
-var _eraser_trail_line:              Line2D = null
+var _eraser
 
 # Resize session — only meaningful while _is_resizing is true.
 var _is_resizing := false
@@ -75,8 +60,10 @@ func _ready() -> void:
 	if controller.graph:
 		_ghost_preview = controller.graph.get_node_or_null("GhostEdgePreview") as GhostEdgePreview
 
-	# Cancel any in-progress erase stroke if the user switches tools externally.
-	Globals.app_state_changed.connect(_on_app_state_changed_eraser)
+	_eraser = _EraserStroke.new(self)
+	Globals.app_state_changed.connect(_sync_eraser_cursor)
+	Globals.app_state_changed.connect(_refresh_hover_cursor_after_tool_change)
+	_sync_eraser_cursor()
 
 
 func _on_ctrl_action_released(event: InputEvent) -> void:
@@ -86,9 +73,8 @@ func _on_ctrl_action_released(event: InputEvent) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Escape cancels an active eraser stroke without deleting anything.
-	if event is InputEventKey and event.is_action_pressed("ui_cancel") and _eraser_active:
-		_cancel_eraser_session()
+	if event is InputEventKey and event.is_action_pressed("ui_cancel") and _eraser.active:
+		_eraser.cancel_to_selection()
 		get_viewport().set_input_as_handled()
 		return
 
@@ -177,6 +163,16 @@ func _hide_ghost_edge_preview() -> void:
 		_ghost_preview.hide_preview()
 
 
+func _sync_eraser_cursor() -> void:
+	_EraserCursor.set_enabled(Globals.current_state == Globals.State.ERASER)
+
+
+func _refresh_hover_cursor_after_tool_change() -> void:
+	if controller == null or controller.graph == null:
+		return
+	_handle_hover(controller.graph.get_global_mouse_position())
+
+
 func _handle_left_click(event: InputEventMouseButton):
 	var graph = controller.graph
 
@@ -184,9 +180,8 @@ func _handle_left_click(event: InputEventMouseButton):
 	_last_mouse_world_pos = mouse_global_pos
 	_has_last_mouse_world_pos = true
 
-	# Eraser: start a new stroke.  Every other mode falls through below.
 	if Globals.current_state == Globals.State.ERASER:
-		_start_eraser_session(mouse_global_pos)
+		_eraser.start_session(mouse_global_pos)
 		get_viewport().set_input_as_handled()
 		return
 
@@ -271,8 +266,8 @@ func _handle_left_click(event: InputEventMouseButton):
 func _handle_left_release(_event: InputEventMouseButton):
 	# Do not clear the Ctrl-connect chain here — was flaky between clicks.
 	# Path ends on Ctrl/Meta key release (_unhandled_input) or on non-ctrl click (above).
-	if _eraser_active:
-		_commit_eraser_session()
+	if _eraser.active:
+		_eraser.commit()
 		return
 	_cleanup_after_release()
 
@@ -484,6 +479,7 @@ func _handle_path_connection(pos: Vector2) -> void:
 		controller.sync_link_session_from_order()
 		controller.link_head = new_id
 		controller.refresh_link_buffer_colors()
+		controller.notify_tool_hint_context()
 		return
 
 	if head != Globals.NOT_FOUND and id == head:
@@ -502,6 +498,7 @@ func _handle_path_connection(pos: Vector2) -> void:
 		)
 		controller.sync_link_session_from_order()
 		controller.refresh_link_buffer_colors()
+		controller.notify_tool_hint_context()
 		return
 
 	controller.link_order.append(id)
@@ -510,6 +507,7 @@ func _handle_path_connection(pos: Vector2) -> void:
 	controller.sync_link_session_from_order()
 	controller.link_head = id
 	controller.refresh_link_buffer_colors()
+	controller.notify_tool_hint_context()
 
 func _handle_right_click(event: InputEventMouseButton):
 	var graph = controller.graph
@@ -556,14 +554,8 @@ func _handle_mouse_movement(_event: InputEventMouseMotion) -> void:
 	_handle_hover(mouse_world_pos)
 
 	# Eraser stroke: update the fading trail and mark items under the brush.
-	if _eraser_active:
-		_eraser_trail.append(mouse_world_pos)
-		if _eraser_trail.size() > ERASER_TRAIL_MAX_POINTS:
-			_eraser_trail.remove_at(0)
-		_update_eraser_trail_line()
-		_eraser_check_at(mouse_world_pos)
-
-	# Active interaction — resize beats normal drag; they can't both be true.
+	if _eraser.active:
+		_eraser.update_motion(mouse_world_pos)
 	elif _is_resizing:
 		_apply_resize(mouse_world_pos)
 	elif controller.is_dragging and _has_last_mouse_world_pos:
@@ -584,9 +576,8 @@ func _handle_dragging(world_delta: Vector2) -> void:
 
 
 func _handle_hover(mouse_world_pos: Vector2) -> void:
-	# Eraser mode always shows the crosshair regardless of what's underneath.
 	if Globals.current_state == Globals.State.ERASER:
-		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_CROSS)
+		_EraserCursor.set_enabled(true)
 		return
 
 	# Resize handles sit on the selection boundary — check them before vertices.
@@ -595,11 +586,20 @@ func _handle_hover(mouse_world_pos: Vector2) -> void:
 		DisplayServer.cursor_set_shape(_get_cursor_for_handle(handle))
 		return
 
-	var over_vertex    := controller.graph.get_vertex_id_at(mouse_world_pos) != Globals.NOT_FOUND
-	var over_selection := not controller.selection_buffer.is_empty() and \
-						  controller.selection_bounds.has_point(mouse_world_pos)
+	var over_vertex := controller.graph.get_vertex_id_at(mouse_world_pos) != Globals.NOT_FOUND
+	if over_vertex:
+		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_MOVE)
+		return
 
-	if over_vertex or over_selection:
+	if controller.graph.get_edge_at(mouse_world_pos) != null:
+		Input.set_custom_mouse_cursor(null, Input.CURSOR_ARROW)
+		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
+		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
+		return
+
+	var over_selection := not controller.selection_buffer.is_empty() and \
+		controller.selection_bounds.has_point(mouse_world_pos)
+	if over_selection:
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_MOVE)
 	else:
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
@@ -742,194 +742,3 @@ func _stop_resize() -> void:
 
 	_resize_snapshot.clear()
 	_resize_handle = ResizeHandle.NONE
-
-
-# ============================================================================
-# Eraser tool
-# ============================================================================
-#
-# Behaviour (Excalidraw-style):
-#   • LMB down   → begin eraser stroke; check item under cursor.
-#   • Mouse move → check item under cursor, paint a fading trail line.
-#   • LMB up     → restore all preview-grey, execute BulkEraseCommand.
-#   • Escape     → restore preview-grey, switch to SELECTION, nothing deleted.
-#   • Tool switch→ silently cancel (colours restored, nothing deleted).
-#
-# Items are "greyed" by temporarily changing vertex/edge data colours so that
-# every listener (UIVertexView, UIEdgeView) repaints immediately without needing
-# any changes to the view layer.
-
-func _on_app_state_changed_eraser() -> void:
-	if _eraser_active and Globals.current_state != Globals.State.ERASER:
-		_cancel_eraser_session_silent()
-
-
-func _start_eraser_session(pos: Vector2) -> void:
-	_eraser_active = true
-	_eraser_pending_vertices.clear()
-	_eraser_pending_edges.clear()
-	_eraser_vertex_id_set.clear()
-	_eraser_edge_key_set.clear()
-	_eraser_original_vertex_colors.clear()
-	_eraser_original_edge_colors.clear()
-	_eraser_trail = PackedVector2Array()
-	_eraser_trail.append(pos)
-	_create_eraser_trail_line()
-	_eraser_check_at(pos)
-
-
-## Checks the position under the eraser brush and marks any new item it touches.
-func _eraser_check_at(pos: Vector2) -> void:
-	var graph := controller.graph
-
-	# Vertex takes priority over edge.
-	var v_id := graph.get_vertex_id_at(pos)
-	if v_id != Globals.NOT_FOUND:
-		if not _eraser_vertex_id_set.has(v_id):
-			var v := graph.get_vertex(v_id)
-			if v:
-				_mark_vertex_for_erasure(v)
-		return  # Whether or not we just marked it, don't also mark an edge.
-
-	# No vertex — check for an edge.
-	var edge := graph.get_edge_at(pos)
-	if edge:
-		_mark_edge_for_erasure(edge)
-
-
-func _mark_vertex_for_erasure(v: Vertex) -> void:
-	_eraser_vertex_id_set[v.id] = true
-	_eraser_original_vertex_colors[v] = v.color
-	_eraser_pending_vertices.append(v)
-	v.color = ERASER_PENDING_COLOR
-
-	# Grey incident edges visually so the whole connected bundle fades together.
-	var e: Edge = v.edges
-	while e:
-		_set_eraser_edge_color(e)
-		e = e.next
-	for inc_e in controller.graph.get_incoming_edges(v):
-		_set_eraser_edge_color(inc_e)
-
-
-func _mark_edge_for_erasure(edge: Edge) -> void:
-	var key := _eraser_edge_key(edge.src.id, edge.dst.id)
-	if _eraser_edge_key_set.has(key):
-		return
-	_eraser_edge_key_set[key] = true
-	_eraser_pending_edges.append(edge)
-
-	# Grey both directions for undirected edges.
-	_set_eraser_edge_color(edge)
-	if not (edge.strategy is DirectedStrategy):
-		var rev := controller.graph.get_edge(edge.dst, edge.src)
-		if rev:
-			_set_eraser_edge_color(rev)
-
-
-## Stores the original colour of an edge object and paints it grey for preview.
-func _set_eraser_edge_color(edge: Edge) -> void:
-	if not _eraser_original_edge_colors.has(edge):
-		_eraser_original_edge_colors[edge] = edge.color
-		edge.color = ERASER_PENDING_COLOR
-
-
-## Restores all greyed item colours without deleting anything.
-func _eraser_restore_colors() -> void:
-	for v in _eraser_original_vertex_colors:
-		if is_instance_valid(v):
-			v.color = _eraser_original_vertex_colors[v]
-	for e in _eraser_original_edge_colors:
-		if is_instance_valid(e):
-			e.color = _eraser_original_edge_colors[e]
-
-
-func _cancel_eraser_session_silent() -> void:
-	_eraser_active = false
-	_eraser_restore_colors()
-	_clear_eraser_state()
-	_destroy_eraser_trail_line()
-
-
-## Escape: cancel stroke and switch back to selection — nothing is deleted.
-func _cancel_eraser_session() -> void:
-	_cancel_eraser_session_silent()
-	Globals.current_state = Globals.State.SELECTION
-
-
-## LMB release: restore preview colours then execute the bulk delete in one command.
-func _commit_eraser_session() -> void:
-	_eraser_active = false
-	_destroy_eraser_trail_line()
-
-	if _eraser_pending_vertices.is_empty() and _eraser_pending_edges.is_empty():
-		_clear_eraser_state()
-		return
-
-	# Restore colours BEFORE building commands so snapshots capture original state.
-	_eraser_restore_colors()
-
-	# Standalone edges: only those whose BOTH endpoints are not being erased.
-	# Vertex commands will cascade-delete the rest.
-	var standalone: Array[Edge] = []
-	for e in _eraser_pending_edges:
-		if not _eraser_vertex_id_set.has(e.src.id) and not _eraser_vertex_id_set.has(e.dst.id):
-			standalone.append(e)
-
-	var cmd := BulkEraseCommand.new(
-		controller.graph,
-		_eraser_pending_vertices,
-		standalone,
-		controller
-	)
-	CommandManager.execute(cmd)
-	_clear_eraser_state()
-
-
-func _clear_eraser_state() -> void:
-	_eraser_pending_vertices.clear()
-	_eraser_pending_edges.clear()
-	_eraser_vertex_id_set.clear()
-	_eraser_edge_key_set.clear()
-	_eraser_original_vertex_colors.clear()
-	_eraser_original_edge_colors.clear()
-	_eraser_trail = PackedVector2Array()
-
-
-## Canonical key for an undirected pair so A–B and B–A map to the same bucket.
-func _eraser_edge_key(a: int, b: int) -> String:
-	return str(min(a, b)) + "_" + str(max(a, b))
-
-
-# --- Eraser trail (fading Line2D drawn in world-space on the graph node) ---
-
-func _create_eraser_trail_line() -> void:
-	if is_instance_valid(_eraser_trail_line):
-		_eraser_trail_line.queue_free()
-
-	_eraser_trail_line = Line2D.new()
-	_eraser_trail_line.width = ERASER_TRAIL_WIDTH
-	_eraser_trail_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
-	_eraser_trail_line.end_cap_mode   = Line2D.LINE_CAP_ROUND
-	_eraser_trail_line.z_index = 10
-
-	var grad := Gradient.new()
-	grad.set_color(0, Color(0.62, 0.62, 0.68, 0.0))   # transparent tail
-	grad.set_color(1, Color(0.62, 0.62, 0.68, 0.72))  # solid brush head
-	_eraser_trail_line.gradient = grad
-
-	controller.graph.add_child(_eraser_trail_line)
-
-
-func _update_eraser_trail_line() -> void:
-	if not is_instance_valid(_eraser_trail_line):
-		return
-	_eraser_trail_line.clear_points()
-	for p in _eraser_trail:
-		_eraser_trail_line.add_point(p)
-
-
-func _destroy_eraser_trail_line() -> void:
-	if is_instance_valid(_eraser_trail_line):
-		_eraser_trail_line.queue_free()
-	_eraser_trail_line = null

@@ -61,8 +61,17 @@ func _ready() -> void:
 	Globals.strategy_changed.connect(_sync_directed_btn)
 	Globals.weighted_mode_changed.connect(_sync_weighted_btn)
 
+	_apply_pointing_hand_to_buttons(self)
+
 	_apply_responsive_layout()
 	call_deferred("_apply_responsive_layout")
+
+
+func _apply_pointing_hand_to_buttons(node: Node) -> void:
+	if node is BaseButton:
+		(node as Control).mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	for c in node.get_children():
+		_apply_pointing_hand_to_buttons(c)
 
 
 func _on_window_or_viewport_resized() -> void:
@@ -202,6 +211,10 @@ func _on_create_pressed() -> void:
 
 func _on_edge_pressed() -> void:
 	Globals.current_state = Globals.State.EDGE
+
+
+func _on_eraser_pressed() -> void:
+	Globals.current_state = Globals.State.ERASER
 
 
 func _sync_tool_buttons() -> void:

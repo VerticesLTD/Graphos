@@ -1,6 +1,9 @@
 class_name AlgorithmPlayer
 extends Node2D
 
+## Emitted once a run actually begins (timeline ready, UI shown). Used by first-time welcome overlay.
+signal algorithm_run_started
+
 const LOG_TAG = "ALG_PLAYER"
 const PSEUDO_MARGIN := 24.0
 
@@ -225,6 +228,7 @@ func start_algorithm(
 
 	_is_algorithm_running = true
 	_lock_algorithm_selection(selection_buffer)
+	algorithm_run_started.emit()
 
 
 ## Modular restart-safe shutdown:

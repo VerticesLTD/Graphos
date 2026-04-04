@@ -2,6 +2,9 @@
 extends Node2D
 class_name PresetGraphMiniRenderer
 
+## Filled behind the graph; use Color(0,0,0,0) to skip drawing (e.g. welcome overlay).
+@export var background_color: Color = Color.WHITE
+
 var _graph: Graph
 
 
@@ -27,7 +30,8 @@ func _draw() -> void:
 	var vp := get_viewport() as SubViewport
 	var vw: float = float(vp.size.x) if vp else 128.0
 	var vh: float = float(vp.size.y) if vp else 88.0
-	draw_rect(Rect2(Vector2.ZERO, Vector2(vw, vh)), Color.WHITE)
+	if background_color.a > 0.001:
+		draw_rect(Rect2(Vector2.ZERO, Vector2(vw, vh)), background_color)
 
 	if _graph == null or _graph.vertices.is_empty():
 		return

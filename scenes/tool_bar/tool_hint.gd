@@ -4,25 +4,38 @@ extends Label
 ## (the toolbar moves to the bottom on narrow screens, leaving no good spot for text).
 const MOBILE_VIEWPORT_MAX_WIDTH := 768.0
 
+var _graph_controller: GraphController
+
+
 func _ready() -> void:
+	_graph_controller = get_node("../../GraphController") as GraphController
 	Globals.app_state_changed.connect(_update_text)
+	Globals.tool_hint_context_changed.connect(_update_text)
 	get_window().size_changed.connect(_update_visibility)
 	_update_text()
 	_update_visibility()
 
 
 func _update_text() -> void:
+	if _graph_controller == null:
+		return
 	match Globals.current_state:
 		Globals.State.SELECTION:
-			text = "Click to select  ·  Drag to multi-select  ·  Right-click selection to run algorithms"
+			if _graph_controller.selection_buffer.is_empty():
+				text = "Click or drag to select"
+			else:
+				text = "Right-click selection for options"
 		Globals.State.CREATE:
-			text = "Click to place a vertex  ·  Hold Ctrl + click two vertices to connect"
+			text = "Click to add vertex  ·  Hold Ctrl + click two vertices to connect"
 		Globals.State.PAN:
 			text = "Drag to pan  ·  Scroll to zoom"
 		Globals.State.EDGE:
-			text = "Click a vertex to start  ·  Click another to connect  ·  Click the same to cancel  ·  Right-click an edge to remove"
+			if _graph_controller.link_head == Globals.NOT_FOUND:
+				text = "Click a vertex to start connection"
+			else:
+				text = "Click second vertex to connect  ·  Click same to cancel"
 		Globals.State.ERASER:
-			text = "Click and drag over vertices or edges to erase  ·  Release to confirm  ·  Escape to cancel"
+			text = "Drag over items to delete  ·  Escape to cancel"
 		_:
 			text = ""
 
