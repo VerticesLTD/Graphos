@@ -6,27 +6,31 @@ class_name SharePanel
 const SHARE_ICON: Texture2D = preload("res://assets/icons/share_icon.svg")
 const TOOLBAR_BG: StyleBox = preload("res://scenes/tool_bar/tool_bar_background.tres")
 
-const ACCENT       := Color(0.263, 0.38, 0.933)
-const ACCENT_HOVER := Color(0.2,   0.3,  0.85)
-const SUCCESS      := Color(0.18,  0.66, 0.44)
+const ACCENT        := Color(0.263, 0.38, 0.933)
+const ACCENT_HOVER  := Color(0.2,   0.3,  0.85)
+const SUCCESS       := Color(0.18,  0.66, 0.44)
 const SUCCESS_HOVER := Color(0.15, 0.58, 0.38)
-const DARK         := Color(0.118, 0.118, 0.18)
-const MUTED        := Color(0.44,  0.44, 0.55)
+const DARK          := Color(0.118, 0.118, 0.18)
+const MUTED         := Color(0.44,  0.44, 0.55)
+const SUBTLE        := Color(0.3,   0.3,  0.45)
+const SUBTLE_HOVER  := Color(0.22,  0.22, 0.36)
 
 const POPUP_WIDTH  := 340
-const POPUP_HEIGHT := 116
+const POPUP_HEIGHT := 152
 const COPY_RESET_SECS := 2.0
 
-@onready var _popup: Popup = $SharePopup
-@onready var _share_manager: ShareManager = get_parent().get_node_or_null("ShareManager") as ShareManager
-@onready var _graph: Graph               = get_parent().get_node_or_null("UndirectedGraph") as Graph
-@onready var _camera: Camera2D           = get_parent().get_node_or_null("Camera") as Camera2D
-@onready var _grid: MathGridBackground   = get_parent().get_node_or_null("MathGridBackground") as MathGridBackground
+@onready var _popup:               Popup              = $SharePopup
+@onready var _share_manager:       ShareManager       = get_parent().get_node_or_null("ShareManager")       as ShareManager
+@onready var _persistence_manager: PersistenceManager = get_parent().get_node_or_null("PersistenceManager") as PersistenceManager
+@onready var _graph:               Graph              = get_parent().get_node_or_null("UndirectedGraph")    as Graph
+@onready var _camera:              Camera2D           = get_parent().get_node_or_null("Camera")             as Camera2D
+@onready var _grid:                MathGridBackground = get_parent().get_node_or_null("MathGridBackground") as MathGridBackground
 
 var _url_field: LineEdit
 var _copy_btn: Button
 var _copy_timer: Timer
 var _current_url: String = ""
+var _duplicate_btn: Button
 
 
 func _ready() -> void:
@@ -44,7 +48,6 @@ func _prewarm_popup() -> void:
 	await get_tree().process_frame
 	_popup.hide()
 
-
 func toggle_popup(trigger_rect: Rect2) -> void:
 	if _popup.visible:
 		_popup.hide()
@@ -57,14 +60,20 @@ func toggle_popup(trigger_rect: Rect2) -> void:
 	if not OS.has_feature("web"):
 		_url_field.placeholder_text = "Open in a browser to share."
 		_copy_btn.disabled = true
+		_duplicate_btn.disabled = true
 	elif _share_manager and _graph and _camera and _grid:
 		_copy_btn.disabled = false
-		_current_url = _share_manager.get_share_url(_graph, _camera, _grid.grid_enabled)
+		_duplicate_btn.disabled = false
+		var graph_id := _persistence_manager.get_active_graph_id() \
+				if _persistence_manager else ""
+		_current_url = _share_manager.get_share_url(
+				_graph, _camera, _grid.grid_enabled, graph_id)
 		_url_field.text = _current_url
 		_url_field.placeholder_text = ""
 	else:
 		_url_field.placeholder_text = "Could not generate link."
 		_copy_btn.disabled = true
+		_duplicate_btn.disabled = true
 
 	_popup.min_size = Vector2i(POPUP_WIDTH, POPUP_HEIGHT)
 	_popup.max_size = Vector2i(POPUP_WIDTH, POPUP_HEIGHT)
@@ -76,7 +85,6 @@ func toggle_popup(trigger_rect: Rect2) -> void:
 	y = clampi(y, 8, int(vp.y) - POPUP_HEIGHT - 8)
 	_popup.position = Vector2i(x, y)
 	_popup.popup()
-
 
 func _build_popup() -> void:
 	var panel := PanelContainer.new()
@@ -164,6 +172,23 @@ func _build_popup() -> void:
 
 	_url_field.gui_input.connect(_on_url_field_input)
 
+	# — Duplicate row —
+	var dup_row := HBoxContainer.new()
+	dup_row.add_theme_constant_override("separation", 6)
+	vbox.add_child(dup_row)
+
+	var dup_label := Label.new()
+	dup_label.text = "Save an independent copy of this graph"
+	dup_label.add_theme_font_size_override("font_size", 10)
+	dup_label.add_theme_color_override("font_color", MUTED)
+	dup_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dup_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	dup_row.add_child(dup_label)
+
+	_duplicate_btn = _make_accent_button("Duplicate", SUBTLE, SUBTLE_HOVER)
+	_duplicate_btn.pressed.connect(_on_duplicate_pressed)
+	dup_row.add_child(_duplicate_btn)
+
 
 func _make_accent_button(label: String, color: Color, hover_color: Color) -> Button:
 	var btn := Button.new()
@@ -245,3 +270,9 @@ func _reset_copy_button() -> void:
 
 func _on_copy_timer_timeout() -> void:
 	_reset_copy_button()
+
+
+func _on_duplicate_pressed() -> void:
+	if _persistence_manager:
+		_persistence_manager.save_as_new_graph()
+	_popup.hide()

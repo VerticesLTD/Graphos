@@ -20,6 +20,7 @@ enum State {
 	SELECTION,
 	CREATE,
 	PAN,
+	EDGE,
 	ALG,
 	ERASER,
 }

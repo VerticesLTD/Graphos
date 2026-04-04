@@ -1,18 +1,15 @@
 extends Camera2D
 
-## Emitted after zoom or pan ends so the persistence layer can schedule a save.
+## Fired after zoom or pan so the scene can persist the view.
 signal view_changed
 
-# --- CONFIGURATION ---
 @export var zoom_speed: float = 0.1
 @export var min_zoom: float = 0.2
 @export var max_zoom: float = 5.0
-@export var smooth_speed: float = 15.0
 
-# State
 var _target_zoom: float = 1.0
 var _is_dragging: bool = false
-var _pan_mode_enabled: bool = false 
+var _pan_mode_enabled: bool = false
 var _last_pan_mode_enabled: bool = false
 var _applied_cursor_state := -1
 
@@ -23,8 +20,8 @@ const CURSOR_STATE_PAN_DRAG := 2
 const PAN_HAND_CURSOR: Texture2D = preload("res://assets/icons/hand.svg")
 const PAN_GRAB_CURSOR: Texture2D = preload("res://assets/icons/hand-grabbing.svg")
 
+
 func _process(_delta: float) -> void:
-	# Pan mode is driven by global tool state.
 	_pan_mode_enabled = Globals.current_state == Globals.State.PAN
 	if _pan_mode_enabled != _last_pan_mode_enabled:
 		if not _pan_mode_enabled:
@@ -32,64 +29,74 @@ func _process(_delta: float) -> void:
 		_last_pan_mode_enabled = _pan_mode_enabled
 		_update_cursor_shape()
 
-	# Enforce cursor while panning/dragging so other hover handlers cannot override it.
 	if _pan_mode_enabled or _is_dragging:
 		_update_cursor_shape()
 
-# Input handling
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not event is InputEventKey:
+		return
+	if not event.pressed:
+		return
+	if not event.is_command_or_control_pressed():
+		return
+
+	var pk: int = event.physical_keycode
+	# Ctrl+=, numpad +, or a dedicated + key; Ctrl+- or numpad -.
+	var zoom_in: bool = pk == KEY_EQUAL or pk == KEY_KP_ADD or pk == KEY_PLUS
+	var zoom_out: bool = pk == KEY_MINUS or pk == KEY_KP_SUBTRACT
+	if zoom_in:
+		_zoom_camera(1.0 + zoom_speed, false)
+		get_viewport().set_input_as_handled()
+	elif zoom_out:
+		_zoom_camera(1.0 - zoom_speed, false)
+		get_viewport().set_input_as_handled()
+
+
 func _input(event: InputEvent) -> void:
-	# Handle Zoom (Mouse Wheel)
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_zoom_camera(1.0 + zoom_speed)
+			_zoom_camera(1.0 + zoom_speed, true)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_zoom_camera(1.0 - zoom_speed)
+			_zoom_camera(1.0 - zoom_speed, true)
 
-		# Handle Drag Start/Stop
-		# Middle Click always drags. 
-		# Left Click only drags if Pan Mode is enabled.
-		var is_middle_click = event.button_index == MOUSE_BUTTON_MIDDLE
-		var is_left_click_pan = event.button_index == MOUSE_BUTTON_LEFT and _pan_mode_enabled
-		
-		if is_middle_click or is_left_click_pan:
+		var is_middle: bool = event.button_index == MOUSE_BUTTON_MIDDLE
+		var is_left_pan: bool = event.button_index == MOUSE_BUTTON_LEFT and _pan_mode_enabled
+		if is_middle or is_left_pan:
 			_is_dragging = event.pressed
 			if not event.pressed:
-				# Safety reset when drag ends.
 				_is_dragging = false
 				view_changed.emit()
-			# UPDATE: Trigger the cursor change immediately
 			_update_cursor_shape()
 
-	# Handle Drag Motion
 	if event is InputEventMouseMotion and _is_dragging:
-		# Divide by zoom so the 'relative' pixels match the world coordinates
 		position -= event.relative / zoom.x
 		_update_cursor_shape()
 
-# Zoom the camera by a factor
-func _zoom_camera(factor: float) -> void:
-	# Store the mouse position in the world BEFORE we zoom
-	var mouse_pos_before = get_global_mouse_position()
-	
-	# Calculate the new zoom level
+
+## factor multiplies the current zoom; it is clamped to [min_zoom, max_zoom].
+## If center_on_mouse is true, the point under the cursor stays fixed (wheel).
+## If false, the viewport center stays fixed (Ctrl+/Ctrl-).
+func _zoom_camera(factor: float, center_on_mouse: bool) -> void:
+	var anchor_before: Vector2 = (
+		get_global_mouse_position() if center_on_mouse else get_screen_center_position()
+	)
+
 	_target_zoom = clamp(_target_zoom * factor, min_zoom, max_zoom)
-	
-	# Update the actual zoom property
-	# (In a 'smooth' version, we do the correction after the lerp in _process)
 	zoom = Vector2(_target_zoom, _target_zoom)
-	
-	# Store the mouse position in the world AFTER we zoom
-	var mouse_pos_after = get_global_mouse_position()
-	
-	# COrrection: Shifting the camera by the difference keeps the cursor pinned to the same spot.
-	position += (mouse_pos_before - mouse_pos_after)
+
+	var anchor_after: Vector2 = (
+		get_global_mouse_position() if center_on_mouse else get_screen_center_position()
+	)
+	position += anchor_before - anchor_after
 	view_changed.emit()
+
 
 func toggle_pan_mode(pan_enabled: bool) -> void:
 	_pan_mode_enabled = pan_enabled
 	_update_cursor_shape()
 
-# Internal helper to handle the cursor logic
+
 func _update_cursor_shape() -> void:
 	var target_state := CURSOR_STATE_ARROW
 	if _is_dragging:
@@ -102,17 +109,14 @@ func _update_cursor_shape() -> void:
 	_applied_cursor_state = target_state
 
 	if _is_dragging:
-		# Closed hand while panning.
 		Input.set_custom_mouse_cursor(PAN_GRAB_CURSOR, Input.CURSOR_ARROW, Vector2(8, 8))
 		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
 	elif _pan_mode_enabled:
-		# Open hand while pan mode is enabled.
 		Input.set_custom_mouse_cursor(PAN_HAND_CURSOR, Input.CURSOR_ARROW, Vector2(8, 8))
 		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
 	else:
-		# Normal arrow otherwise.
 		Input.set_custom_mouse_cursor(null, Input.CURSOR_ARROW)
 		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
