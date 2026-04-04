@@ -430,7 +430,23 @@ func get_viewport_center_world_pos() -> Vector2:
 	return graph.get_global_mouse_position()
 
 
-func insert_preset_from_json_path(json_path: String) -> void:
+## Viewport pixel (top-left origin) → world point on the graph canvas (respects camera zoom).
+func screen_point_to_world(screen_px: Vector2) -> Vector2:
+	if graph == null:
+		return Vector2.ZERO
+	var vp := graph.get_viewport()
+	if vp == null:
+		return Vector2.ZERO
+	var cam := vp.get_camera_2d()
+	if cam == null:
+		return get_viewport_center_world_pos()
+	var rect := vp.get_visible_rect()
+	var center_scr := rect.position + rect.size * 0.5
+	var offset := screen_px - center_scr
+	return cam.get_screen_center_position() + offset / cam.zoom
+
+
+func insert_preset_from_json_path_at_world_anchor(json_path: String, anchor_world: Vector2) -> void:
 	var preset_graph: Graph = GraphPresetIO.load_preset_from_file(json_path)
 	if preset_graph == null:
 		Notify.show_error("Could not load graph preset.")
@@ -439,9 +455,16 @@ func insert_preset_from_json_path(json_path: String) -> void:
 	if need == 0:
 		preset_graph.queue_free()
 		return
-	var anchor := get_viewport_center_world_pos()
-	var cmd := PasteCommand.new(graph, preset_graph, anchor, self)
+	var cmd := PasteCommand.new(graph, preset_graph, anchor_world, self)
 	CommandManager.execute(cmd)
+
+
+func insert_preset_from_json_path_at_screen_point(json_path: String, screen_px: Vector2) -> void:
+	insert_preset_from_json_path_at_world_anchor(json_path, screen_point_to_world(screen_px))
+
+
+func insert_preset_from_json_path(json_path: String) -> void:
+	insert_preset_from_json_path_at_world_anchor(json_path, get_viewport_center_world_pos())
 
 
 ## ------------------------------------------------------------------------------
