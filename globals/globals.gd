@@ -31,6 +31,13 @@ var current_state: State:
 		current_state = value
 		app_state_changed.emit()
 
+
+## Pan and eraser own the pointer (hand / brush). Graph elements must not show hover rings or
+## selection-driven glow from [AnimationManager] while these tools are active.
+func graph_hover_highlights_disabled() -> bool:
+	return current_state == State.PAN or current_state == State.ERASER
+
+
 var algorithm_show_vertex_keys: bool = false:
 	set(value):
 		if algorithm_show_vertex_keys == value:

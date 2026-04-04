@@ -62,7 +62,7 @@ func _ready() -> void:
 
 	_eraser = _EraserStroke.new(self)
 	Globals.app_state_changed.connect(_sync_eraser_cursor)
-	Globals.app_state_changed.connect(_refresh_hover_cursor_after_tool_change)
+	Globals.app_state_changed.connect(_refresh_canvas_cursor_after_tool_change)
 	_sync_eraser_cursor()
 
 
@@ -167,10 +167,10 @@ func _sync_eraser_cursor() -> void:
 	_EraserCursor.set_enabled(Globals.current_state == Globals.State.ERASER)
 
 
-func _refresh_hover_cursor_after_tool_change() -> void:
+func _refresh_canvas_cursor_after_tool_change() -> void:
 	if controller == null or controller.graph == null:
 		return
-	_handle_hover(controller.graph.get_global_mouse_position())
+	_sync_canvas_cursor_from_world_mouse(controller.graph.get_global_mouse_position())
 
 
 func _handle_left_click(event: InputEventMouseButton):
@@ -550,8 +550,8 @@ func _handle_right_click(event: InputEventMouseButton):
 func _handle_mouse_movement(_event: InputEventMouseMotion) -> void:
 	var mouse_world_pos := controller.graph.get_global_mouse_position()
 
-	# Cursor feedback every frame regardless of interaction mode.
-	_handle_hover(mouse_world_pos)
+	# OS cursor follows world hit-tests (separate from Control-based toolbar cursors).
+	_sync_canvas_cursor_from_world_mouse(mouse_world_pos)
 
 	# Eraser stroke: update the fading trail and mark items under the brush.
 	if _eraser.active:
@@ -575,30 +575,36 @@ func _handle_dragging(world_delta: Vector2) -> void:
 	controller.update_selection_bounds()
 
 
-func _handle_hover(mouse_world_pos: Vector2) -> void:
+# -----------------------------------------------------------------------------
+# Canvas cursor — one place that maps world-space mouse → OS cursor.
+# Priority: eraser-only brush → resize handles → vertex drag → edge click → selection interior → arrow.
+# Eraser always wins so we never flash move/pointing hands over the graph (see Globals.graph_hover_highlights_disabled for visuals).
+# -----------------------------------------------------------------------------
+
+func _sync_canvas_cursor_from_world_mouse(world_pos: Vector2) -> void:
 	if Globals.current_state == Globals.State.ERASER:
 		_EraserCursor.set_enabled(true)
 		return
 
-	# Resize handles sit on the selection boundary — check them before vertices.
-	var handle := _get_handle_at(mouse_world_pos)
+	var handle := _get_handle_at(world_pos)
 	if handle != ResizeHandle.NONE:
 		DisplayServer.cursor_set_shape(_get_cursor_for_handle(handle))
 		return
 
-	var over_vertex := controller.graph.get_vertex_id_at(mouse_world_pos) != Globals.NOT_FOUND
-	if over_vertex:
+	if controller.graph.get_vertex_id_at(world_pos) != Globals.NOT_FOUND:
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_MOVE)
 		return
 
-	if controller.graph.get_edge_at(mouse_world_pos) != null:
+	if controller.graph.get_edge_at(world_pos) != null:
 		Input.set_custom_mouse_cursor(null, Input.CURSOR_ARROW)
 		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
 		return
 
-	var over_selection := not controller.selection_buffer.is_empty() and \
-		controller.selection_bounds.has_point(mouse_world_pos)
+	var over_selection := (
+		not controller.selection_buffer.is_empty()
+		and controller.selection_bounds.has_point(world_pos)
+	)
 	if over_selection:
 		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_MOVE)
 	else:

@@ -55,6 +55,7 @@ func _ready() -> void:
 			mouse_detection_area.mouse_entered.connect(_on_mouse_entered)
 		if not mouse_detection_area.mouse_exited.is_connected(_on_mouse_exited):
 			mouse_detection_area.mouse_exited.connect(_on_mouse_exited)
+		Globals.app_state_changed.connect(_on_global_tool_changed)
 
 		# Algorithm support
 		if not edge_data.animation_requested.is_connected(_on_animation_requested):
@@ -71,6 +72,24 @@ func _ready() -> void:
 		refresh()
 	else:
 		queue_free()
+
+
+func _on_global_tool_changed() -> void:
+	_clear_hover_if_tool_forbids_it()
+
+
+func _clear_hover_if_tool_forbids_it() -> void:
+	if not Globals.graph_hover_highlights_disabled():
+		return
+	if not is_hovered and not is_manual_hover:
+		return
+	if _tween:
+		_tween.kill()
+	is_hovered = false
+	is_manual_hover = false
+	draw_width_hovered = Globals.EDGE_WIDTH
+	draw_color_hovered = edge_data.color
+	_refresh_visual_style()
 
 
 # --- Visual Refresh ---
@@ -126,7 +145,7 @@ func _refresh_geometry_if_needed() -> void:
 
 ## Routes animation commands received from the Edge Data.
 func _on_animation_requested(anim_name: String) -> void:
-	if Globals.current_state == Globals.State.PAN and anim_name == "hover_start":
+	if anim_name == "hover_start" and Globals.graph_hover_highlights_disabled():
 		return
 	match anim_name:
 		"hover_start":
@@ -138,9 +157,10 @@ func _on_animation_requested(anim_name: String) -> void:
 
 ## Triggers the start of the hover state on mouse enter.
 func _on_mouse_entered() -> void:
-	if Globals.current_state == Globals.State.PAN:
+	if Globals.graph_hover_highlights_disabled():
 		return
-	if is_hovered: return
+	if is_hovered:
+		return
 	is_hovered = true
 	_start_hover_animation()
 

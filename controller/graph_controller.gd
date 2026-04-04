@@ -101,7 +101,7 @@ func _on_app_state_changed() -> void:
 
 func _process(delta: float) -> void:
 	if Globals.current_state != _last_tool_state:
-		if Globals.current_state == Globals.State.PAN and animation_manager:
+		if animation_manager and Globals.graph_hover_highlights_disabled():
 			animation_manager.clear_all_selection_hovers()
 		_last_tool_state = Globals.current_state
 

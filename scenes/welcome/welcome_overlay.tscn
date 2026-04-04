@@ -1,7 +1,6 @@
-[gd_scene load_steps=6 format=3 uid="uid://c8welcomeoverlay1"]
+[gd_scene load_steps=5 format=3 uid="uid://c8welcomeoverlay1"]
 
 [ext_resource type="Script" path="res://scenes/welcome/welcome_overlay.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://cuove7dnxxstp" path="res://scenes/presets/preset_live_thumbnail.tscn" id="2_thumb"]
 [ext_resource type="Texture2D" uid="uid://cmgktymkkl21e" path="res://assets/icons/create_tool_icon.svg" id="3_create"]
 [ext_resource type="Texture2D" uid="uid://bqx8k2m4n7p3w" path="res://assets/icons/edge_tool_icon.png" id="4_edge"]
 [ext_resource type="Texture2D" uid="uid://v5eliv4lx04j" path="res://assets/icons/cursor-alt-svgrepo-com.svg" id="5_select"]
@@ -26,127 +25,96 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -340.0
-offset_right = 340.0
-offset_top = 92.0
-offset_bottom = 520.0
+offset_left = -320.0
+offset_right = 320.0
+offset_top = 200.0
+offset_bottom = 580.0
 grow_horizontal = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 0
 alignment = 1
-
-[node name="LogoHolder" type="Control" parent="Root/Column"]
-custom_minimum_size = Vector2(280, 168)
-layout_mode = 2
-size_flags_horizontal = 4
-
-[node name="PresetLiveThumbnail" parent="Root/Column/LogoHolder" instance=ExtResource("2_thumb")]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 
 [node name="TextBlock" type="VBoxContainer" parent="Root/Column"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 20
 size_flags_horizontal = 4
 
 [node name="Title" type="Label" parent="Root/Column/TextBlock"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.118, 0.118, 0.176, 1)
-theme_override_font_sizes/font_size = 28
 text = "Welcome to Graphos"
 horizontal_alignment = 1
 
 [node name="Blurb" type="Label" parent="Root/Column/TextBlock"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.38, 0.38, 0.45, 1)
-theme_override_font_sizes/font_size = 15
 text = "An interactive graph algorithm visualizer"
 horizontal_alignment = 1
 
 [node name="RowCreate" type="HBoxContainer" parent="Root/Column/TextBlock"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 alignment = 1
 
 [node name="Icon" type="TextureRect" parent="Root/Column/TextBlock/RowCreate"]
-custom_minimum_size = Vector2(30, 30)
+custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
-size_flags_vertical = 4
+size_flags_vertical = 0
 mouse_filter = 2
 texture = ExtResource("3_create")
 expand_mode = 1
 stretch_mode = 5
+texture_filter = 4
 
-[node name="Line" type="RichTextLabel" parent="Root/Column/TextBlock/RowCreate"]
-custom_minimum_size = Vector2(520, 0)
+[node name="Line" type="Label" parent="Root/Column/TextBlock/RowCreate"]
+custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
-size_flags_horizontal = 3
-bbcode_enabled = true
-fit_content = true
-scroll_active = false
+size_flags_horizontal = 0
 autowrap_mode = 3
-theme_override_colors/default_color = Color(0.22, 0.22, 0.3, 1)
-theme_override_font_sizes/normal_font_size = 15
-text = "[b]Create[/b]: Click the canvas to add a vertex or try a [i]Preset[/i]."
+text = "Create: Click the canvas to add a vertex or try Presets."
 
 [node name="RowConnect" type="HBoxContainer" parent="Root/Column/TextBlock"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 alignment = 1
 
 [node name="Icon" type="TextureRect" parent="Root/Column/TextBlock/RowConnect"]
-custom_minimum_size = Vector2(30, 30)
+custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
-size_flags_vertical = 4
+size_flags_vertical = 0
 mouse_filter = 2
 texture = ExtResource("4_edge")
 expand_mode = 1
 stretch_mode = 5
+texture_filter = 4
 
-[node name="Line" type="RichTextLabel" parent="Root/Column/TextBlock/RowConnect"]
-custom_minimum_size = Vector2(520, 0)
+[node name="Line" type="Label" parent="Root/Column/TextBlock/RowConnect"]
+custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
-size_flags_horizontal = 3
-bbcode_enabled = true
-fit_content = true
-scroll_active = false
+size_flags_horizontal = 0
 autowrap_mode = 3
-theme_override_colors/default_color = Color(0.22, 0.22, 0.3, 1)
-theme_override_font_sizes/normal_font_size = 15
-text = "[b]Connect[/b]: Click two vertices to connect (or hold [i]Ctrl + Click[/i])."
+text = "Connect: Click two vertices to connect (or hold Ctrl + click)."
 
 [node name="RowAnalyze" type="HBoxContainer" parent="Root/Column/TextBlock"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 alignment = 1
 
 [node name="Icon" type="TextureRect" parent="Root/Column/TextBlock/RowAnalyze"]
-custom_minimum_size = Vector2(30, 30)
+custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
-size_flags_vertical = 4
+size_flags_vertical = 0
 mouse_filter = 2
 texture = ExtResource("5_select")
 expand_mode = 1
 stretch_mode = 5
+texture_filter = 4
 
-[node name="Line" type="RichTextLabel" parent="Root/Column/TextBlock/RowAnalyze"]
-custom_minimum_size = Vector2(520, 0)
+[node name="Line" type="Label" parent="Root/Column/TextBlock/RowAnalyze"]
+custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
-size_flags_horizontal = 3
-bbcode_enabled = true
-fit_content = true
-scroll_active = false
+size_flags_horizontal = 0
 autowrap_mode = 3
-theme_override_colors/default_color = Color(0.22, 0.22, 0.3, 1)
-theme_override_font_sizes/normal_font_size = 15
-text = "[b]Analyze[/b]: Select items, then [i]Right-click[/i] to run algorithms or edit properties."
+text = "Analyze: Select items, then Right-click to run algorithms or edit properties."
 
 [node name="Closing" type="Label" parent="Root/Column/TextBlock"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.42, 0.42, 0.5, 1)
-theme_override_font_sizes/font_size = 14
 text = "Hope you enjoy!"
 horizontal_alignment = 1
