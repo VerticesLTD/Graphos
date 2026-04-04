@@ -34,7 +34,9 @@ var _desktop_modifier_font: int
 
 func _ready() -> void:
 	_cache_desktop_layout()
-	get_viewport().size_changed.connect(_on_viewport_size_changed)
+	# canvas_items stretch keeps the root viewport at base size (e.g. 1280 wide);
+	# real narrow screens must use the window / browser width, not viewport rect alone.
+	get_window().size_changed.connect(_on_window_or_viewport_resized)
 
 	tool_row.move_child(pan_btn, 0)
 	tool_row.move_child(edge_btn, 1)
@@ -58,9 +60,10 @@ func _ready() -> void:
 	Globals.weighted_mode_changed.connect(_sync_weighted_btn)
 
 	_apply_responsive_layout()
+	call_deferred("_apply_responsive_layout")
 
 
-func _on_viewport_size_changed() -> void:
+func _on_window_or_viewport_resized() -> void:
 	_apply_responsive_layout()
 
 
@@ -79,8 +82,27 @@ func _cache_desktop_layout() -> void:
 	_desktop_modifier_font = directed_btn.get_theme_font_size("font_size", "Button")
 
 
+## Width used for the mobile breakpoint. With stretch/canvas_items the logical
+## viewport stays at the project base width; window size and (on web) innerWidth
+## reflect the actual layout width.
+func _layout_width_for_breakpoint() -> float:
+	var w := float(DisplayServer.window_get_size().x)
+	var vp_w := get_viewport().get_visible_rect().size.x
+	if w <= 0.0:
+		w = vp_w
+	else:
+		w = minf(w, vp_w)
+	if OS.has_feature("web"):
+		var inner: Variant = JavaScriptBridge.eval("window.innerWidth", true)
+		if inner != null:
+			var iw := float(inner)
+			if iw > 0.0:
+				w = minf(w, iw)
+	return w
+
+
 func _is_mobile_viewport() -> bool:
-	return get_viewport().get_visible_rect().size.x <= MOBILE_VIEWPORT_MAX_WIDTH
+	return _layout_width_for_breakpoint() <= MOBILE_VIEWPORT_MAX_WIDTH
 
 
 func _apply_responsive_layout() -> void:
