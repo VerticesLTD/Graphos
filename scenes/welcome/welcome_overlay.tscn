@@ -1,15 +1,15 @@
-[gd_scene load_steps=5 format=3 uid="uid://ce8vasy4hj2x7"]
+[gd_scene format=3 uid="uid://ce8vasy4hj2x7"]
 
-[ext_resource type="Script" path="res://scenes/welcome/welcome_overlay.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://b0bd5ujk8kw3m" path="res://scenes/welcome/welcome_overlay.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://cmgktymkkl21e" path="res://assets/icons/create_tool_icon.svg" id="3_create"]
 [ext_resource type="Texture2D" uid="uid://bqx8k2m4n7p3w" path="res://assets/icons/edge_tool_icon.png" id="4_edge"]
 [ext_resource type="Texture2D" uid="uid://v5eliv4lx04j" path="res://assets/icons/cursor-alt-svgrepo-com.svg" id="5_select"]
 
-[node name="WelcomeLayer" type="CanvasLayer"]
+[node name="WelcomeLayer" type="CanvasLayer" unique_id=939629155]
 layer = 0
 script = ExtResource("1_script")
 
-[node name="Root" type="Control" parent="."]
+[node name="Root" type="Control" parent="." unique_id=1363264063]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -18,13 +18,12 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Title" type="Label" parent="Root"]
+[node name="Title" type="Label" parent="Root" unique_id=1432737303]
 layout_mode = 0
-mouse_filter = 2
 text = "Welcome to Graphos!"
 horizontal_alignment = 1
 
-[node name="InstructionShift" type="MarginContainer" parent="Root"]
+[node name="InstructionShift" type="MarginContainer" parent="Root" unique_id=1650626459]
 layout_mode = 0
 mouse_filter = 2
 theme_override_constants/margin_left = 40
@@ -32,21 +31,21 @@ theme_override_constants/margin_top = 0
 theme_override_constants/margin_right = 40
 theme_override_constants/margin_bottom = 0
 
-[node name="CenterRows" type="CenterContainer" parent="Root/InstructionShift"]
+[node name="CenterRows" type="CenterContainer" parent="Root/InstructionShift" unique_id=1478773289]
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="InstructionBlock" type="VBoxContainer" parent="Root/InstructionShift/CenterRows"]
+[node name="InstructionBlock" type="VBoxContainer" parent="Root/InstructionShift/CenterRows" unique_id=1942173010]
 custom_minimum_size = Vector2(492, 0)
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_constants/separation = 16
 
-[node name="RowCreate" type="HBoxContainer" parent="Root/InstructionShift/CenterRows/InstructionBlock"]
+[node name="RowCreate" type="HBoxContainer" parent="Root/InstructionShift/CenterRows/InstructionBlock" unique_id=129765885]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Icon" type="TextureRect" parent="Root/InstructionShift/CenterRows/InstructionBlock/RowCreate"]
+[node name="Icon" type="TextureRect" parent="Root/InstructionShift/CenterRows/InstructionBlock/RowCreate" unique_id=712364859]
 texture_filter = 4
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
@@ -56,18 +55,18 @@ texture = ExtResource("3_create")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Line" type="Label" parent="Root/InstructionShift/CenterRows/InstructionBlock/RowCreate"]
+[node name="Line" type="Label" parent="Root/InstructionShift/CenterRows/InstructionBlock/RowCreate" unique_id=114447899]
 custom_minimum_size = Vector2(452, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Create: Click the canvas to add a vertex or try Presets."
 autowrap_mode = 3
 
-[node name="RowConnect" type="HBoxContainer" parent="Root/InstructionShift/CenterRows/InstructionBlock"]
+[node name="RowConnect" type="HBoxContainer" parent="Root/InstructionShift/CenterRows/InstructionBlock" unique_id=1909021312]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Icon" type="TextureRect" parent="Root/InstructionShift/CenterRows/InstructionBlock/RowConnect"]
+[node name="Icon" type="TextureRect" parent="Root/InstructionShift/CenterRows/InstructionBlock/RowConnect" unique_id=1860337091]
 texture_filter = 4
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
@@ -77,18 +76,18 @@ texture = ExtResource("4_edge")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Line" type="Label" parent="Root/InstructionShift/CenterRows/InstructionBlock/RowConnect"]
+[node name="Line" type="Label" parent="Root/InstructionShift/CenterRows/InstructionBlock/RowConnect" unique_id=1978555089]
 custom_minimum_size = Vector2(452, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Connect: Click two vertices in Edge Mode, or hold Ctrl + Click."
 autowrap_mode = 3
 
-[node name="RowAnalyze" type="HBoxContainer" parent="Root/InstructionShift/CenterRows/InstructionBlock"]
+[node name="RowAnalyze" type="HBoxContainer" parent="Root/InstructionShift/CenterRows/InstructionBlock" unique_id=803442185]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Icon" type="TextureRect" parent="Root/InstructionShift/CenterRows/InstructionBlock/RowAnalyze"]
+[node name="Icon" type="TextureRect" parent="Root/InstructionShift/CenterRows/InstructionBlock/RowAnalyze" unique_id=29098236]
 texture_filter = 4
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
@@ -98,7 +97,7 @@ texture = ExtResource("5_select")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Line" type="Label" parent="Root/InstructionShift/CenterRows/InstructionBlock/RowAnalyze"]
+[node name="Line" type="Label" parent="Root/InstructionShift/CenterRows/InstructionBlock/RowAnalyze" unique_id=304011323]
 custom_minimum_size = Vector2(452, 0)
 layout_mode = 2
 size_flags_horizontal = 3

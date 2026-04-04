@@ -1,4 +1,5 @@
-## First-visit welcome: graph snapped to a design board ratio; title + rows in screen space (scales with viewport).
+## First-visit welcome: graph snapped to a design board ratio; title + rows live in
+## world space so they pan/scroll with the grid instead of staying fixed on screen.
 extends CanvasLayer
 
 const _GRAPHOS_PRESET := "res://core/presets/data/graphos.json"
@@ -8,9 +9,10 @@ const _COMPLETED_ROW_ALPHA := 0.2
 
 ## Reference artboard (any resolution — only ratios matter). Matches a 1920×1080 comp.
 const _REF_BOARD := Vector2(1920.0, 1080.0)
-const _LOGO_CENTER_BOARD := Vector2(960.0, 325.0)
-const _TITLE_CENTER_BOARD := Vector2(960.0, 552.0)
-const _INSTRUCTIONS_TOP_CENTER_BOARD := Vector2(960.0, 612.0)
+## Graph sits roughly in the upper-center; text follows below it.
+const _LOGO_CENTER_BOARD := Vector2(960.0, 310.0)
+const _TITLE_CENTER_BOARD := Vector2(960.0, 505.0)
+const _INSTRUCTIONS_TOP_CENTER_BOARD := Vector2(960.0, 575.0)
 ## Extra shift right for the instruction block vs title (board pixels; scales with viewport width).
 const _INSTRUCTIONS_NUDGE_X_BOARD := 44.0
 
@@ -19,13 +21,12 @@ const _WELCOME_GRAPH_RADIUS_INSET := _MATH_GRID_MINOR * 1.25
 const _WELCOME_GRAPH_MIN_SHRINK_FACTOR := 0.86
 const _INSTRUCTIONS_MAX_WIDTH_FRAC := 0.92
 
-const _TITLE_FONT_SIZE := 30
+const _TITLE_FONT_SIZE := 42
 const _ROW_FONT_SIZE := 13
 
 const _TITLE_GRAY := Color(0.118, 0.118, 0.18, 1)
 const _BODY_GRAY := Color(0.28, 0.28, 0.34, 1)
 
-@onready var _fade_target: Control = $Root
 @onready var _title: Label = $Root/Title
 @onready var _instruction_shift: MarginContainer = $Root/InstructionShift
 @onready var _instruction_block: VBoxContainer = $Root/InstructionShift/CenterRows/InstructionBlock
@@ -38,6 +39,9 @@ var _text_tween: Tween
 var _create_row_dimmed := false
 var _connect_row_dimmed := false
 var _pasted_welcome_preset := false
+## World-space container that holds the title and instruction labels so they
+## travel with the canvas when the user pans or zooms.
+var _world_text_root: Node2D = null
 
 
 func _ready() -> void:
@@ -58,6 +62,8 @@ func _on_viewport_size_changed() -> void:
 	_layout_welcome_ui.call_deferred()
 
 
+# ---------- coordinate helpers ----------
+
 func _board_to_viewport_point(board_px: Vector2) -> Vector2:
 	var r := get_viewport().get_visible_rect()
 	return r.position + Vector2(
@@ -66,15 +72,28 @@ func _board_to_viewport_point(board_px: Vector2) -> Vector2:
 	)
 
 
+## Convert a screen-space point to world (canvas) coordinates.
+func _screen_to_world(screen_pt: Vector2) -> Vector2:
+	return get_viewport().get_canvas_transform().affine_inverse() * screen_pt
+
+
+## Map a board-ratio position directly to world coordinates.
+func _board_to_world_point(board_px: Vector2) -> Vector2:
+	return _screen_to_world(_board_to_viewport_point(board_px))
+
+
+# ---------- bootstrap ----------
+
 func _bootstrap_welcome_flow() -> void:
 	_apply_typography()
-	_match_title_font_to_instruction_rows()
 	_tint_row_icons()
 	_bootstrap_welcome_graph()
 	call_deferred("_after_welcome_graph_sync")
 
 
 func _apply_typography() -> void:
+	var title_font: Font = load("res://assets/fonts/latinmodern-math.otf")
+	_title.add_theme_font_override("font", title_font)
 	_title.add_theme_font_size_override("font_size", _TITLE_FONT_SIZE)
 	_title.add_theme_color_override("font_color", _TITLE_GRAY)
 	_title.add_theme_constant_override("line_spacing", 4)
@@ -90,16 +109,6 @@ func _apply_typography() -> void:
 				lab.add_theme_color_override("font_color", _BODY_GRAY)
 				lab.add_theme_constant_override("line_spacing", 4)
 				lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-
-
-func _match_title_font_to_instruction_rows() -> void:
-	var line: Node = _row_create.get_node_or_null("Line")
-	if line is Label:
-		var sample: Label = line as Label
-		var f: Font = sample.get_theme_font("font")
-		_title.remove_theme_font_override("font")
-		if f:
-			_title.add_theme_font_override("font", f)
 
 
 func _tint_row_icons() -> void:
@@ -130,37 +139,22 @@ func _after_welcome_graph_sync() -> void:
 	if gc:
 		gc.clear_selection_buffer()
 	Globals.current_state = Globals.State.CREATE
+	# Guard: only create the world-space text container once even if called twice.
+	if _world_text_root == null:
+		_create_world_text_container()
 	await get_tree().process_frame
 	_layout_welcome_ui()
 
 
-func _layout_welcome_ui() -> void:
-	if not is_instance_valid(_title) or not is_instance_valid(_instruction_shift):
-		return
-	var r := get_viewport().get_visible_rect()
-	var title_center := _board_to_viewport_point(_TITLE_CENTER_BOARD)
-	var instr_anchor := _board_to_viewport_point(_INSTRUCTIONS_TOP_CENTER_BOARD)
-	instr_anchor.x += r.size.x * (_INSTRUCTIONS_NUDGE_X_BOARD / _REF_BOARD.x)
-
-	_title.reset_size()
-	_instruction_block.custom_minimum_size.x = minf(492.0, r.size.x * _INSTRUCTIONS_MAX_WIDTH_FRAC - 80.0)
-	_instruction_shift.reset_size()
-
-	await get_tree().process_frame
-
-	var ts: Vector2 = _title.get_combined_minimum_size()
-	if ts.x < 1.0 or ts.y < 1.0:
-		ts = _title.size
-	_title.custom_minimum_size = ts
-	_title.size = ts
-	_title.global_position = title_center - ts * 0.5
-
-	await get_tree().process_frame
-
-	var ib_size: Vector2 = _instruction_shift.size
-	if ib_size.x < 1.0:
-		ib_size = _instruction_shift.get_combined_minimum_size()
-	_instruction_shift.global_position = Vector2(instr_anchor.x - ib_size.x * 0.5, instr_anchor.y)
+## Move the title and instruction nodes out of the CanvasLayer (screen space) and
+## into a plain Node2D sibling (world space) so they travel with the grid on pan/zoom.
+func _create_world_text_container() -> void:
+	_world_text_root = Node2D.new()
+	_world_text_root.name = "WelcomeTextWorld"
+	get_parent().add_child(_world_text_root)
+	_title.reparent(_world_text_root, false)
+	_instruction_shift.reparent(_world_text_root, false)
+	_propagate_mouse_ignore(_world_text_root)
 
 
 func _snap_graph_centroid_to_board_logo() -> void:
@@ -204,12 +198,56 @@ func _shrink_welcome_graph_toward_centroid() -> void:
 		v.pos = center + (v.pos - center) * factor
 
 
+# ---------- layout ----------
+
+func _layout_welcome_ui() -> void:
+	if not is_instance_valid(_title) or not is_instance_valid(_instruction_shift):
+		return
+	if not is_instance_valid(_world_text_root):
+		return
+
+	var r := get_viewport().get_visible_rect()
+
+	# All positions are converted to world coordinates so the text lives on the grid.
+	var title_world := _board_to_world_point(_TITLE_CENTER_BOARD)
+
+	# Build the instruction anchor in screen space first (so the nudge is in screen pixels),
+	# then convert to world.
+	var instr_screen := _board_to_viewport_point(_INSTRUCTIONS_TOP_CENTER_BOARD)
+	instr_screen.x += r.size.x * (_INSTRUCTIONS_NUDGE_X_BOARD / _REF_BOARD.x)
+	var instr_world := _screen_to_world(instr_screen)
+
+	_title.reset_size()
+	_instruction_block.custom_minimum_size.x = minf(492.0, r.size.x * _INSTRUCTIONS_MAX_WIDTH_FRAC - 80.0)
+	_instruction_shift.reset_size()
+
+	await get_tree().process_frame
+
+	var ts: Vector2 = _title.get_combined_minimum_size()
+	if ts.x < 1.0 or ts.y < 1.0:
+		ts = _title.size
+	_title.custom_minimum_size = ts
+	_title.size = ts
+	_title.position = title_world - ts * 0.5
+
+	await get_tree().process_frame
+
+	var ib_size: Vector2 = _instruction_shift.size
+	if ib_size.x < 1.0:
+		ib_size = _instruction_shift.get_combined_minimum_size()
+	_instruction_shift.position = Vector2(instr_world.x - ib_size.x * 0.5, instr_world.y)
+
+
+# ---------- mouse ----------
+
 func _propagate_mouse_ignore(node: Node) -> void:
 	if node is Control:
 		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for c in node.get_children():
 		_propagate_mouse_ignore(c)
 
+
+# ---------- dismiss signals ----------
 
 func _connect_dismiss_signals() -> void:
 	_algorithm_player = get_node_or_null("../GraphController/AlgorithmPlayer") as AlgorithmPlayer
@@ -275,7 +313,9 @@ func _run_dismiss_sequence() -> void:
 	_text_tween = create_tween()
 	_text_tween.set_ease(Tween.EASE_IN_OUT)
 	_text_tween.set_trans(Tween.TRANS_SINE)
-	_text_tween.tween_property(_fade_target, "modulate:a", 0.0, _TEXT_FADE_SEC)
+	# Fade the world-space text container; graph vertices are animated separately by the engine.
+	if is_instance_valid(_world_text_root):
+		_text_tween.tween_property(_world_text_root, "modulate:a", 0.0, _TEXT_FADE_SEC)
 	_text_tween.tween_callback(_finish_and_free)
 
 
@@ -292,3 +332,6 @@ func _exit_tree() -> void:
 		_algorithm_player.algorithm_run_started.disconnect(_on_algorithm_started_dismiss)
 	if CommandManager.state_changed.is_connected(_on_command_state_for_welcome):
 		CommandManager.state_changed.disconnect(_on_command_state_for_welcome)
+	# Free the world-space text container which is a sibling, not a child of this node.
+	if is_instance_valid(_world_text_root):
+		_world_text_root.queue_free()
