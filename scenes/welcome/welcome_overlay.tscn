@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://c8welcomeoverlay1"]
+[gd_scene load_steps=6 format=3 uid="uid://c8welcomeoverlay1"]
 
 [ext_resource type="Script" path="res://scenes/welcome/welcome_overlay.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/welcome/welcome_graph_logo.tscn" id="2_logo"]
 [ext_resource type="Texture2D" uid="uid://cmgktymkkl21e" path="res://assets/icons/create_tool_icon.svg" id="3_create"]
 [ext_resource type="Texture2D" uid="uid://bqx8k2m4n7p3w" path="res://assets/icons/edge_tool_icon.png" id="4_edge"]
 [ext_resource type="Texture2D" uid="uid://v5eliv4lx04j" path="res://assets/icons/cursor-alt-svgrepo-com.svg" id="5_select"]
@@ -27,33 +28,41 @@ anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -320.0
 offset_right = 320.0
-offset_top = 200.0
-offset_bottom = 580.0
+offset_top = 188.0
+offset_bottom = 560.0
 grow_horizontal = 2
 theme_override_constants/separation = 0
 alignment = 1
 
-[node name="TextBlock" type="VBoxContainer" parent="Root/Column"]
+[node name="WelcomeContent" type="VBoxContainer" parent="Root/Column"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 22
 size_flags_horizontal = 4
 
-[node name="Title" type="Label" parent="Root/Column/TextBlock"]
+[node name="LogoHolder" type="Control" parent="Root/Column/WelcomeContent"]
+custom_minimum_size = Vector2(260, 150)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="WelcomeGraphLogo" parent="Root/Column/WelcomeContent/LogoHolder" instance=ExtResource("2_logo")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="Root/Column/WelcomeContent"]
 layout_mode = 2
 text = "Welcome to Graphos"
 horizontal_alignment = 1
 
-[node name="Blurb" type="Label" parent="Root/Column/TextBlock"]
-layout_mode = 2
-text = "An interactive graph algorithm visualizer"
-horizontal_alignment = 1
-
-[node name="RowCreate" type="HBoxContainer" parent="Root/Column/TextBlock"]
+[node name="RowCreate" type="HBoxContainer" parent="Root/Column/WelcomeContent"]
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="Icon" type="TextureRect" parent="Root/Column/TextBlock/RowCreate"]
+[node name="Icon" type="TextureRect" parent="Root/Column/WelcomeContent/RowCreate"]
 custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
 size_flags_vertical = 0
@@ -63,19 +72,19 @@ expand_mode = 1
 stretch_mode = 5
 texture_filter = 4
 
-[node name="Line" type="Label" parent="Root/Column/TextBlock/RowCreate"]
+[node name="Line" type="Label" parent="Root/Column/WelcomeContent/RowCreate"]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 0
 autowrap_mode = 3
 text = "Create: Click the canvas to add a vertex or try Presets."
 
-[node name="RowConnect" type="HBoxContainer" parent="Root/Column/TextBlock"]
+[node name="RowConnect" type="HBoxContainer" parent="Root/Column/WelcomeContent"]
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="Icon" type="TextureRect" parent="Root/Column/TextBlock/RowConnect"]
+[node name="Icon" type="TextureRect" parent="Root/Column/WelcomeContent/RowConnect"]
 custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
 size_flags_vertical = 0
@@ -85,19 +94,19 @@ expand_mode = 1
 stretch_mode = 5
 texture_filter = 4
 
-[node name="Line" type="Label" parent="Root/Column/TextBlock/RowConnect"]
+[node name="Line" type="Label" parent="Root/Column/WelcomeContent/RowConnect"]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 0
 autowrap_mode = 3
 text = "Connect: Click two vertices to connect (or hold Ctrl + click)."
 
-[node name="RowAnalyze" type="HBoxContainer" parent="Root/Column/TextBlock"]
+[node name="RowAnalyze" type="HBoxContainer" parent="Root/Column/WelcomeContent"]
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="Icon" type="TextureRect" parent="Root/Column/TextBlock/RowAnalyze"]
+[node name="Icon" type="TextureRect" parent="Root/Column/WelcomeContent/RowAnalyze"]
 custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
 size_flags_vertical = 0
@@ -107,14 +116,9 @@ expand_mode = 1
 stretch_mode = 5
 texture_filter = 4
 
-[node name="Line" type="Label" parent="Root/Column/TextBlock/RowAnalyze"]
+[node name="Line" type="Label" parent="Root/Column/WelcomeContent/RowAnalyze"]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 0
 autowrap_mode = 3
 text = "Analyze: Select items, then Right-click to run algorithms or edit properties."
-
-[node name="Closing" type="Label" parent="Root/Column/TextBlock"]
-layout_mode = 2
-text = "Hope you enjoy!"
-horizontal_alignment = 1

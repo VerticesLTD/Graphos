@@ -14,11 +14,9 @@ const DARK          := Color(0.118, 0.118, 0.18)
 ## URL text: same accent family as primary actions so the link stays readable on web.
 const LINK_TEXT     := Color(0.12, 0.28, 0.82)
 const MUTED         := Color(0.44,  0.44, 0.55)
-const SUBTLE        := Color(0.3,   0.3,  0.45)
-const SUBTLE_HOVER  := Color(0.22,  0.22, 0.36)
 
 const POPUP_WIDTH  := 340
-const POPUP_HEIGHT := 152
+const POPUP_HEIGHT := 118
 const COPY_RESET_SECS := 2.0
 
 @onready var _popup:               Popup              = $SharePopup
@@ -32,7 +30,6 @@ var _url_field: LineEdit
 var _copy_btn: Button
 var _copy_timer: Timer
 var _current_url: String = ""
-var _duplicate_btn: Button
 
 
 func _ready() -> void:
@@ -62,10 +59,8 @@ func toggle_popup(trigger_rect: Rect2) -> void:
 	if not OS.has_feature("web"):
 		_url_field.placeholder_text = "Open in a browser to share."
 		_copy_btn.disabled = true
-		_duplicate_btn.disabled = true
 	elif _share_manager and _graph and _camera and _grid:
 		_copy_btn.disabled = false
-		_duplicate_btn.disabled = false
 		var graph_id := _persistence_manager.get_active_graph_id() \
 				if _persistence_manager else ""
 		_current_url = _share_manager.get_share_url(
@@ -75,7 +70,6 @@ func toggle_popup(trigger_rect: Rect2) -> void:
 	else:
 		_url_field.placeholder_text = "Could not generate link."
 		_copy_btn.disabled = true
-		_duplicate_btn.disabled = true
 
 	_popup.min_size = Vector2i(POPUP_WIDTH, POPUP_HEIGHT)
 	_popup.max_size = Vector2i(POPUP_WIDTH, POPUP_HEIGHT)
@@ -183,24 +177,6 @@ func _build_popup() -> void:
 
 	_url_field.gui_input.connect(_on_url_field_input)
 
-	# — Duplicate row —
-	var dup_row := HBoxContainer.new()
-	dup_row.add_theme_constant_override("separation", 6)
-	vbox.add_child(dup_row)
-
-	var dup_label := Label.new()
-	dup_label.text = "New graph ID — your original file stays as-is in this browser."
-	dup_label.add_theme_font_size_override("font_size", 10)
-	dup_label.add_theme_color_override("font_color", MUTED)
-	dup_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	dup_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	dup_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	dup_row.add_child(dup_label)
-
-	_duplicate_btn = _make_accent_button("Save as new graph", SUBTLE, SUBTLE_HOVER)
-	_duplicate_btn.pressed.connect(_on_duplicate_pressed)
-	dup_row.add_child(_duplicate_btn)
-
 
 func _make_accent_button(label: String, color: Color, hover_color: Color) -> Button:
 	var btn := Button.new()
@@ -282,9 +258,3 @@ func _reset_copy_button() -> void:
 
 func _on_copy_timer_timeout() -> void:
 	_reset_copy_button()
-
-
-func _on_duplicate_pressed() -> void:
-	if _persistence_manager:
-		_persistence_manager.save_as_new_graph()
-	_popup.hide()

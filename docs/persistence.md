@@ -54,21 +54,15 @@ If a recipient already has a local graph with the same `graphId`, a dialog is sh
 
 | Choice | Behaviour |
 |---|---|
-| **Keep local version** | The locally stored graph is kept; the shared data is discarded. |
-| **Open shared version** | The local file is overwritten with the shared graph. |
-| **Save shared as new graph** | A fresh ID is generated for the shared graph; both copies are preserved. |
+| **Keep my copy** | The locally stored graph is kept; the shared data is discarded. |
+| **Replace from link** | The local file is overwritten with the shared graph. |
+| **Import as new** | A fresh ID is generated for the shared graph; both copies are preserved. |
 
 ---
 
-## Duplicating a Graph
+## Duplicating a graph
 
-The **Share** popup contains a **Duplicate** button. Clicking it:
-
-1. Generates a new graph ID.
-2. Saves the current graph state under the new ID.
-3. Makes the duplicate the active graph.
-
-The original graph remains untouched.
+`PersistenceManager.save_as_new_graph()` generates a new graph ID, saves the current canvas under that ID, and makes it the active graph; the previous file is left unchanged. There is no button for this in the **Share** popup (Share is link-only). When you open a shared link that matches an existing ID, **Import as new** in the conflict dialog saves the link’s graph as a separate local copy instead.
 
 ---
 
