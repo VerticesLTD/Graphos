@@ -17,6 +17,8 @@
 [ext_resource type="Script" path="res://scenes/main/persistence_manager.gd" id="15_persistence"]
 [ext_resource type="Script" path="res://scenes/main/share_manager.gd" id="16_share_manager"]
 [ext_resource type="PackedScene" path="res://scenes/sharing/share_panel.tscn" id="17_share_panel"]
+[ext_resource type="Script" path="res://scenes/tool_bar/tool_hint.gd" id="18_tool_hint"]
+[ext_resource type="PackedScene" path="res://scenes/welcome/welcome_overlay.tscn" id="19_welcome"]
 
 [node name="Main" type="Node2D" unique_id=446252932]
 script = ExtResource("1_yyfjg")
@@ -30,7 +32,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 1
+mouse_filter = 2
 
 [node name="UndirectedGraph" type="Node2D" parent="." unique_id=1415093803]
 script = ExtResource("1_yyfjg")
@@ -70,6 +72,20 @@ script = ExtResource("6_th5th")
 
 [node name="ToolBar" parent="CanvasLayer" unique_id=165261049 instance=ExtResource("7_7smn1")]
 
+[node name="ToolHint" type="Label" parent="CanvasLayer" unique_id=111222333]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_right = 400.0
+offset_top = 80.0
+offset_bottom = 100.0
+horizontal_alignment = 1
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.592, 0.592, 0.624, 1)
+theme_override_font_sizes/font_size = 13
+script = ExtResource("18_tool_hint")
+
 [node name="PopupMenuLayer" parent="CanvasLayer" unique_id=665487505 instance=ExtResource("8_raeie")]
 
 [node name="PresetPickerRoot" parent="." unique_id=1015688362 instance=ExtResource("14_preset_picker")]
@@ -86,3 +102,5 @@ camera = NodePath("../Camera")
 grid_background = NodePath("../MathGridBackground")
 popup_menu_a = NodePath("../GraphController/PopupMenu")
 popup_menu_b = NodePath("../CanvasLayer/PopupMenuLayer")
+
+[node name="WelcomeOverlay" parent="." instance=ExtResource("19_welcome")]

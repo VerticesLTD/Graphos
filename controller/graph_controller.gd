@@ -91,7 +91,7 @@ func _ready() -> void:
 		push_warning("GraphController: popup manager not assigned in Inspector.")
 
 	if math_grid_background:
-		math_grid_background.set_grid_enabled(false)
+		math_grid_background.set_grid_enabled(true)
 
 
 func _on_app_state_changed() -> void:
@@ -101,7 +101,7 @@ func _on_app_state_changed() -> void:
 
 func _process(delta: float) -> void:
 	if Globals.current_state != _last_tool_state:
-		if Globals.current_state == Globals.State.PAN and animation_manager:
+		if animation_manager and Globals.graph_hover_highlights_disabled():
 			animation_manager.clear_all_selection_hovers()
 		_last_tool_state = Globals.current_state
 
@@ -289,7 +289,7 @@ func clear_link_context(_event: InputEvent) -> void:
 	link_session.clear()
 	link_order.clear()
 	link_head = Globals.NOT_FOUND
-
+	notify_tool_hint_context()
 
 func sync_link_session_from_order() -> void:
 	link_session.clear()
@@ -330,6 +330,7 @@ func _populate_selection_buffer() -> void:
 
 	animation_manager.update_current_selection(selection_buffer)
 	update_selection_bounds()
+	notify_tool_hint_context()
 
 ## Manually sets the selection buffer to a specific set of vertices.
 ## Useful for PasteCommand.
@@ -344,6 +345,7 @@ func select_vertices(vertices_to_select: Array[Vertex]) -> void:
 	
 	# Update the box
 	update_selection_bounds()
+	notify_tool_hint_context()
 
 		
 ## Drops selection entries that no longer exist on the graph (e.g. after undo removes a vertex).
@@ -368,6 +370,11 @@ func clear_selection_buffer() -> void:
 	selection_buffer.clear()
 	animation_manager.update_current_selection(selection_buffer)
 	update_selection_bounds()
+	notify_tool_hint_context()
+
+## Emits when selection or edge-link state changes so the toolbar hint can update.
+func notify_tool_hint_context() -> void:
+	Globals.tool_hint_context_changed.emit()
 
 ## Refreshes chain / head colors from link_session + link_head.
 func refresh_link_buffer_colors() -> void:

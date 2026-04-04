@@ -41,9 +41,29 @@ func _ready() -> void:
 	
 	# This allows algorithms to trigger animations via the Data
 	vertex_data.animation_requested.connect(_on_animation_requested)
+	Globals.app_state_changed.connect(_on_global_tool_changed)
 
 	refresh()
-	
+
+
+func _on_global_tool_changed() -> void:
+	_clear_hover_if_tool_forbids_it()
+
+
+## Clears pointer / manual hover when switching to pan or eraser mid-hover.
+func _clear_hover_if_tool_forbids_it() -> void:
+	if not Globals.graph_hover_highlights_disabled():
+		return
+	if not is_hovered:
+		return
+	if _tween:
+		_tween.kill()
+	is_hovered = false
+	is_manual_hover = false
+	draw_radius_hovered = Globals.VERTEX_RADIUS
+	draw_color_hovered = vertex_data.color
+	queue_redraw()
+
 
 ## ------------------------------------------------------------------------------
 ## VISUAL REFRESH 
@@ -56,19 +76,10 @@ func refresh() -> void:
 	label.text = str(vertex_data.id)
 	self.z_index = vertex_data.z_idx
 
-	# Pan mode should not show hover visuals.
-	if Globals.current_state == Globals.State.PAN and is_hovered:
-		if _tween: _tween.kill()
-		is_hovered = false
-		is_manual_hover = false
-		draw_radius_hovered = Globals.VERTEX_RADIUS
-		draw_color_hovered = vertex_data.color
+	if Globals.graph_hover_highlights_disabled():
+		_clear_hover_if_tool_forbids_it()
 
-	if is_hovered:
-		queue_redraw()
-	else:
-		queue_redraw()
-
+	queue_redraw()
 	_update_key_badge()
 	
 ## This function handles the actual pixel drawing on screen.
@@ -114,7 +125,7 @@ func _on_vanished(_v: Vertex) -> void:
 
 
 func _on_mouse_entered() -> void:
-	if Globals.current_state == Globals.State.PAN:
+	if Globals.graph_hover_highlights_disabled():
 		return
 	if is_hovered:
 		return
@@ -130,7 +141,7 @@ func manual_hover_start() -> void:
 
 ## Routes animation commands received from the Vertex data.
 func _on_animation_requested(anim_name: String) -> void:
-	if Globals.current_state == Globals.State.PAN and anim_name == "hover_start":
+	if anim_name == "hover_start" and Globals.graph_hover_highlights_disabled():
 		return
 	match anim_name:
 		"hover_start":

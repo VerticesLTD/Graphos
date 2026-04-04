@@ -72,6 +72,7 @@ func _style_top_right_bar() -> void:
 	_share_btn.add_theme_color_override("font_pressed_color", Color(0.25, 0.36, 0.78))
 	_share_btn.add_theme_color_override("font_focus_color",   SHARE_BLUE)
 	_share_btn.tooltip_text = "Share\nCopy a link to this graph"
+	_share_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 	_presets_btn.text = "Presets"
 	_presets_btn.icon = null
@@ -110,6 +111,7 @@ func _style_top_right_bar() -> void:
 	_presets_btn.add_theme_color_override("font_pressed_color", ACCENT)
 	_presets_btn.add_theme_color_override("font_focus_color",   DARK)
 	_presets_btn.tooltip_text = "Presets\nLoad a sample graph"
+	_presets_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 
 func _build_grid() -> void:

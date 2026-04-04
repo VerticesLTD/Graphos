@@ -16,6 +16,7 @@ const MOBILE_MODIFIER_FONT := 15
 @onready var selection_btn: Button   = $PanelContainer/HBoxContainer/Selection
 @onready var create_btn: Button      = $PanelContainer/HBoxContainer/Create
 @onready var edge_btn: Button        = $PanelContainer/HBoxContainer/Edge
+@onready var eraser_btn: Button      = $PanelContainer/HBoxContainer/Eraser
 
 var _mobile_layout_active := false
 
@@ -48,6 +49,7 @@ func _ready() -> void:
 	selection_btn.button_group = tool_group
 	create_btn.button_group    = tool_group
 	edge_btn.button_group      = tool_group
+	eraser_btn.button_group    = tool_group
 	_sync_tool_buttons()
 
 	directed_btn.button_pressed = Globals.active_strategy is DirectedStrategy
@@ -59,8 +61,17 @@ func _ready() -> void:
 	Globals.strategy_changed.connect(_sync_directed_btn)
 	Globals.weighted_mode_changed.connect(_sync_weighted_btn)
 
+	_apply_pointing_hand_to_buttons(self)
+
 	_apply_responsive_layout()
 	call_deferred("_apply_responsive_layout")
+
+
+func _apply_pointing_hand_to_buttons(node: Node) -> void:
+	if node is BaseButton:
+		(node as Control).mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	for c in node.get_children():
+		_apply_pointing_hand_to_buttons(c)
 
 
 func _on_window_or_viewport_resized() -> void:
@@ -126,7 +137,7 @@ func _enter_mobile_layout() -> void:
 	add_theme_constant_override("margin_left", 0)
 	add_theme_constant_override("margin_right", 0)
 	tool_row.add_theme_constant_override("separation", MOBILE_HBOX_SEP)
-	for btn in [pan_btn, selection_btn, create_btn, edge_btn]:
+	for btn in [pan_btn, selection_btn, create_btn, edge_btn, eraser_btn]:
 		btn.custom_minimum_size = MOBILE_TOOL_BTN_SIZE
 		var mc := btn.get_node("MarginContainer") as MarginContainer
 		for side in ["margin_left", "margin_top", "margin_right", "margin_bottom"]:
@@ -148,7 +159,7 @@ func _enter_desktop_layout() -> void:
 	remove_theme_constant_override("margin_left")
 	remove_theme_constant_override("margin_right")
 	tool_row.add_theme_constant_override("separation", _desktop_tool_row_separation)
-	for btn in [pan_btn, selection_btn, create_btn, edge_btn]:
+	for btn in [pan_btn, selection_btn, create_btn, edge_btn, eraser_btn]:
 		btn.custom_minimum_size = _desktop_tool_btn_min
 		var mc := btn.get_node("MarginContainer") as MarginContainer
 		for side in ["margin_left", "margin_top", "margin_right", "margin_bottom"]:
@@ -202,11 +213,16 @@ func _on_edge_pressed() -> void:
 	Globals.current_state = Globals.State.EDGE
 
 
+func _on_eraser_pressed() -> void:
+	Globals.current_state = Globals.State.ERASER
+
+
 func _sync_tool_buttons() -> void:
 	pan_btn.button_pressed       = Globals.current_state == Globals.State.PAN
 	selection_btn.button_pressed = Globals.current_state == Globals.State.SELECTION
 	create_btn.button_pressed    = Globals.current_state == Globals.State.CREATE
 	edge_btn.button_pressed      = Globals.current_state == Globals.State.EDGE
+	eraser_btn.button_pressed    = Globals.current_state == Globals.State.ERASER
 
 
 ## Blocks signals during sync to prevent re-entrant toggle loops.

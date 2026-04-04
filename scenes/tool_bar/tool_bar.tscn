@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://cmgktymkkl21e" path="res://assets/icons/create_tool_icon.svg" id="5_2j54p"]
 [ext_resource type="Texture2D" path="res://assets/icons/hand_toolbar.svg" id="6_pan"]
 [ext_resource type="Texture2D" uid="uid://bqx8k2m4n7p3w" path="res://assets/icons/edge_tool_icon.png" id="7_edge_icon"]
+[ext_resource type="Texture2D" path="res://assets/icons/eraser_icon.svg" id="8_eraser_icon"]
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_lpcgc"]
 color = Color(0.72, 0.72, 0.76, 0.85)
@@ -126,7 +127,7 @@ layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
 tooltip_text = "Select
-Click or drag to select and move"
+Click or drag to select  ·  Right-click selection for options"
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -159,8 +160,8 @@ custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
-tooltip_text = "Draw
-Click to place vertices · Ctrl+click two vertices to connect"
+tooltip_text = "Create
+Click to add vertex  ·  Hold Ctrl + click two vertices to connect"
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -195,7 +196,7 @@ layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
 tooltip_text = "Edge
-Left-click two vertices to connect · Click the same vertex again to clear"
+Pick a start vertex, then a second to connect  ·  Same vertex cancels"
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -229,7 +230,7 @@ layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
 tooltip_text = "Pan
-Drag to pan"
+Drag to pan  ·  Scroll to zoom"
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -256,6 +257,40 @@ texture = ExtResource("6_pan")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="Eraser" type="Button" parent="PanelContainer/HBoxContainer" unique_id=726100200]
+texture_filter = 4
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+tooltip_text = "Erase
+Click and drag to erase vertices and edges"
+theme_override_styles/normal = ExtResource("3_lpcgc")
+theme_override_styles/pressed = ExtResource("4_u1pd4")
+theme_override_styles/hover = ExtResource("4_u1pd4")
+theme_override_styles/focus = ExtResource("4_u1pd4")
+toggle_mode = true
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/HBoxContainer/Eraser" unique_id=726100201]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="Icon" type="TextureRect" parent="PanelContainer/HBoxContainer/Eraser/MarginContainer" unique_id=726100202]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("8_eraser_icon")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="VSeparator2" type="VSeparator" parent="PanelContainer/HBoxContainer" unique_id=1541838938]
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleBoxLine_lpcgc")
@@ -267,8 +302,8 @@ theme_override_constants/separation = 2
 
 [node name="DirectedBtn" type="Button" parent="PanelContainer/HBoxContainer/Modifiers" unique_id=1608271324]
 layout_mode = 2
-tooltip_text = "Directed edges
-Arrows show edge direction"
+tooltip_text = "Directed
+Edges follow a specific direction"
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
 theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
@@ -285,8 +320,8 @@ text = "Directed"
 
 [node name="WeightedBtn" type="Button" parent="PanelContainer/HBoxContainer/Modifiers" unique_id=1787136133]
 layout_mode = 2
-tooltip_text = "Weighted edges
-Edges carry numeric weights"
+tooltip_text = "Weighted
+Edges carry numeric values  ·  Click an edge to edit weight"
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
 theme_override_colors/font_pressed_color = Color(0.263, 0.38, 0.933, 1)
 theme_override_colors/font_hover_color = Color(0.263, 0.38, 0.933, 1)
@@ -304,3 +339,4 @@ text = "Weighted"
 [connection signal="pressed" from="PanelContainer/HBoxContainer/Create" to="." method="_on_create_pressed"]
 [connection signal="pressed" from="PanelContainer/HBoxContainer/Edge" to="." method="_on_edge_pressed"]
 [connection signal="pressed" from="PanelContainer/HBoxContainer/Pan" to="." method="_on_pan_pressed"]
+[connection signal="pressed" from="PanelContainer/HBoxContainer/Eraser" to="." method="_on_eraser_pressed"]

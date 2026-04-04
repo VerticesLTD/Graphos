@@ -11,6 +11,8 @@ const EVNT_TAG = "EVENT"
 # App states
 # ------------
 signal app_state_changed
+## Selection buffer or edge link head changed — refresh contextual toolbar hints.
+signal tool_hint_context_changed
 signal algorithm_key_visuals_changed
 ## Emitted when the active edge strategy (directed/undirected) changes.
 signal strategy_changed
@@ -28,6 +30,13 @@ var current_state: State:
 	set(value):
 		current_state = value
 		app_state_changed.emit()
+
+
+## Pan and eraser own the pointer (hand / brush). Graph elements must not show hover rings or
+## selection-driven glow from [AnimationManager] while these tools are active.
+func graph_hover_highlights_disabled() -> bool:
+	return current_state == State.PAN or current_state == State.ERASER
+
 
 var algorithm_show_vertex_keys: bool = false:
 	set(value):
