@@ -18,6 +18,9 @@ var link_head: int = Globals.NOT_FOUND
 var link_session: Dictionary = {}
 ## Visit order for undo (may repeat vertex ids when revisiting).
 var link_order: Array[int] = []
+## True while the user is extending the graph with Ctrl+click (Create or Edge mode).
+## Edge mode also has a no-Ctrl "simple" link session; that keeps this false so Ctrl release does not clear it.
+var link_ctrl_chain: bool = false
 
 ## The rectangle which bounds the selection
 var selection_bounds: Rect2 = Rect2()
@@ -72,8 +75,8 @@ var is_resizing: bool = false
 
 ## Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	# If the app's state changed, we want to reset selection
-	Globals.app_state_changed.connect(self.clear_selection_buffer)
+	# If the app's state changed, we want to reset selection and connect-by-edge session.
+	Globals.app_state_changed.connect(self._on_app_state_changed)
 	CommandManager.history_changed.connect(prune_selection_to_live_graph)
 
 	## Inject graph into popup manager so it can create commands like DeleteVertexCommand.new(graph, v)
@@ -89,7 +92,12 @@ func _ready() -> void:
 
 	if math_grid_background:
 		math_grid_background.set_grid_enabled(false)
-	
+
+
+func _on_app_state_changed() -> void:
+	clear_selection_buffer()
+	clear_link_context(null)
+
 
 func _process(delta: float) -> void:
 	if Globals.current_state != _last_tool_state:
@@ -273,6 +281,7 @@ func handle_vertex_placement(pos: Vector2) -> void:
 
 ## Clears Ctrl-connect path state and vertex chain colors.
 func clear_link_context(_event: InputEvent) -> void:
+	link_ctrl_chain = false
 	for vid in link_session:
 		var v = graph.get_vertex(int(vid))
 		if v:

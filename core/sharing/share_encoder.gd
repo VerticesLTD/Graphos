@@ -9,7 +9,7 @@
 ##   serialize → JSON.stringify (compact) → UTF-8 bytes → DEFLATE → base64url
 ##
 ## The JSON payload is identical to the .graphos format_version 2 document,
-## so the same AppStateSerializer / GraphSerializer restore path is reused.
+## including the optional "graph_id" field added by the multi-graph system.
 extends RefCounted
 class_name ShareEncoder
 
@@ -17,22 +17,29 @@ const FRAGMENT_PREFIX := "json="
 
 
 ## Encode the current graph and view state into a #json=... URL fragment.
-static func to_url_fragment(graph: Graph, camera: Camera2D, grid_enabled: bool) -> String:
+## graph_id is embedded in the payload so the recipient can reconstruct the
+## stable ID without needing a separate query-string parameter.
+static func to_url_fragment(
+		graph: Graph,
+		camera: Camera2D,
+		grid_enabled: bool,
+		graph_id: String = "") -> String:
 	var graph_data := GraphSerializer.to_dictionary(graph)
-	var app_state := AppStateSerializer.to_dictionary(camera, grid_enabled)
+	var app_state  := AppStateSerializer.to_dictionary(camera, grid_enabled)
 
 	var doc := {
 		"format_version": GraphDocumentIO.FORMAT_VERSION,
-		"next_vertex_id": graph_data["next_vertex_id"],
-		"vertices": graph_data["vertices"],
-		"edges": graph_data["edges"],
-		"app_state": app_state,
+		"graph_id":        graph_id,
+		"next_vertex_id":  graph_data["next_vertex_id"],
+		"vertices":        graph_data["vertices"],
+		"edges":           graph_data["edges"],
+		"app_state":       app_state,
 	}
 
 	# Compact JSON (no pretty-print) — every byte counts in a URL.
-	var json := JSON.stringify(doc)
-	var compressed := json.to_utf8_buffer().compress(FileAccess.COMPRESSION_DEFLATE)
-	var b64 := Marshalls.raw_to_base64(compressed)
+	var json        := JSON.stringify(doc)
+	var compressed  := json.to_utf8_buffer().compress(FileAccess.COMPRESSION_DEFLATE)
+	var b64         := Marshalls.raw_to_base64(compressed)
 
 	# Standard base64 → URL-safe base64 (RFC 4648 §5): +→- /→_ strip =
 	b64 = b64.replace("+", "-").replace("/", "_").replace("=", "")
@@ -41,8 +48,8 @@ static func to_url_fragment(graph: Graph, camera: Camera2D, grid_enabled: bool) 
 
 
 ## Decode a URL fragment (e.g. window.location.hash) back into a document dictionary.
-## Returns { "graph_data": Dictionary, "app_state": Dictionary } on success,
-## or {} on failure (corrupt data, wrong format, etc.).
+## Returns { "graph_data": Dictionary, "graph_id": String, "app_state": Dictionary }
+## on success, or {} on failure (corrupt data, wrong format, etc.).
 static func from_url_fragment(fragment: String) -> Dictionary:
 	var stripped := fragment.lstrip("#")
 	if not stripped.begins_with(FRAGMENT_PREFIX):
@@ -86,7 +93,8 @@ static func from_url_fragment(fragment: String) -> Dictionary:
 
 	return {
 		"graph_data": data,
-		"app_state": AppStateSerializer.from_dictionary(raw_app_state),
+		"graph_id":   data.get("graph_id", ""),
+		"app_state":  AppStateSerializer.from_dictionary(raw_app_state),
 	}
 
 

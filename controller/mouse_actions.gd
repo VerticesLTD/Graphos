@@ -7,6 +7,9 @@ enum ResizeHandle {
 	TOP, BOTTOM, LEFT, RIGHT,                         # single-axis
 }
 
+## Right Control physical keycode (not always == KEY_CTRL across backends).
+const _PHYS_CTRL_R := 4194328
+
 # ----------------------------------------------------------------------------
 # State
 # ----------------------------------------------------------------------------
@@ -34,7 +37,7 @@ var action_map: Dictionary = {
 	&"left_click_ctrl" : [_handle_left_click, _handle_left_release],
 	&"right_click" : [_handle_right_click, _handle_left_release],
 	&"right_click_ctrl" : [null, null],
-	&"ctrl" : [null, func(_event): controller.clear_link_context(_event)],
+	&"ctrl" : [null, _on_ctrl_action_released],
 }
 
 func _ready() -> void:
@@ -46,6 +49,13 @@ func _ready() -> void:
 	controller = par_node
 	if controller.graph:
 		_ghost_preview = controller.graph.get_node_or_null("GhostEdgePreview") as GhostEdgePreview
+
+
+func _on_ctrl_action_released(event: InputEvent) -> void:
+	if Globals.current_state == Globals.State.EDGE and not controller.link_ctrl_chain:
+		return
+	controller.clear_link_context(event)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if Globals.current_state == Globals.State.PAN:
@@ -63,14 +73,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	# Release Ctrl/Meta ends the connect session (backup: Input Map "ctrl" may only bind one physical key).
+	# Edge mode: only clear on Ctrl release when the session was started with Ctrl+click (link_ctrl_chain).
 	if event is InputEventKey and not event.pressed:
 		var pk: int = event.physical_keycode
-		# KEY_CTRL + typical Right-Control physical code (not always == KEY_CTRL across backends).
-		const _PHYS_CTRL_R := 4194328
 		if pk == KEY_CTRL or pk == KEY_META or pk == _PHYS_CTRL_R:
-			if not controller.link_session.is_empty():
-				controller.clear_link_context(event)
-			_hide_ghost_edge_preview()
+			if not (Globals.current_state == Globals.State.EDGE and not controller.link_ctrl_chain):
+				if not controller.link_session.is_empty():
+					controller.clear_link_context(event)
+				_hide_ghost_edge_preview()
 
 	# If the menu closed less than 200ms ago, ignore ALL clicks.
 	# This prevents "Accidental Vertices" (Left Click)
@@ -85,6 +95,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		_handle_mouse_movement(event)
 		return
+
 	# MacOs ctrl+left_click is right click. Needs to be handled.
 	if event.is_action_pressed("right_click_ctrl") and OS.get_name() == "macOS":
 		_handle_left_click(event)
@@ -134,7 +145,6 @@ func _hide_ghost_edge_preview() -> void:
 
 func _handle_left_click(event: InputEventMouseButton):
 	var graph = controller.graph
-	var selection_buffer = controller.selection_buffer
 
 	var mouse_global_pos = graph.get_global_mouse_position()
 	_last_mouse_world_pos = mouse_global_pos
@@ -147,6 +157,18 @@ func _handle_left_click(event: InputEventMouseButton):
 		or Input.is_key_pressed(KEY_META)
 		or event.ctrl_pressed
 		or event.meta_pressed
+	)
+
+	# Edge mode without Ctrl: simple two-vertex connect (no Create-style path).
+	if Globals.current_state == Globals.State.EDGE and not is_ctrl:
+		_handle_edge_mode_left_click(mouse_global_pos)
+		get_viewport().set_input_as_handled()
+		return
+
+	var selection_buffer = controller.selection_buffer
+	var ctrl_graph_path := is_ctrl and (
+		Globals.current_state == Globals.State.CREATE
+		or Globals.current_state == Globals.State.EDGE
 	)
 
 	# Resize handles live on the selection boundary — check them first so they
@@ -163,14 +185,14 @@ func _handle_left_click(event: InputEventMouseButton):
 	# Multi-drag: only when not using Ctrl+connect (otherwise we never reach _handle_path_connection).
 	if selection_buffer.size() > 1:
 		if controller.selection_bounds.has_point(mouse_global_pos):
-			if not (is_ctrl and Globals.current_state == Globals.State.CREATE):
+			if not ctrl_graph_path:
 				controller.start_dragging()
 				return
 
 	# Clicked Vertex (not inside the rectangle)  
 	if id != Globals.NOT_FOUND:
 		var clicked_v: Vertex = graph.get_vertex(id)
-		if is_ctrl and Globals.current_state == Globals.State.CREATE:
+		if ctrl_graph_path:
 			_handle_path_connection(mouse_global_pos)
 		else:
 			# Leaving connect-by-Ctrl mode: normal select/drag — drop path state here only (not on every click).
@@ -189,7 +211,10 @@ func _handle_left_click(event: InputEventMouseButton):
 		# We only place a vertex if there are no nodes selected
 		elif selection_buffer.is_empty():
 			controller.handle_vertex_placement(mouse_global_pos) # Just create
-	
+	elif Globals.current_state == Globals.State.EDGE:
+		if is_ctrl:
+			_handle_path_connection(mouse_global_pos)
+
 	# Empty click without Ctrl ends the connect chain; Ctrl+empty is handled above.
 	if not is_ctrl and not controller.link_session.is_empty():
 		controller.clear_link_context(event)
@@ -235,8 +260,58 @@ func _cleanup_after_release() -> void:
 		controller.update_selection_bounds(1.0)
 
 
+## Edge tool: first vertex sets the preview head; second vertex commits an edge (or same vertex clears).
+func _handle_edge_mode_left_click(mouse_global_pos: Vector2) -> void:
+	var graph := controller.graph
+	if graph == null:
+		return
+
+	var id := graph.get_vertex_id_at(mouse_global_pos)
+	if id == Globals.NOT_FOUND:
+		var pending_head: int = controller.link_head
+		if pending_head == Globals.NOT_FOUND:
+			controller.clear_link_context(null)
+			controller.clear_selection_buffer()
+			return
+		# First vertex already chosen: place a new vertex on the canvas and connect it.
+		if graph.get_edge_at(mouse_global_pos) != null:
+			return
+		var step := PathStepCommand.new(graph, mouse_global_pos, pending_head)
+		CommandManager.execute(step)
+		controller.clear_link_context(null)
+		controller.clear_selection_buffer()
+		return
+
+	var clicked_v: Vertex = graph.get_vertex(id)
+	if clicked_v == null:
+		return
+
+	var head_id: int = controller.link_head
+	if head_id == Globals.NOT_FOUND:
+		controller.link_ctrl_chain = false
+		controller.link_order.clear()
+		controller.link_order.append(id)
+		controller.sync_link_session_from_order()
+		controller.link_head = id
+		controller.select_vertices([clicked_v])
+		controller.refresh_link_buffer_colors()
+		return
+
+	if head_id == id:
+		controller.clear_link_context(null)
+		controller.clear_selection_buffer()
+		return
+
+	if controller.should_add_connection(head_id, id):
+		CommandManager.execute(AddEdgeCommand.new(graph, head_id, id))
+
+	controller.clear_link_context(null)
+	controller.clear_selection_buffer()
+
+
 ## Ctrl+click connect: next edge is always (link_head -> clicked vertex). Session/head live on GraphController.
 func _handle_path_connection(pos: Vector2) -> void:
+	controller.link_ctrl_chain = true
 	var graph = controller.graph
 	var id := graph.get_vertex_id_at(pos)
 	var head: int = controller.link_head

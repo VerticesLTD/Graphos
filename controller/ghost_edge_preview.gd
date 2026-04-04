@@ -2,7 +2,7 @@ extends Node2D
 ## Preview for Ctrl+click edge chains in Create mode: stroke in _draw(), arrow + optional placement disk as children.
 class_name GhostEdgePreview
 
-const _PHYS_CTRL_R: Key = 4194328 as Key  ## Right Ctrl physical keycode
+const _PHYS_CTRL_R := 4194328  ## Right Ctrl physical keycode (Input map keycode)
 const LINE_ALPHA := 0.42
 const GHOST_DISK_ALPHA := 0.22
 ## Placement hint only — smaller than a real vertex so it reads lighter than committed nodes.
@@ -121,19 +121,18 @@ func sync_preview(graph: Graph, ctrl: GraphController, mouse_pos: Vector2) -> vo
 
 
 func _should_show(ctrl: GraphController) -> bool:
-	return (
-		Globals.current_state == Globals.State.CREATE
-		and ctrl.link_head != Globals.NOT_FOUND
-		and _ctrl_held()
-	)
+	if ctrl.link_head == Globals.NOT_FOUND:
+		return false
+	if Globals.current_state == Globals.State.EDGE:
+		return true
+	return Globals.current_state == Globals.State.CREATE and _ctrl_held()
 
 
 func _ctrl_held() -> bool:
-	return (
-		Input.is_key_pressed(KEY_CTRL)
-		or Input.is_key_pressed(KEY_META)
-		or Input.is_physical_key_pressed(_PHYS_CTRL_R)
-	)
+	if Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_META):
+		return true
+	# Right Control physical keycode (some backends).
+	return Input.is_key_pressed(_PHYS_CTRL_R)
 
 
 static func _make_circle_polygon(radius: float, points: int) -> PackedVector2Array:

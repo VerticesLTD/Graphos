@@ -6,6 +6,7 @@
 ## Document root shape:
 ##   {
 ##     "format_version": 2,
+##     "graph_id": string,         # stable unique ID (empty string in legacy files)
 ##     "next_vertex_id": int,
 ##     "vertices": [...],          # see GraphSerializer
 ##     "edges": [...],             # see GraphSerializer
@@ -22,21 +23,38 @@ class_name GraphDocumentIO
 
 const FORMAT_VERSION := 2
 const FILE_EXTENSION := "graphos"
+## Kept for desktop-only fallback; web uses GraphStore (user://graphs/).
 const AUTOSAVE_PATH := "user://autosave.graphos"
 
 
-## Write a complete document to disk. Returns true on success.
-static func save(graph: Graph, camera: Camera2D, grid_enabled: bool, path: String) -> bool:
+## Build a complete document dictionary without writing it to disk.
+## graph_id may be empty for legacy/desktop use.
+static func build_document(
+		graph: Graph,
+		camera: Camera2D,
+		grid_enabled: bool,
+		graph_id: String = "") -> Dictionary:
 	var graph_data := GraphSerializer.to_dictionary(graph)
-	var app_state := AppStateSerializer.to_dictionary(camera, grid_enabled)
-
-	var doc := {
+	var app_state  := AppStateSerializer.to_dictionary(camera, grid_enabled)
+	return {
 		"format_version": FORMAT_VERSION,
-		"next_vertex_id": graph_data["next_vertex_id"],
-		"vertices": graph_data["vertices"],
-		"edges": graph_data["edges"],
-		"app_state": app_state,
+		"graph_id":        graph_id,
+		"next_vertex_id":  graph_data["next_vertex_id"],
+		"vertices":        graph_data["vertices"],
+		"edges":           graph_data["edges"],
+		"app_state":       app_state,
 	}
+
+
+## Write a complete document to disk. Returns true on success.
+## graph_id is optional; pass it to embed the stable ID in the file.
+static func save(
+		graph: Graph,
+		camera: Camera2D,
+		grid_enabled: bool,
+		path: String,
+		graph_id: String = "") -> bool:
+	var doc := build_document(graph, camera, grid_enabled, graph_id)
 
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
@@ -78,5 +96,6 @@ static func load(path: String) -> Dictionary:
 
 	return {
 		"graph_data": data,
-		"app_state": AppStateSerializer.from_dictionary(raw_app_state),
+		"graph_id":   data.get("graph_id", ""),
+		"app_state":  AppStateSerializer.from_dictionary(raw_app_state),
 	}

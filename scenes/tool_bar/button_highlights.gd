@@ -3,11 +3,13 @@ extends HBoxContainer
 @onready var create: Button  = $Create
 @onready var selection: Button = $Selection
 @onready var pan: Button = $Pan
+@onready var edge: Button = $Edge
 
 @onready var _buttons_by_state: Dictionary = {
 	Globals.State.CREATE: create,
 	Globals.State.SELECTION: selection,
 	Globals.State.PAN: pan,
+	Globals.State.EDGE: edge,
 }
 
 # Keep track of the last state so we only animate when it changes
