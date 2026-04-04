@@ -582,6 +582,7 @@ func _commit_inline_weight_edit(new_text: String) -> void:
 func _finish_inline_weight_edit() -> void:
 	weight_edit.release_focus()
 	weight_edit.visible = false
+	weight_label.visible = true
 	Globals.active_weight_editor = null
 	refresh()
 
