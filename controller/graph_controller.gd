@@ -118,6 +118,8 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if Globals.current_state == Globals.State.PAN:
 		return
+	if event is InputEventKey and AppInputPolicy.is_text_field_focused():
+		return
 
 	if event is InputEventKey:
 		# Ctrl+Z / Ctrl+Y: first press applies once, then repeats while held.

@@ -11,6 +11,8 @@ const ACCENT_HOVER  := Color(0.2,   0.3,  0.85)
 const SUCCESS       := Color(0.18,  0.66, 0.44)
 const SUCCESS_HOVER := Color(0.15, 0.58, 0.38)
 const DARK          := Color(0.118, 0.118, 0.18)
+## URL text: same accent family as primary actions so the link stays readable on web.
+const LINK_TEXT     := Color(0.12, 0.28, 0.82)
 const MUTED         := Color(0.44,  0.44, 0.55)
 const SUBTLE        := Color(0.3,   0.3,  0.45)
 const SUBTLE_HOVER  := Color(0.22,  0.22, 0.36)
@@ -143,17 +145,26 @@ func _build_popup() -> void:
 	_url_field = LineEdit.new()
 	_url_field.editable = false
 	_url_field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_url_field.add_theme_font_size_override("font_size", 11)
-	_url_field.add_theme_color_override("font_color",          DARK)
-	_url_field.add_theme_color_override("font_readonly_color", DARK)
+	_url_field.add_theme_font_size_override("font_size", 13)
+	_url_field.add_theme_color_override("font_color",            LINK_TEXT)
+	_url_field.add_theme_color_override("font_uneditable_color", LINK_TEXT)
+	_url_field.add_theme_color_override("font_readonly_color",   LINK_TEXT)
 	_url_field.add_theme_color_override("font_placeholder_color", MUTED)
+	_url_field.add_theme_color_override("caret_color",          ACCENT)
+	_url_field.add_theme_color_override("font_selected_color",  Color.WHITE)
+	_url_field.add_theme_color_override("selection_color",      Color(ACCENT.r, ACCENT.g, ACCENT.b, 0.35))
 	var field_bg := StyleBoxFlat.new()
-	field_bg.bg_color = Color(0.94, 0.94, 0.96)
+	field_bg.bg_color = Color(1, 1, 1)
+	field_bg.border_width_left   = 1
+	field_bg.border_width_top    = 1
+	field_bg.border_width_right  = 1
+	field_bg.border_width_bottom = 1
+	field_bg.border_color = Color(0.78, 0.8, 0.9)
 	field_bg.set_corner_radius_all(6)
-	field_bg.content_margin_left   = 8
-	field_bg.content_margin_right  = 8
-	field_bg.content_margin_top    = 6
-	field_bg.content_margin_bottom = 6
+	field_bg.content_margin_left   = 10
+	field_bg.content_margin_right  = 10
+	field_bg.content_margin_top    = 8
+	field_bg.content_margin_bottom = 8
 	_url_field.add_theme_stylebox_override("normal",    field_bg)
 	_url_field.add_theme_stylebox_override("read_only", field_bg)
 	_url_field.add_theme_stylebox_override("focus",     field_bg)
@@ -178,14 +189,15 @@ func _build_popup() -> void:
 	vbox.add_child(dup_row)
 
 	var dup_label := Label.new()
-	dup_label.text = "Save an independent copy of this graph"
+	dup_label.text = "New graph ID — your original file stays as-is in this browser."
 	dup_label.add_theme_font_size_override("font_size", 10)
 	dup_label.add_theme_color_override("font_color", MUTED)
+	dup_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dup_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	dup_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	dup_row.add_child(dup_label)
 
-	_duplicate_btn = _make_accent_button("Duplicate", SUBTLE, SUBTLE_HOVER)
+	_duplicate_btn = _make_accent_button("Save as new graph", SUBTLE, SUBTLE_HOVER)
 	_duplicate_btn.pressed.connect(_on_duplicate_pressed)
 	dup_row.add_child(_duplicate_btn)
 

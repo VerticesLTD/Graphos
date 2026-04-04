@@ -177,11 +177,14 @@ func _snap_mobile_bottom() -> void:
 	)
 
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
+	# After GUI: LineEdit / dialogs keep D, W, and modified shortcuts.
+	if AppInputPolicy.is_text_field_focused():
+		return
 	if event.is_action_pressed("toggle_direction"):
 		directed_btn.button_pressed = !directed_btn.button_pressed
 		get_viewport().set_input_as_handled()
-	if event.is_action_pressed("toggle_weight"):
+	elif event.is_action_pressed("toggle_weight"):
 		weighted_btn.button_pressed = !weighted_btn.button_pressed
 		get_viewport().set_input_as_handled()
 

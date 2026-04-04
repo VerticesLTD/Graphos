@@ -20,6 +20,16 @@
 extends Node
 class_name PersistenceManager
 
+const _CONFLICT_TOOLBAR_BG: StyleBox = preload("res://scenes/tool_bar/tool_bar_background.tres")
+const _C_ACCENT       := Color(0.263, 0.38, 0.933)
+const _C_ACCENT_HOVER := Color(0.2, 0.3, 0.85)
+const _C_DARK         := Color(0.118, 0.118, 0.18)
+const _C_MUTED        := Color(0.44, 0.44, 0.55)
+const _C_SUBTLE       := Color(0.3, 0.3, 0.45)
+const _C_SUBTLE_HOVER := Color(0.22, 0.22, 0.36)
+const _C_SEP          := Color(0.878, 0.878, 0.878)
+const _C_SHARE_BLUE   := Color(0.36, 0.48, 0.88)
+
 @export var graph: Graph
 @export var camera: Camera2D
 @export var grid_background: MathGridBackground
@@ -68,10 +78,12 @@ func _ready() -> void:
 		_load_startup_graph()
 
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if OS.has_feature("web"):
 		return
 	if not event is InputEventKey or not event.pressed or event.echo:
+		return
+	if AppInputPolicy.is_text_field_focused():
 		return
 	if event.is_action_pressed("save_file_as"):
 		_open_save_dialog()
@@ -264,38 +276,156 @@ func _show_conflict_dialog(conflict: Dictionary) -> void:
 	if graph_id.is_empty() or shared_doc.is_empty():
 		return
 
-	var dialog := AcceptDialog.new()
-	dialog.title = "Graph Already Exists"
-	dialog.dialog_text = (
-		"You opened a shared link for a graph that already exists in your\n"
-		+ "local storage (ID: %s).\n\nWhat would you like to do?" % graph_id
-	)
-	dialog.ok_button_text = "Keep local version"
-	var shared_btn := dialog.add_button("Open shared version", true, "open_shared")
-	var copy_btn   := dialog.add_button("Save shared as new graph", true, "save_copy")
-	# Suppress unused-variable warnings — buttons are referenced via signals.
-	var _s := shared_btn
-	var _c := copy_btn
+	var win := Window.new()
+	win.title = "Same graph is already saved here"
+	win.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN
+	win.unresizable = true
+	win.transient = true
+	win.exclusive = true
+	win.min_size = Vector2i(440, 248)
+	win.size = Vector2i(480, 280)
 
-	dialog.confirmed.connect(func() -> void:
-		# "Keep local version" — the local graph is already loaded; nothing to do.
-		dialog.queue_free()
+	var panel := PanelContainer.new()
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var card: StyleBoxFlat = _CONFLICT_TOOLBAR_BG.duplicate() as StyleBoxFlat
+	card.expand_margin_left   = 0
+	card.expand_margin_top    = 0
+	card.expand_margin_right  = 0
+	card.expand_margin_bottom = 0
+	card.corner_radius_top_left     = 10
+	card.corner_radius_top_right    = 10
+	card.corner_radius_bottom_left  = 10
+	card.corner_radius_bottom_right = 10
+	panel.add_theme_stylebox_override("panel", card)
+	win.add_child(panel)
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left",   18)
+	margin.add_theme_constant_override("margin_right",  18)
+	margin.add_theme_constant_override("margin_top",    14)
+	margin.add_theme_constant_override("margin_bottom", 16)
+	panel.add_child(margin)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	margin.add_child(vbox)
+
+	var heading := Label.new()
+	heading.text = "This link uses a graph you already have"
+	heading.add_theme_font_size_override("font_size", 15)
+	heading.add_theme_color_override("font_color", _C_DARK)
+	heading.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(heading)
+
+	var hsep := HSeparator.new()
+	hsep.add_theme_color_override("color", _C_SEP)
+	vbox.add_child(hsep)
+
+	var body := Label.new()
+	body.text = (
+		"Graph ID %s is already in this browser’s storage. The canvas is showing your saved copy. "
+		+ "Pick what to do with the data from the link."
+	) % graph_id
+	body.add_theme_font_size_override("font_size", 12)
+	body.add_theme_color_override("font_color", _C_MUTED)
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(body)
+
+	var btn_row := HBoxContainer.new()
+	btn_row.add_theme_constant_override("separation", 8)
+	btn_row.alignment = BoxContainer.ALIGNMENT_END
+	vbox.add_child(btn_row)
+
+	var btn_keep := _conflict_outline_button("Keep my copy")
+	var btn_import := _conflict_fill_button("Import as new", _C_ACCENT, _C_ACCENT_HOVER)
+	var btn_replace := _conflict_fill_button("Replace from link", _C_SUBTLE, _C_SUBTLE_HOVER)
+	btn_keep.custom_minimum_size = Vector2(0, 36)
+	btn_import.custom_minimum_size = Vector2(0, 36)
+	btn_replace.custom_minimum_size = Vector2(0, 36)
+	btn_row.add_child(btn_keep)
+	btn_row.add_child(btn_import)
+	btn_row.add_child(btn_replace)
+
+	var close := func() -> void:
+		win.hide()
+		win.queue_free()
+
+	btn_keep.pressed.connect(close)
+	btn_import.pressed.connect(func() -> void:
+		var new_id := GraphStore.generate_unique_id()
+		shared_doc["graph_id"] = new_id
+		_persist_and_apply_shared(new_id, shared_doc)
+		close.call()
+	)
+	btn_replace.pressed.connect(func() -> void:
+		_persist_and_apply_shared(graph_id, shared_doc)
+		close.call()
 	)
 
-	dialog.custom_action.connect(func(action: StringName) -> void:
-		if action == "open_shared":
-			# Overwrite the local file with the shared version and apply it.
-			_persist_and_apply_shared(graph_id, shared_doc)
-		elif action == "save_copy":
-			# Generate a fresh ID guaranteed not to collide, make it active.
-			var new_id := GraphStore.generate_unique_id()
-			shared_doc["graph_id"] = new_id
-			_persist_and_apply_shared(new_id, shared_doc)
-		dialog.queue_free()
-	)
+	win.close_requested.connect(close)
 
-	get_tree().root.add_child(dialog)
-	dialog.popup_centered(Vector2i(480, 0))
+	get_tree().root.add_child(win)
+	win.popup_centered()
+
+
+func _conflict_outline_button(p_label: String) -> Button:
+	var btn := Button.new()
+	btn.text = p_label
+	btn.focus_mode = Control.FOCUS_NONE
+	var sn := StyleBoxFlat.new()
+	sn.bg_color = Color(1, 1, 1)
+	sn.border_width_left   = 2
+	sn.border_width_top    = 2
+	sn.border_width_right  = 2
+	sn.border_width_bottom = 2
+	sn.border_color = _C_SHARE_BLUE
+	sn.set_corner_radius_all(8)
+	sn.shadow_color  = Color(_C_SHARE_BLUE.r, _C_SHARE_BLUE.g, _C_SHARE_BLUE.b, 0.12)
+	sn.shadow_size   = 4
+	sn.shadow_offset = Vector2(0, 1)
+	sn.content_margin_left   = 12
+	sn.content_margin_right  = 12
+	sn.content_margin_top    = 8
+	sn.content_margin_bottom = 8
+	var sh := sn.duplicate() as StyleBoxFlat
+	sh.bg_color = Color(0.94, 0.95, 0.99)
+	sh.shadow_size = 0
+	btn.add_theme_stylebox_override("normal",  sn)
+	btn.add_theme_stylebox_override("hover",   sh)
+	btn.add_theme_stylebox_override("pressed", sh)
+	btn.add_theme_stylebox_override("focus",   sn)
+	btn.add_theme_font_size_override("font_size", 12)
+	btn.add_theme_color_override("font_color",         _C_SHARE_BLUE)
+	btn.add_theme_color_override("font_hover_color",   _C_SHARE_BLUE)
+	btn.add_theme_color_override("font_pressed_color", Color(0.25, 0.36, 0.78))
+	btn.add_theme_color_override("font_focus_color",   _C_SHARE_BLUE)
+	return btn
+
+
+func _conflict_fill_button(p_label: String, p_bg: Color, p_hover: Color) -> Button:
+	var btn := Button.new()
+	btn.text = p_label
+	btn.focus_mode = Control.FOCUS_NONE
+	var normal_sb := StyleBoxFlat.new()
+	normal_sb.bg_color = p_bg
+	normal_sb.set_corner_radius_all(8)
+	normal_sb.content_margin_left   = 12
+	normal_sb.content_margin_right  = 12
+	normal_sb.content_margin_top    = 8
+	normal_sb.content_margin_bottom = 8
+	var hover_sb: StyleBoxFlat = normal_sb.duplicate() as StyleBoxFlat
+	hover_sb.bg_color = p_hover
+	btn.add_theme_stylebox_override("normal",  normal_sb)
+	btn.add_theme_stylebox_override("hover",   hover_sb)
+	btn.add_theme_stylebox_override("pressed", hover_sb)
+	btn.add_theme_stylebox_override("focus",   normal_sb)
+	btn.add_theme_font_size_override("font_size", 12)
+	btn.add_theme_color_override("font_color",         Color.WHITE)
+	btn.add_theme_color_override("font_hover_color",   Color.WHITE)
+	btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	btn.add_theme_color_override("font_focus_color",   Color.WHITE)
+	return btn
 
 
 func _persist_and_apply_shared(graph_id: String, result: Dictionary) -> void:

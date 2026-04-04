@@ -24,6 +24,8 @@ func _process(delta: float) -> void:
 			_on_hold_start()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if AppInputPolicy.is_text_field_focused():
+		return
 	if Globals.current_state == Globals.State.PAN:
 		if selection_rect != null:
 			remove_child(selection_rect)
