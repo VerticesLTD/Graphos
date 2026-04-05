@@ -9,10 +9,10 @@ source_text = "Prim(G, s)
 for v in V:--1
     d[v]=inf, p[v]=null, s[v]=UNDISC--1
 d[s]=0, Q.add(s, 0)--2
-while Q is not empty:
+while Q is not empty:--3,4,5,6
     u = Q.pop_min(), s[u] = FINISHED--3
     if p[u] != null: add (p[u], u) to MST--4
-    for v in Adj[u]:
+    for v in Adj[u]:--5,6
         if s[v] != FINISHED and w(u, v) < d[v]:--5
             d[v]=w(u, v), p[v]=u, Q.upsert(v, d[v])--6"
 raw_code = "Prim(G, s)
@@ -25,5 +25,5 @@ while Q is not empty:
     for v in Adj[u]:
         if s[v] != FINISHED and w(u, v) < d[v]:
             d[v]=w(u, v), p[v]=u, Q.upsert(v, d[v])"
-steps = [[], [1, 2], [3], [5], [6], [8], [9]]
+steps = [[], [1, 2], [3], [4, 5], [4, 6], [4, 7, 8], [4, 7, 9]]
 metadata/_custom_type_script = "uid://c8h8cvjik2tcu"
