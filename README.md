@@ -10,7 +10,7 @@ Build graphs. Run algorithms. Understand them step-by-step.
 
 <br/>
 
-<a href="https://verticesltd.github.io/Graphos/" target="_blank" rel="noopener noreferrer">
+<a href="https://www.graph-os.com/" target="_blank" rel="noopener noreferrer">
   <strong>▶ &nbsp;Open the Live Demo</strong>
 </a>
 
