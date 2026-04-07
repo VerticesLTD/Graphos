@@ -94,15 +94,15 @@ func _bench_vertex_pick_queries(g: Graph, query_count: int) -> void:
 		var _id := g.get_vertex_id_at(p)
 
 func _bench_vertex_pick_queries_linear(g: Graph, query_count: int) -> void:
-	var radius_sq := Globals.VERTEX_RADIUS * Globals.VERTEX_RADIUS
+	var radius_sq: float = Globals.VERTEX_RADIUS * Globals.VERTEX_RADIUS
 	for i in query_count:
 		var p := Vector2(float(i % 100), float((i * 37) % 100))
-		var found := Globals.NOT_FOUND
+		var found: int = Globals.NOT_FOUND
 		for v: Vertex in g.vertices.values():
 			if (v.pos - p).length_squared() <= radius_sq:
 				found = v.id
 				break
-		var _id := found
+		var _id: int = found
 
 func _bench_get_edge_at_queries(g: Graph, query_count: int) -> void:
 	var cols := maxi(1, int(ceil(sqrt(float(g.num_vertices)))))
