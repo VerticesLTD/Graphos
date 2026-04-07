@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://ci5epjfev0c53"]
+
+[ext_resource type="Theme" uid="uid://kfcyeb61dcth" path="res://styles/feedback_button_theme.tres" id="1_fflhq"]
+[ext_resource type="Script" uid="uid://c7ywp3xecsett" path="res://scenes/feedback/feedback.gd" id="1_kd6fv"]
+[ext_resource type="StyleBox" uid="uid://bdiessvqitwl2" path="res://scenes/tool_bar/tool_bar_background.tres" id="3_djegc"]
+
+[node name="Feedback" type="Control" unique_id=1947904442]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_kd6fv")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=437233443]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+
+[node name="SendFeedback" type="Button" parent="MarginContainer" unique_id=1377285510]
+layout_mode = 2
+theme = ExtResource("1_fflhq")
+text = "Send Feedback"
+
+[node name="Popup" type="Popup" parent="." unique_id=938699655]
+oversampling_override = 1.0
+size = Vector2i(502, 215)
+visible = true
+
+[node name="PanelRoot" type="PanelContainer" parent="Popup" unique_id=113360399]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("3_djegc")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Popup/PanelRoot" unique_id=1847068178]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Popup/PanelRoot/VBoxContainer" unique_id=313847414]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "Send us feedback!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextEdit" type="TextEdit" parent="Popup/PanelRoot/VBoxContainer" unique_id=1247062953]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+placeholder_text = "Suggest new algorithms, features for the app, or general improvements you think are appropriate!"
+wrap_mode = 1
+
+[node name="Button" type="Button" parent="Popup/PanelRoot/VBoxContainer" unique_id=1237842233]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("1_fflhq")
+text = "Send"
+
+[connection signal="pressed" from="MarginContainer/SendFeedback" to="." method="_on_send_feedback_pressed"]
+[connection signal="pressed" from="Popup/PanelRoot/VBoxContainer/Button" to="." method="_on_send_pressed"]
