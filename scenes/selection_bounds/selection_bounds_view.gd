@@ -53,7 +53,7 @@ func _draw() -> void:
 func _handle_world_size(ui_scale: float) -> float:
 	var target_screen_px := 8.0
 	var uncapped := target_screen_px * ui_scale
-	var max_world := Globals.VERTEX_RADIUS * 0.85
+	var max_world: float = Globals.VERTEX_RADIUS * 0.85
 	return clampf(minf(uncapped, max_world), 1.2, max_world)
 
 func _draw_handle(pos: Vector2, size: float, outline_scale: float) -> void:

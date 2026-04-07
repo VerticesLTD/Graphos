@@ -164,7 +164,7 @@ func get_incoming_edges(target: Vertex) -> Array[Edge]:
 
 ## Finds the vertex whose circle contains pos. Returns NOT_FOUND if none.
 func get_vertex_id_at(pos: Vector2) -> int:
-	var radius_sq := Globals.VERTEX_RADIUS * Globals.VERTEX_RADIUS
+	var radius_sq: float = Globals.VERTEX_RADIUS * Globals.VERTEX_RADIUS
 	for id in _vertex_spatial_index.get_candidate_ids(pos):
 		var v: Vertex = vertices.get(id)
 		if v == null:
