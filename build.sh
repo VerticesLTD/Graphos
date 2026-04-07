@@ -10,8 +10,8 @@ mkdir -p public
 
 echo "Downloading Godot ${GODOT_VERSION}..."
 FILE_VERSION="Godot_v${GODOT_VERSION}_linux.x86_64"
-wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${FILE_VERSION}.zip" -O godot.zip
-wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_export_templates.tpz" -O templates.tpz
+curl -L -s "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${FILE_VERSION}.zip" -o godot.zip
+curl -L -s "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_export_templates.tpz" -o templates.tpz
 
 echo "Extracting..."
 unzip -q godot.zip
