@@ -228,7 +228,6 @@ theme_override_styles/focus = SubResource("StyleBoxFlat_speed_hover")
 text = "1x"
 
 [node name="ProgressTrack" type="Control" parent="Panel/VBox" unique_id=1420688071]
-clip_contents = false
 custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 size_flags_horizontal = 3

@@ -2,23 +2,17 @@
 
 [ext_resource type="Script" uid="uid://dcl6ckcas6der" path="res://scenes/tool_bar/tool_bar.gd" id="1_gdu6t"]
 [ext_resource type="Script" uid="uid://css85v57pq6ys" path="res://scenes/tool_bar/button_highlights.gd" id="1_uiivm"]
-[ext_resource type="StyleBox" uid="uid://bdiessvqitwl2" path="res://scenes/tool_bar/tool_bar_background.tres" id="2_u1pd4"]
 [ext_resource type="StyleBox" uid="uid://npixnrumei6q" path="res://scenes/tool_bar/button_normal.tres" id="3_lpcgc"]
-[ext_resource type="StyleBox" uid="uid://edc2pra87k3x" path="res://scenes/tool_bar/button_hover.tres" id="4_u1pd4"]
 [ext_resource type="Texture2D" uid="uid://v5eliv4lx04j" path="res://assets/icons/cursor-alt-svgrepo-com.svg" id="4_selection_icon"]
+[ext_resource type="StyleBox" uid="uid://edc2pra87k3x" path="res://scenes/tool_bar/button_hover.tres" id="4_u1pd4"]
 [ext_resource type="Texture2D" uid="uid://cmgktymkkl21e" path="res://assets/icons/create_tool_icon.svg" id="5_2j54p"]
-[ext_resource type="Texture2D" path="res://assets/icons/hand_toolbar.svg" id="6_pan"]
+[ext_resource type="Texture2D" uid="uid://b6juabb4v03bc" path="res://assets/icons/hand_toolbar.svg" id="6_pan"]
 [ext_resource type="Texture2D" uid="uid://bqx8k2m4n7p3w" path="res://assets/icons/edge_tool_icon.png" id="7_edge_icon"]
-[ext_resource type="Texture2D" path="res://assets/icons/eraser_icon.svg" id="8_eraser_icon"]
-
-[sub_resource type="StyleBoxLine" id="StyleBoxLine_lpcgc"]
-color = Color(0.72, 0.72, 0.76, 0.85)
-grow_begin = -4.0
-grow_end = -4.0
-thickness = 1
-vertical = true
+[ext_resource type="Texture2D" uid="uid://c6mroisvwpr7w" path="res://assets/icons/eraser_icon.svg" id="8_eraser_icon"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_toolbar_panel"]
+content_margin_left = 5.0
+content_margin_right = 5.0
 bg_color = Color(1, 1, 1, 1)
 border_width_left = 1
 border_width_top = 1
@@ -33,11 +27,15 @@ expand_margin_left = 7.0
 expand_margin_top = 7.0
 expand_margin_right = 7.0
 expand_margin_bottom = 7.0
-shadow_color = Color(0, 0, 0, 0.10)
+shadow_color = Color(0, 0, 0, 0.1)
 shadow_size = 6
 shadow_offset = Vector2(0, 2)
-content_margin_left = 5.0
-content_margin_right = 5.0
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_lpcgc"]
+color = Color(0.72, 0.72, 0.76, 0.85)
+grow_begin = -4.0
+grow_end = -4.0
+vertical = true
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_toggle_normal"]
 content_margin_left = 8.0
@@ -125,9 +123,9 @@ texture_filter = 4
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 size_flags_vertical = 4
-focus_mode = 0
 tooltip_text = "Select
 Click or drag to select  ·  Right-click selection for options"
+focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -159,9 +157,9 @@ texture_filter = 4
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 size_flags_vertical = 4
-focus_mode = 0
 tooltip_text = "Create
 Click to add vertex  ·  Hold Ctrl + click two vertices to connect"
+focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -194,9 +192,9 @@ texture_filter = 4
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 size_flags_vertical = 4
-focus_mode = 0
 tooltip_text = "Edge
 Pick a start vertex, then a second to connect  ·  Same vertex cancels"
+focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -228,9 +226,9 @@ texture_filter = 4
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 size_flags_vertical = 4
-focus_mode = 0
 tooltip_text = "Pan
 Drag to pan  ·  Scroll to zoom"
+focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")
@@ -262,9 +260,9 @@ texture_filter = 4
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 size_flags_vertical = 4
-focus_mode = 0
 tooltip_text = "Erase
 Click and drag to erase vertices and edges"
+focus_mode = 0
 theme_override_styles/normal = ExtResource("3_lpcgc")
 theme_override_styles/pressed = ExtResource("4_u1pd4")
 theme_override_styles/hover = ExtResource("4_u1pd4")

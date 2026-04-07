@@ -7,7 +7,6 @@
 [node name="CodeBackground" type="PanelContainer" unique_id=870985294]
 z_index = 10
 texture_filter = 4
-custom_minimum_size = Vector2(0, 0)
 offset_right = 1.0
 offset_bottom = 1.0
 size_flags_horizontal = 8
@@ -57,4 +56,3 @@ text = "[outline_size=2][outline_color=black][color=#0080ffff][b]1. Q ← new Qu
 "
 fit_content = true
 autowrap_mode = 0
-vertical_alignment = 0
