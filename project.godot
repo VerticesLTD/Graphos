@@ -150,3 +150,5 @@ environment/defaults/default_clear_color=Color(1, 1, 1, 1)
 [debug]
 
 gdscript/warnings/treat_warnings_as_errors=false
+gdscript/warnings/inferred_declaration=0
+gdscript/warnings/untyped_declaration=0
