@@ -41,6 +41,10 @@ var num_vertices: int:
 # Vertex lifecycle
 # ------------------------------------------------------------------
 
+func _ready() -> void:
+	await RenderingServer.frame_post_draw
+	DisplayServer.window_set_title("Graphos", get_window().get_window_id())
+
 ## Creates a vertex, registers it in all indexes, and spawns a view node.
 func add_vertex(pos: Vector2 = Vector2.ZERO, color: Color = Globals.VERTEX_COLOR) -> Vertex:
 	var v := Vertex.new(get_next_available_id(), color, Globals.INF, Globals.INF, pos)

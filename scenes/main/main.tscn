@@ -14,11 +14,12 @@
 [ext_resource type="Script" uid="uid://brhvjsox00got" path="res://scenes/background/math_grid_background.gd" id="12_math_grid"]
 [ext_resource type="Script" uid="uid://dldtmuvu7cxha" path="res://controller/ghost_edge_preview.gd" id="13_ghost_edge"]
 [ext_resource type="PackedScene" path="res://scenes/presets/preset_picker.tscn" id="14_preset_picker"]
-[ext_resource type="Script" path="res://scenes/main/persistence_manager.gd" id="15_persistence"]
-[ext_resource type="Script" path="res://scenes/main/share_manager.gd" id="16_share_manager"]
-[ext_resource type="PackedScene" path="res://scenes/sharing/share_panel.tscn" id="17_share_panel"]
-[ext_resource type="Script" path="res://scenes/tool_bar/tool_hint.gd" id="18_tool_hint"]
-[ext_resource type="PackedScene" path="res://scenes/welcome/welcome_overlay.tscn" id="19_welcome"]
+[ext_resource type="Script" uid="uid://b7r758nm2bdfk" path="res://scenes/main/persistence_manager.gd" id="15_persistence"]
+[ext_resource type="PackedScene" uid="uid://ci5epjfev0c53" path="res://scenes/feedback/feedback.tscn" id="16_r4lks"]
+[ext_resource type="Script" uid="uid://cxqv3ech7h2ma" path="res://scenes/main/share_manager.gd" id="16_share_manager"]
+[ext_resource type="PackedScene" uid="uid://ccka0nd856cca" path="res://scenes/sharing/share_panel.tscn" id="17_share_panel"]
+[ext_resource type="Script" uid="uid://bcy61pj3dte0g" path="res://scenes/tool_bar/tool_hint.gd" id="18_tool_hint"]
+[ext_resource type="PackedScene" uid="uid://ce8vasy4hj2x7" path="res://scenes/welcome/welcome_overlay.tscn" id="19_welcome"]
 
 [node name="Main" type="Node2D" unique_id=446252932]
 script = ExtResource("1_yyfjg")
@@ -46,7 +47,7 @@ script = ExtResource("12_math_grid")
 
 [node name="Camera" parent="." unique_id=603822564 instance=ExtResource("11_camera")]
 
-[node name="WelcomeLayer" parent="." instance=ExtResource("19_welcome")]
+[node name="WelcomeLayer" parent="." unique_id=1253975232 instance=ExtResource("19_welcome")]
 
 [node name="GraphController" type="Node" parent="." unique_id=1509094021 node_paths=PackedStringArray("graph")]
 script = ExtResource("2_b1x3f")
@@ -79,16 +80,17 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -400.0
-offset_right = 400.0
 offset_top = 80.0
+offset_right = 400.0
 offset_bottom = 100.0
-horizontal_alignment = 1
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.592, 0.592, 0.624, 1)
 theme_override_font_sizes/font_size = 13
+horizontal_alignment = 1
 script = ExtResource("18_tool_hint")
 
 [node name="PopupMenuLayer" parent="CanvasLayer" unique_id=665487505 instance=ExtResource("8_raeie")]
+
+[node name="Feedback" parent="CanvasLayer" unique_id=1947904442 instance=ExtResource("16_r4lks")]
 
 [node name="PresetPickerRoot" parent="." unique_id=1015688362 instance=ExtResource("14_preset_picker")]
 
