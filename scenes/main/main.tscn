@@ -13,7 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://cjtn7ni7fjvft" path="res://scenes/camera/camera.tscn" id="11_camera"]
 [ext_resource type="Script" uid="uid://brhvjsox00got" path="res://scenes/background/math_grid_background.gd" id="12_math_grid"]
 [ext_resource type="Script" uid="uid://dldtmuvu7cxha" path="res://controller/ghost_edge_preview.gd" id="13_ghost_edge"]
-[ext_resource type="PackedScene" path="res://scenes/presets/preset_picker.tscn" id="14_preset_picker"]
+[ext_resource type="PackedScene" uid="uid://dor2q5ey20s4e" path="res://scenes/presets/preset_picker.tscn" id="14_preset_picker"]
 [ext_resource type="Script" uid="uid://b7r758nm2bdfk" path="res://scenes/main/persistence_manager.gd" id="15_persistence"]
 [ext_resource type="PackedScene" uid="uid://ci5epjfev0c53" path="res://scenes/feedback/feedback.tscn" id="16_r4lks"]
 [ext_resource type="Script" uid="uid://cxqv3ech7h2ma" path="res://scenes/main/share_manager.gd" id="16_share_manager"]
