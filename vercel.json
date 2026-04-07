@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "buildCommand": "bash build.sh",
+  "outputDirectory": "public",
+  "framework": null,
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./"
+}
