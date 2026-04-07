@@ -208,7 +208,7 @@ func _handle_left_click(event: InputEventMouseButton):
 		return
 
 	var selection_buffer = controller.selection_buffer
-	var ctrl_graph_path := is_ctrl and (
+	var ctrl_graph_path: bool = is_ctrl and (
 		Globals.current_state == Globals.State.CREATE
 		or Globals.current_state == Globals.State.EDGE
 	)

@@ -9,7 +9,6 @@ script = ExtResource("1_kfvck")
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=299046112]
 custom_minimum_size = Vector2(100, 50)
-layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -23,12 +22,12 @@ theme_override_styles/panel = ExtResource("2_7r6yp")
 
 [node name="Label" type="Label" parent="PanelContainer" unique_id=853132152]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0)
-theme_override_font_sizes/font_size = 15
-theme_override_constants/line_spacing = 3
-autowrap_mode = 3
 size_flags_horizontal = 3
 size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0)
+theme_override_constants/line_spacing = 3
+theme_override_font_sizes/font_size = 15
 horizontal_alignment = 1
 vertical_alignment = 1
+autowrap_mode = 3

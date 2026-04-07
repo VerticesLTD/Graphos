@@ -1,15 +1,14 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://dor2q5ey20s4e"]
 
-[ext_resource type="Script" path="res://scenes/presets/preset_picker.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cvucfnlol4whc" path="res://scenes/presets/preset_picker.gd" id="1_script"]
 [ext_resource type="StyleBox" uid="uid://bdiessvqitwl2" path="res://scenes/tool_bar/tool_bar_background.tres" id="2_bar"]
 
-[node name="PresetPickerRoot" type="CanvasLayer"]
+[node name="PresetPickerRoot" type="CanvasLayer" unique_id=1141586939]
 layer = 2
 script = ExtResource("1_script")
-graph_controller_path = NodePath("../GraphController")
 
-[node name="Margin" type="MarginContainer" parent="."]
-anchors_preset = 2
+[node name="Margin" type="MarginContainer" parent="." unique_id=1174629466]
+anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -202.0
@@ -18,13 +17,13 @@ offset_right = -20.0
 offset_bottom = 68.0
 grow_horizontal = 0
 
-[node name="HBox" type="HBoxContainer" parent="Margin"]
+[node name="HBox" type="HBoxContainer" parent="Margin" unique_id=227239117]
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 4
 theme_override_constants/separation = 8
 
-[node name="ShareButton" type="Button" parent="Margin/HBox"]
+[node name="ShareButton" type="Button" parent="Margin/HBox" unique_id=1463491879]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -32,7 +31,7 @@ tooltip_text = "Share
 Copy a link to this graph"
 text = "Share"
 
-[node name="PresetsButton" type="Button" parent="Margin/HBox"]
+[node name="PresetsButton" type="Button" parent="Margin/HBox" unique_id=1408462323]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -40,15 +39,11 @@ tooltip_text = "Presets
 Load a sample graph"
 text = "Presets"
 
-[node name="PresetsPopup" type="Popup" parent="."]
-transparent = false
-borderless = true
-popup_window = true
-unresizable = true
-visible = false
+[node name="PresetsPopup" type="Popup" parent="." unique_id=768198572]
+size = Vector2i(328, 380)
 min_size = Vector2i(328, 380)
 
-[node name="PanelRoot" type="PanelContainer" parent="PresetsPopup"]
+[node name="PanelRoot" type="PanelContainer" parent="PresetsPopup" unique_id=408387991]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -56,21 +51,21 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = ExtResource("2_bar")
 
-[node name="Margin" type="MarginContainer" parent="PresetsPopup/PanelRoot"]
+[node name="Margin" type="MarginContainer" parent="PresetsPopup/PanelRoot" unique_id=1776170700]
 layout_mode = 2
 theme_override_constants/margin_left = 6
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 6
 theme_override_constants/margin_bottom = 6
 
-[node name="Scroll" type="ScrollContainer" parent="PresetsPopup/PanelRoot/Margin"]
+[node name="Scroll" type="ScrollContainer" parent="PresetsPopup/PanelRoot/Margin" unique_id=1638118207]
+custom_minimum_size = Vector2(0, 332)
 layout_mode = 2
 size_flags_vertical = 3
-custom_minimum_size = Vector2(0, 332)
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 2
 
-[node name="Grid" type="GridContainer" parent="PresetsPopup/PanelRoot/Margin/Scroll"]
+[node name="Grid" type="GridContainer" parent="PresetsPopup/PanelRoot/Margin/Scroll" unique_id=644374042]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 6

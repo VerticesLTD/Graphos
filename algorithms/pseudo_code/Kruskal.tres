@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="PseudoCodeData" format=3]
+[gd_resource type="Resource" script_class="PseudoCodeData" format=3 uid="uid://dmj804lx6nflv"]
 
 [ext_resource type="Script" uid="uid://c8h8cvjik2tcu" path="res://algorithms/pseudo_code/pseudo_code_resource.gd" id="1_kruskal"]
 

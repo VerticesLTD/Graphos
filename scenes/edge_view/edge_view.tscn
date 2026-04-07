@@ -35,7 +35,6 @@ antialiased = true
 
 [node name="Weight" type="Label" parent="." unique_id=152968238]
 texture_filter = 2
-mouse_filter = 2
 offset_right = 40.0
 offset_bottom = 23.0
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
@@ -47,16 +46,15 @@ vertical_alignment = 1
 
 [node name="WeightEdit" type="LineEdit" parent="." unique_id=918274631]
 visible = false
-mouse_filter = 2
 offset_right = 56.0
 offset_bottom = 30.0
+mouse_filter = 2
 theme_override_colors/font_color = Color(0.118, 0.118, 0.18, 1)
 theme_override_fonts/font = ExtResource("2_ewg0c")
 theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("StyleBoxEmpty_weight_edit")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_weight_edit")
 theme_override_styles/read_only = SubResource("StyleBoxEmpty_weight_edit")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_weight_edit")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_weight_edit")
 alignment = 1
 flat = true
 

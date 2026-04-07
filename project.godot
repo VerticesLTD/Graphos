@@ -8,10 +8,6 @@
 
 config_version=5
 
-[animation]
-
-compatibility/default_parent_skeleton_in_mesh_instance_3d=true
-
 [application]
 
 config/name="Graphos"
@@ -29,6 +25,10 @@ Globals="*uid://b66flw6uqbdop"
 GLogger="*uid://b7vp5dn120dii"
 CommandManager="*uid://bstobjaowschd"
 Notify="*res://scenes/notifier/notify.tscn"
+
+[debug]
+
+gdscript/warnings/treat_warnings_as_errors=false
 
 [display]
 
@@ -146,9 +146,3 @@ renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(1, 1, 1, 1)
 2d/snap/snap_2d_transforms_to_pixel=true
 2d/snap/snap_2d_vertices_to_pixel=true
-
-[debug]
-
-gdscript/warnings/treat_warnings_as_errors=false
-gdscript/warnings/inferred_declaration=0
-gdscript/warnings/untyped_declaration=0

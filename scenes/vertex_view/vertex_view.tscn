@@ -27,16 +27,16 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
-[node name="KeyBadge" type="Node2D" parent="."]
+[node name="KeyBadge" type="Node2D" parent="." unique_id=938544250]
 position = Vector2(16, -16)
 
-[node name="BubbleRing" type="Polygon2D" parent="KeyBadge"]
+[node name="BubbleRing" type="Polygon2D" parent="KeyBadge" unique_id=521154687]
 color = Color(0.58, 0.64, 0.72, 1)
 
-[node name="Bubble" type="Polygon2D" parent="KeyBadge"]
+[node name="Bubble" type="Polygon2D" parent="KeyBadge" unique_id=1470173891]
 color = Color(0.945098, 0.960784, 0.976471, 1)
 
-[node name="KeyLabel" type="Label" parent="KeyBadge"]
+[node name="KeyLabel" type="Label" parent="KeyBadge" unique_id=1944785353]
 offset_left = -15.0
 offset_top = -10.0
 offset_right = 15.0

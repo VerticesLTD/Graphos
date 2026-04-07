@@ -6,7 +6,7 @@ const _PHYS_CTRL_R := 4194328  ## Right Ctrl physical keycode (Input map keycode
 const LINE_ALPHA := 0.42
 const GHOST_DISK_ALPHA := 0.22
 ## Placement hint only — smaller than a real vertex so it reads lighter than committed nodes.
-const GHOST_DISK_RADIUS := Globals.VERTEX_RADIUS * 0.86
+const GHOST_DISK_RADIUS: float = Globals.VERTEX_RADIUS * 0.86
 
 var _arrow: Polygon2D
 var _ghost_vertex: Polygon2D
