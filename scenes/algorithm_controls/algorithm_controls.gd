@@ -52,7 +52,7 @@ func _snap_to_bottom_center() -> void:
 	if _is_mobile_web:
 		position = Vector2(
 			roundf(vp.x / 2.0 - size.x / 2.0),
-			vp.y - size.y
+			vp.y - size.y - 150
 		)
 	else:
 		position = Vector2(
