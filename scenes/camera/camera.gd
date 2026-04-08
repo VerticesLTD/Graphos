@@ -80,7 +80,8 @@ func _input(event: InputEvent) -> void:
 			_update_cursor_shape()
 
 	if event is InputEventMouseMotion and _is_dragging:
-		position -= event.relative / zoom.x
+		var ui_scale = get_window().content_scale_factor
+		position -= (event.relative / ui_scale) / zoom.x
 		_update_cursor_shape()
 
 
