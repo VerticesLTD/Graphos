@@ -9,4 +9,4 @@ func _is_mobile_web() -> bool:
 
 func _adjust_ui_scale() -> void:
 	if _is_mobile_web():
-		get_window().content_scale_factor = 5.0
+		get_window().content_scale_factor = 2.0
