@@ -53,7 +53,7 @@ func _snap_to_bottom_center() -> void:
 	grow_horizontal = Control.GROW_DIRECTION_BOTH
 	grow_vertical = Control.GROW_DIRECTION_BEGIN
 	
-	var margin_y: float = 150.0 if Globals.is_mobile_layout(get_viewport()) else 24.0
+	var margin_y: float = 90.0 if Globals.is_mobile_layout(get_viewport()) else 24.0
 	var vp := get_viewport().get_visible_rect().size
 	position = Vector2(roundf(vp.x / 2.0 - size.x / 2.0), vp.y - size.y - margin_y)
 

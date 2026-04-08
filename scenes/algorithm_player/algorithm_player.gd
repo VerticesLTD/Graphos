@@ -285,9 +285,10 @@ func _place_visualizer_bottom_left() -> void:
 	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 	var panel_size: Vector2 = pseudo_visualizer.size
 	if Globals.is_mobile_layout(get_viewport()):
+		var controls_margin := 90.0 + algorithm_controls.size.y + 12.0
 		pseudo_visualizer.position = Vector2(
 			PSEUDO_MARGIN,
-			viewport_size.y - panel_size.y - PSEUDO_MARGIN - 150
+			viewport_size.y - panel_size.y - controls_margin
 		)
 	else:
 		pseudo_visualizer.position = Vector2(
