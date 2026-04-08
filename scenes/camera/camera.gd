@@ -86,9 +86,6 @@ func _input(event: InputEvent) -> void:
 		position -= event.relative / zoom.x
 		_update_cursor_shape()
 
-	# if event is InputEventMouseMotion and _is_dragging:
-	# 	var ui_scale = get_window().content_scale_factor
-
 func _is_mobile_web() -> bool:
 	return OS.has_feature("web_android") or OS.has_feature("web_ios")
 
