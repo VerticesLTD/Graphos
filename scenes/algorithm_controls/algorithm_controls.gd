@@ -48,20 +48,14 @@ func _resolve_progress_fill() -> ProgressBar:
 
 func _snap_to_bottom_center() -> void:
 	await get_tree().process_frame
+	
+	set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	grow_horizontal = Control.GROW_DIRECTION_BOTH
+	grow_vertical = Control.GROW_DIRECTION_BEGIN
+	
+	var margin_y: float = 90.0 if Globals.is_mobile_layout(get_viewport()) else 24.0
 	var vp := get_viewport().get_visible_rect().size
-	if _is_mobile_web:
-		position = Vector2(
-			roundf(vp.x / 2.0 - size.x / 2.0),
-			vp.y - size.y - 150
-		)
-	else:
-		position = Vector2(
-			roundf(vp.x / 2.0 - size.x / 2.0),
-			vp.y - size.y - 24.0
-		)
-
-func _is_mobile_web() -> bool:
-	return OS.has_feature("web_android") or OS.has_feature("web_ios")
+	position = Vector2(roundf(vp.x / 2.0 - size.x / 2.0), vp.y - size.y - margin_y)
 
 
 # ──────────────────────────────────────────────────────────

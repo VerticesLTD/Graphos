@@ -93,31 +93,10 @@ func _cache_desktop_layout() -> void:
 	_desktop_modifier_font = directed_btn.get_theme_font_size("font_size", "Button")
 
 
-## Width used for the mobile breakpoint. With stretch/canvas_items the logical
-## viewport stays at the project base width; window size and (on web) innerWidth
-## reflect the actual layout width.
-func _layout_width_for_breakpoint() -> float:
-	var w := float(DisplayServer.window_get_size().x)
-	var vp_w := get_viewport().get_visible_rect().size.x
-	if w <= 0.0:
-		w = vp_w
-	else:
-		w = minf(w, vp_w)
-	if OS.has_feature("web"):
-		var inner: Variant = JavaScriptBridge.eval("window.innerWidth", true)
-		if inner != null:
-			var iw := float(inner)
-			if iw > 0.0:
-				w = minf(w, iw)
-	return w
-
-
-func _is_mobile_viewport() -> bool:
-	return _layout_width_for_breakpoint() <= MOBILE_VIEWPORT_MAX_WIDTH
 
 
 func _apply_responsive_layout() -> void:
-	var mobile := _is_mobile_viewport()
+	var mobile := Globals.is_mobile_layout(get_viewport())
 	if mobile != _mobile_layout_active:
 		if mobile:
 			_enter_mobile_layout()

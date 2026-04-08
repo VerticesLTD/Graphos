@@ -284,19 +284,17 @@ func _expose_visualizer() -> void:
 func _place_visualizer_bottom_left() -> void:
 	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 	var panel_size: Vector2 = pseudo_visualizer.size
-	if _is_mobile_web():
+	if Globals.is_mobile_layout(get_viewport()):
+		var controls_margin := 90.0 + algorithm_controls.size.y + 12.0
 		pseudo_visualizer.position = Vector2(
 			PSEUDO_MARGIN,
-			viewport_size.y - panel_size.y - PSEUDO_MARGIN - 150
+			viewport_size.y - panel_size.y - controls_margin
 		)
 	else:
 		pseudo_visualizer.position = Vector2(
 			PSEUDO_MARGIN,
 			viewport_size.y - panel_size.y - PSEUDO_MARGIN
 		)
-
-func _is_mobile_web() -> bool:
-	return OS.has_feature("web_android") or OS.has_feature("web_ios")
 
 # Animation to show player controls.
 func _expose_controls() -> void:
