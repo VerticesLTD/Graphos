@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" uid="uid://ccka0nd856cca" path="res://scenes/sharing/share_panel.tscn" id="17_share_panel"]
 [ext_resource type="Script" uid="uid://bcy61pj3dte0g" path="res://scenes/tool_bar/tool_hint.gd" id="18_tool_hint"]
 [ext_resource type="PackedScene" uid="uid://ce8vasy4hj2x7" path="res://scenes/welcome/welcome_overlay.tscn" id="19_welcome"]
+[ext_resource type="Script" uid="uid://ciqi4vmyemqmu" path="res://scenes/main/resolution_manager.gd" id="21_pg34l"]
 
 [node name="Main" type="Node2D" unique_id=446252932]
 script = ExtResource("1_yyfjg")
@@ -106,3 +107,6 @@ camera = NodePath("../Camera")
 grid_background = NodePath("../MathGridBackground")
 popup_menu_a = NodePath("../GraphController/PopupMenu")
 popup_menu_b = NodePath("../CanvasLayer/PopupMenuLayer")
+
+[node name="ResolutionManager" type="Node" parent="." unique_id=1257491223]
+script = ExtResource("21_pg34l")

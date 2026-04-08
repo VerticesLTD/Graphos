@@ -29,7 +29,6 @@ text = "Send Feedback"
 [node name="Popup" type="Popup" parent="." unique_id=938699655]
 oversampling_override = 1.0
 size = Vector2i(502, 215)
-visible = true
 
 [node name="PanelRoot" type="PanelContainer" parent="Popup" unique_id=113360399]
 anchors_preset = 15

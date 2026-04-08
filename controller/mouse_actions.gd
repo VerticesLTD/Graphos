@@ -37,6 +37,13 @@ var _resize_snapshot: Dictionary   # { Vertex -> Vector2 } positions at drag sta
 var _edge_mode_pending_id: int = Globals.NOT_FOUND
 var _edge_mode_pending_click_pos: Vector2 = Vector2.ZERO
 
+# Mobile
+@export var long_press_duration := 0.5
+@export var drag_deadzone := 15.0
+var _is_touching := false
+var _touch_time := 0.0
+var _touch_start_pos: Vector2
+
 # ----------------------------------------------------------------------------
 # Input routing
 # ----------------------------------------------------------------------------
@@ -65,6 +72,29 @@ func _ready() -> void:
 	Globals.app_state_changed.connect(_refresh_canvas_cursor_after_tool_change)
 	_sync_eraser_cursor()
 
+func _process(delta: float) -> void:
+	# Checking for long press
+	if _is_touching and not Globals.current_state == Globals.State.PAN:
+		_touch_time += delta
+		if _touch_time >= long_press_duration:
+			_is_touching = false
+			_trigger_right_click_event(_touch_start_pos)
+
+## Triggers a right click press & release in the godot input pipeline.
+## This allows the code to handle the action as it would normally.
+func _trigger_right_click_event(pos: Vector2):
+	var right_click = InputEventMouseButton.new()
+	right_click.button_index = MOUSE_BUTTON_RIGHT
+	right_click.pressed = true
+	right_click.position = pos
+	right_click.global_position = pos
+
+	get_viewport().push_input(right_click,true)
+
+	var right_release = right_click.duplicate()
+	right_release.pressed = false
+	get_viewport().push_input(right_release, true)
+
 
 func _on_ctrl_action_released(event: InputEvent) -> void:
 	if Globals.current_state == Globals.State.EDGE and not controller.link_ctrl_chain:
@@ -73,6 +103,18 @@ func _on_ctrl_action_released(event: InputEvent) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Handling Mobile right click as long press
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			_is_touching = true
+			_touch_time = 0.0
+			_touch_start_pos = event.position
+		else:
+			_is_touching = false
+	elif event is InputEventScreenDrag and _is_touching:
+		if event.position.distance_to(_touch_start_pos) > drag_deadzone:
+			_is_touching = false
+			
 	if event is InputEventKey and event.is_action_pressed("ui_cancel") and _eraser.active:
 		_eraser.cancel_to_selection()
 		get_viewport().set_input_as_handled()
