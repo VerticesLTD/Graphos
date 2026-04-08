@@ -22,7 +22,7 @@ func _update_text() -> void:
 	match Globals.current_state:
 		Globals.State.SELECTION:
 			if _graph_controller.selection_buffer.is_empty():
-				text = "Click or drag to select"
+				text = "Click or drag to select  ·  To move canvas, hold scroll wheel or switch to Pan mode"
 			else:
 				text = "Right-click selection for options"
 		Globals.State.CREATE:
