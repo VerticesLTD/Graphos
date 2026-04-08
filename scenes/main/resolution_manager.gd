@@ -2,7 +2,7 @@ extends Node
 
 
 func _ready() -> void:
-	pass # Replace with function body.
+	_adjust_ui_scale()
 
 func _is_mobile_web() -> bool:
 	return OS.has_feature("web_android") or OS.has_feature("web_ios")

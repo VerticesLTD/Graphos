@@ -108,5 +108,5 @@ grid_background = NodePath("../MathGridBackground")
 popup_menu_a = NodePath("../GraphController/PopupMenu")
 popup_menu_b = NodePath("../CanvasLayer/PopupMenuLayer")
 
-[node name="ResolutionManager" type="Node" parent="." unique_id=1734835834]
+[node name="ResolutionManager" type="Node" parent="." unique_id=1257491223]
 script = ExtResource("21_pg34l")
