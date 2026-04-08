@@ -1,4 +1,8 @@
 extends Node
+
+func _ready() -> void:
+	get_tree().root.set_layout_direction(Window.LAYOUT_DIRECTION_LTR)
+
 # ------------
 # Logging tags
 # ------------
