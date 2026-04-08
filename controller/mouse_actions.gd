@@ -74,7 +74,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	# Checking for long press
-	if _is_touching:
+	if _is_touching and not Globals.current_state == Globals.State.PAN:
 		_touch_time += delta
 		if _touch_time >= long_press_duration:
 			_is_touching = false
@@ -89,11 +89,11 @@ func _trigger_right_click_event(pos: Vector2):
 	right_click.position = pos
 	right_click.global_position = pos
 
-	Input.parse_input_event(right_click)
+	get_viewport().push_input(right_click,true)
 
 	var right_release = right_click.duplicate()
 	right_release.pressed = false
-	Input.parse_input_event(right_release)
+	get_viewport().push_input(right_release, true)
 
 
 func _on_ctrl_action_released(event: InputEvent) -> void:
