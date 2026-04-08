@@ -128,3 +128,21 @@ const INF: float = 1e18
 # EDGE LINE EDIT
 # ------------
 var active_weight_editor: LineEdit = null
+
+# ------------
+# Mobile Layout
+# ------------
+func is_mobile_layout(viewport: Viewport) -> bool:
+	var w := float(DisplayServer.window_get_size().x)
+	var vp_w := viewport.get_visible_rect().size.x
+	if w <= 0.0:
+		w = vp_w
+	else:
+		w = minf(w, vp_w)
+	if OS.has_feature("web"):
+		var inner: Variant = JavaScriptBridge.eval("window.innerWidth", true)
+		if inner != null:
+			var iw := float(inner)
+			if iw > 0.0:
+				w = minf(w, iw)
+	return w <= 768.0
