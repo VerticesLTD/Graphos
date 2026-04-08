@@ -49,10 +49,19 @@ func _resolve_progress_fill() -> ProgressBar:
 func _snap_to_bottom_center() -> void:
 	await get_tree().process_frame
 	var vp := get_viewport().get_visible_rect().size
-	position = Vector2(
-		roundf(vp.x / 2.0 - size.x / 2.0),
-		vp.y - size.y - 24.0
-	)
+	if _is_mobile_web:
+		position = Vector2(
+			roundf(vp.x / 2.0 - size.x / 2.0),
+			vp.y - size.y
+		)
+	else:
+		position = Vector2(
+			roundf(vp.x / 2.0 - size.x / 2.0),
+			vp.y - size.y - 24.0
+		)
+
+func _is_mobile_web() -> bool:
+	return OS.has_feature("web_android") or OS.has_feature("web_ios")
 
 
 # ──────────────────────────────────────────────────────────
