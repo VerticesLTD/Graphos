@@ -26,7 +26,7 @@ echo "Building project for Web..."
 # --- MICROSOFT CLARITY INJECTION 
 echo "Injecting Microsoft Clarity..."
 CLARITY_ID="w8x9s1vxi5"
-CLARITY_JS='<script type="text/javascript">(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);c[a]("start", i);})(window, document, "clarity", "script", "w8x9s1vxi5");</script>'
+CLARITY_JS='<script type="text/javascript">(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;t.setAttribute("crossorigin", "anonymous");y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);c[a]("start", i);})(window, document, "clarity", "script", "w8x9s1vxi5");</script>'
 
 # Inject to the header
 sed -i "s@</head>@${CLARITY_JS}</head>@" public/index.html
