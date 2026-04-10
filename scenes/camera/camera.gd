@@ -12,6 +12,7 @@ var _is_dragging: bool = false
 var _pan_mode_enabled: bool = false
 var _last_pan_mode_enabled: bool = false
 var _applied_cursor_state := -1
+var _active_touches := {}
 
 const CURSOR_STATE_ARROW := 0
 const CURSOR_STATE_PAN_IDLE := 1
@@ -34,13 +35,49 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event is InputEventKey:
-		return
-	if not event.pressed:
-		return
 	if AppInputPolicy.is_text_field_focused():
 		return
+
+	if event is InputEventMagnifyGesture:
+		_zoom_camera(event.factor, true)
+		get_viewport().set_input_as_handled()
+		return
+
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			_active_touches[event.index] = event.position
+		else:
+			_active_touches.erase(event.position)
+		return
+
+	if event is InputEventScreenDrag:
+		_active_touches[event.index] = event.position
+
+		if _active_touches.size() == 2:
+			var touch_keys := _active_touches.keys()
+			var pos1: Vector2 = _active_touches[touch_keys[0]]
+			var pos2: Vector2 = _active_touches[touch_keys[1]]
+
+			# Create prev positions
+			var prev_pos1 : Vector2 = pos1 - (event.relative if event.index == touch_keys[0] else Vector2.ZERO)
+			var prev_pos2 : Vector2 = pos2 - (event.relative if event.index == touch_keys[1] else Vector2.ZERO)
+
+			var current_distance := pos1.distance_to(pos2)
+			var prev_distance := prev_pos1.distance_to(prev_pos2)
+
+			if prev_distance > 0.0:
+				var zoom_factor: float = current_distance / prev_distance
+				_zoom_camera(zoom_factor,false)
+				get_viewport().set_input_as_handled()
+		return
+
+	if not event is InputEventKey:
+		return
+
 	if not event.is_command_or_control_pressed():
+		return
+
+	if not event.pressed:
 		return
 
 	var pk: int = event.physical_keycode
