@@ -134,7 +134,7 @@ const INF: float = 1e18
 var active_weight_editor: LineEdit = null
 
 # ------------
-# Mobile Layout
+# Mobile
 # ------------
 func is_mobile_layout(viewport: Viewport) -> bool:
 	var w := float(DisplayServer.window_get_size().x)
@@ -150,3 +150,6 @@ func is_mobile_layout(viewport: Viewport) -> bool:
 			if iw > 0.0:
 				w = minf(w, iw)
 	return w <= 768.0
+
+## A dictionary containing positions currently touched by the user
+var active_touches := {}

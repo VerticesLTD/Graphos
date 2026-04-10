@@ -76,6 +76,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_handle_keyboard(event)
 
 func _start_drag():
+	# Stopping mass selection when user tries to zoom on touch devices
+	if Globals.active_touches.size() >= 2:
+		return
 	# The selection rectangle updates Globals.selection_rectangle independently
 	selection_rect = SELECTION_RECT_BLUEPRINT.instantiate()
 	selection_rect.graph = graph_controller.graph

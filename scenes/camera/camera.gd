@@ -12,7 +12,6 @@ var _is_dragging: bool = false
 var _pan_mode_enabled: bool = false
 var _last_pan_mode_enabled: bool = false
 var _applied_cursor_state := -1
-var _active_touches := {}
 
 const CURSOR_STATE_ARROW := 0
 const CURSOR_STATE_PAN_IDLE := 1
@@ -45,18 +44,18 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event is InputEventScreenTouch:
 		if event.pressed:
-			_active_touches[event.index] = event.position
+			Globals.active_touches[event.index] = event.position
 		else:
-			_active_touches.erase(event.position)
+			Globals.active_touches.erase(event.position)
 		return
 
-	if event is InputEventScreenDrag:
-		_active_touches[event.index] = event.position
+	if event is InputEventScreenDrag and not Globals.current_state == Globals.State.PAN:
+		Globals.active_touches[event.index] = event.position
 
-		if _active_touches.size() == 2:
-			var touch_keys := _active_touches.keys()
-			var pos1: Vector2 = _active_touches[touch_keys[0]]
-			var pos2: Vector2 = _active_touches[touch_keys[1]]
+		if Globals.active_touches.size() == 2:
+			var touch_keys: Array = Globals.active_touches.keys()
+			var pos1: Vector2 = Globals.active_touches[touch_keys[0]]
+			var pos2: Vector2 = Globals.active_touches[touch_keys[1]]
 
 			# Create prev positions
 			var prev_pos1 : Vector2 = pos1 - (event.relative if event.index == touch_keys[0] else Vector2.ZERO)
