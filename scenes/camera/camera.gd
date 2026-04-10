@@ -121,12 +121,9 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventScreenDrag and _is_dragging:
 		position += event.relative / zoom.x
 		get_viewport().set_input_as_handled()
-	elif event is InputEventMouseMotion and _is_dragging and not _is_mobile_web():
+	elif event is InputEventMouseMotion and _is_dragging and not Globals.is_running_on_mobile:
 		position -= event.relative / zoom.x
 		_update_cursor_shape()
-
-func _is_mobile_web() -> bool:
-	return OS.has_feature("web_android") or OS.has_feature("web_ios")
 
 ## factor multiplies the current zoom; it is clamped to [min_zoom, max_zoom].
 ## If center_on_mouse is true, the point under the cursor stays fixed (wheel).

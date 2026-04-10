@@ -136,6 +136,10 @@ var active_weight_editor: LineEdit = null
 # ------------
 # Mobile
 # ------------
+var is_running_on_mobile: bool :
+	get:
+		return OS.has_feature("web_android") or OS.has_feature("web_ios")
+
 func is_mobile_layout(viewport: Viewport) -> bool:
 	var w := float(DisplayServer.window_get_size().x)
 	var vp_w := viewport.get_visible_rect().size.x

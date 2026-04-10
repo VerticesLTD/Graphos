@@ -34,6 +34,9 @@ var _desktop_modifier_font: int
 
 
 func _ready() -> void:
+	# Increase scale if on mobile
+	if Globals.is_running_on_mobile:
+		scale = Vector2(1.2,1.2)
 	_cache_desktop_layout()
 	# canvas_items stretch keeps the root viewport at base size (e.g. 1280 wide);
 	# real narrow screens must use the window / browser width, not viewport rect alone.
