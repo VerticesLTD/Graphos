@@ -1,7 +1,7 @@
 name: "Build Custom Godot 4.6 Engine"
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Manual trigger only
 
 jobs:
   build-custom-wasm:
@@ -13,7 +13,7 @@ jobs:
       - name: Set up Emscripten
         uses: mymindstorm/setup-emsdk@v14
         with:
-          version: 4.0.20 # Verified for Godot 4.6.x
+          version: 3.1.64 
 
       - name: Set up Python & SCons
         uses: actions/setup-python@v5
@@ -30,7 +30,7 @@ jobs:
       - name: Compile Custom Engine (Threaded)
         run: |
           cd godot-source
-          # 'threads=yes' is critical for your SharedArrayBuffer performance
+          # 'threads=yes' matches your wasm-opt config in build.sh
           scons platform=web target=template_release threads=yes \
             optimize=speed \
             module_3d_enabled=no \
@@ -45,15 +45,17 @@ jobs:
       - name: Package Template
         run: |
           mkdir -p release-files
-          # Godot 4.6 SCons output for web is typically godot.web.template_release.wasm32.zip
-          # We rename it to the 'standard' name the exporter looks for
-          cp godot-source/bin/godot.web.template_release.wasm32.zip release-files/web_release.zip
-          
+          # Godot 4.6 builds a zip. We extract the binary/JS and rename them for the exporter.
+          unzip godot-source/bin/godot.web.template_release.wasm32.zip -d temp_extract
+          mv temp_extract/godot.web.template_release.wasm release-files/web_release.wasm
+          mv temp_extract/godot.web.template_release.js release-files/web_release.js
+          cd release-files && zip -r ../web_release.zip .
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v4.6-custom-engine
+          tag_name: v4.6-custom
           name: "Graphos Custom Engine 4.6"
-          files: release-files/web_release.zip
+          files: web_release.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
