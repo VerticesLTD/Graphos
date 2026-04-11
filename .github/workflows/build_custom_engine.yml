@@ -41,7 +41,7 @@ jobs:
             module_basis_universal_enabled=no \
             module_meshoptimizer_enabled=no \
             module_text_server_fb_enabled=no \
-            disable_advanced_gui=yes \
+            disable_advanced_gui=no \
             -j$(nproc)
 
       - name: Package Template
