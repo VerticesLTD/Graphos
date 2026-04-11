@@ -96,7 +96,7 @@ func _cache_desktop_layout() -> void:
 
 
 func _apply_responsive_layout() -> void:
-	var mobile := Globals.is_mobile_layout(get_viewport())
+	var mobile: bool = Globals.is_mobile_layout(get_viewport())
 	if mobile != _mobile_layout_active:
 		if mobile:
 			_enter_mobile_layout()
