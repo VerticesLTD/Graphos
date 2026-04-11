@@ -21,9 +21,9 @@ config/icon="res://assets/logo/SplashLogo.png"
 [autoload]
 
 AppInputPolicy="*res://globals/app_input_policy.gd"
-Globals="*uid://b66flw6uqbdop"
-GLogger="*uid://b7vp5dn120dii"
-CommandManager="*uid://bstobjaowschd"
+Globals="*res://globals/globals.gd"
+GLogger="*res://globals/logger.gd"
+CommandManager="*res://commands/command_manager.gd"
 Notify="*res://scenes/notifier/notify.tscn"
 
 [debug]
