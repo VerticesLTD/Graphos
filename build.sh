@@ -31,6 +31,14 @@ echo "Downloading WASM Optimizer..."
 curl -L -s "https://github.com/WebAssembly/binaryen/releases/download/${BINARYEN_VERSION}/binaryen-${BINARYEN_VERSION}-x86_64-linux.tar.gz" | tar xz
 
 echo "Optimizing index.wasm for speed and size..."
+# Added --enable-bulk-memory to fix the validator errors
+./binaryen-${BINARYEN_VERSION}/bin/wasm-opt -Oz \
+  --strip-debug \
+  --enable-threads \
+  --enable-bulk-memory \
+  public/index.wasm -o public/index.wasm
+
+echo "Optimizing index.wasm for speed and size..."
 # -Oz: Aggressive size optimization
 # --strip-debug: Remove symbols (saves massive space)
 # --enable-threads: REQUIRED because we enabled multi-threading in the UI
