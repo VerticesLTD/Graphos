@@ -34,9 +34,8 @@ if [ ! -d binaryen-${BINARYEN_VERSION} ]; then
   curl -L -s "https://github.com/WebAssembly/binaryen/releases/download/${BINARYEN_VERSION}/binaryen-${BINARYEN_VERSION}-x86_64-linux.tar.gz" | tar xz
 fi
 
-echo "Optimizing index.wasm with the full Godot 4.6 feature set..."
-# Consolidation of all flags to prevent any further validator panics
-./binaryen-${BINARYEN_VERSION}/bin/wasm-opt -Oz \
+echo "Optimizing index.wasm for MAXIMUM execution speed (-O4)..."
+./binaryen-${BINARYEN_VERSION}/bin/wasm-opt -O4 \
   --strip-debug \
   --enable-threads \
   --enable-bulk-memory \
@@ -46,6 +45,7 @@ echo "Optimizing index.wasm with the full Godot 4.6 feature set..."
   --enable-exception-handling \
   --enable-reference-types \
   public/index.wasm -o public/index.wasm
+
 
 # --- 5. CLEANUP ---
 echo "Cleaning up..."
