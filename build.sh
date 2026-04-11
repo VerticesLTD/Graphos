@@ -23,7 +23,7 @@ mv templates/* ~/.local/share/godot/export_templates/${V_DIR}/
 
 # --- 3. EXPORT PROJECT ---
 echo "Building Graphos for Web..."
-./${FILE_VERSION} --headless --export-release "Web" public/index.html
+./${FILE_VERSION} --headless --export-release "web" public/index.html
 
 # --- 4. WASM OPTIMIZATION (THE SURGERY) ---
 # This tool strips unused C++ functions from the Godot engine binary.
