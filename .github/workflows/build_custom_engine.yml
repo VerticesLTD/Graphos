@@ -18,7 +18,7 @@ jobs:
       - name: Compile
         run: |
           cd godot-source
-          # We enable threads to match your wasm-opt config
+          # We MUST use threads=yes to match your wasm-opt flags
           scons platform=web target=template_release threads=yes \
             optimize=speed module_3d_enabled=no module_physics_3d_enabled=no \
             module_navigation_enabled=no module_xr_enabled=no \
@@ -27,8 +27,8 @@ jobs:
       - name: Package for Godot Exporter
         run: |
           mkdir -p release
-          # Godot 4.6 with threads=yes creates files with '.threads' in the name.
-          # We rename them to the standard names the headless exporter looks for.
+          # 4.6 names these godot.web.template_release.wasm32.threads.wasm
+          # We rename them to standard names so the export command finds them.
           find godot-source/bin/ -name "*.wasm" -exec cp {} release/web_release.wasm \;
           find godot-source/bin/ -name "*.js" -exec cp {} release/web_release.js \;
           cd release && zip -r ../web_release.zip .
@@ -36,6 +36,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v4.6-custom
+          name: "Graphos Custom Engine 4.6"
           files: web_release.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
