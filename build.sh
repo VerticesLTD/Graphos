@@ -30,13 +30,17 @@ echo "Building Graphos for Web..."
 echo "Downloading WASM Optimizer..."
 curl -L -s "https://github.com/WebAssembly/binaryen/releases/download/${BINARYEN_VERSION}/binaryen-${BINARYEN_VERSION}-x86_64-linux.tar.gz" | tar xz
 
-echo "Optimizing index.wasm for speed and size..."
-# Added --enable-bulk-memory to fix the validator errors
+echo "Optimizing index.wasm with full feature support..."
+# Consolidating all modern WASM features used by Godot 4.6
 ./binaryen-${BINARYEN_VERSION}/bin/wasm-opt -Oz \
   --strip-debug \
   --enable-threads \
   --enable-bulk-memory \
+  --enable-simd \
+  --enable-sign-ext \
+  --enable-nontrapping-float-to-int \
   public/index.wasm -o public/index.wasm
+
 
 echo "Optimizing index.wasm for speed and size..."
 # -Oz: Aggressive size optimization
