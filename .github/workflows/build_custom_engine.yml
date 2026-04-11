@@ -1,0 +1,62 @@
+name: "Build Custom Lightweight Godot Engine"
+
+on:
+  workflow_dispatch: # This makes it manual. It won't run unless you click the button.
+
+jobs:
+  build-custom-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.64 
+
+      - name: Set up Python & SCons
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install SCons
+        run: pip install scons
+
+      - name: Clone Godot Source
+        run: |
+          # We clone the exact version you are currently using
+          git clone --depth 1 --branch 4.3-stable https://github.com/godotengine/godot.git godot-source
+
+      - name: Compile Custom Engine
+        run: |
+          cd godot-source
+          # These flags rip out the 3D, Physics, and Navigation modules
+          scons platform=web target=template_release \
+            optimize=speed \
+            module_3d_enabled=no \
+            module_physics_3d_enabled=no \
+            module_navigation_enabled=no \
+            module_xr_enabled=no \
+            module_basis_universal_enabled=no \
+            module_meshoptimizer_enabled=no \
+            module_text_server_fb_enabled=no \
+            disable_advanced_gui=yes \
+            -j$(nproc)
+
+      - name: Package Template
+        run: |
+          mkdir -p release-files
+          # Move the compiled engine files
+          cp godot-source/bin/godot.web.template_release.wasm release-files/web_release.wasm
+          cp godot-source/bin/godot.web.template_release.js release-files/web_release.js
+          cd release-files && zip -r ../custom_engine_4.3.zip .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: custom-engine-v1
+          name: "Graphos Custom Engine 4.3"
+          files: custom_engine_4.3.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
