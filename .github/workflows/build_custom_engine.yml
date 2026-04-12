@@ -1,7 +1,7 @@
 name: "Build Custom Godot 4.6 Engine"
 
-# Manual only: long compile. Pushes to main / Vercel use build.sh + the existing release asset below.
-# Typical order: run this workflow → wait for green release → then push app changes that rely on it.
+# Manual only: long compile (~tens of minutes) — uses Actions minutes. Prefer local SCons if you hit quotas.
+# Vercel/build.sh defaults to the small v4.6-custom web_release.zip; override with CUSTOM_ENGINE_URL if you publish elsewhere.
 on:
   workflow_dispatch:
 
