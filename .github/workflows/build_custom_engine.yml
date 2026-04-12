@@ -1,42 +1,85 @@
 name: "Build Custom Godot 4.6 Engine"
+
+# Manual only: long compile. Pushes to main / Vercel use build.sh + the existing release asset below.
+# Typical order: run this workflow → wait for green release → then push app changes that rely on it.
 on:
   workflow_dispatch:
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Emscripten
-        uses: mymindstorm/setup-emsdk@v14
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          version: 4.0.20 # Required for Godot 4.6+
+          python-version: "3.12"
+
+      - name: Setup Emscripten
+        uses: emscripten-core/setup-emsdk@v16
+        with:
+          # Newest 4.0.x known to emsdk; Godot 4.6 requires Emscripten 4.0.0+.
+          version: "4.0.23"
+
       - name: Setup Build Tools
         run: |
-          python -m pip install scons
+          python -m pip install --upgrade pip
+          python -m pip install "scons>=4.0,<5"
           git clone --depth 1 --branch 4.6-stable https://github.com/godotengine/godot.git godot-source
+
       - name: Compile
         run: |
           cd godot-source
-          # We MUST use threads=yes to match your wasm-opt flags
+          # Safe / required flags (do not change lightly):
+          # - Keep javascript_eval default (yes): Graphos uses JavaScriptBridge.eval on web (share URL, feedback, etc.).
+          # - Keep threads=yes: export_presets.cfg uses variant/thread_support=true; threads=no would mismatch.
+          # - optimize=speed: prioritize runtime CPU (Graphos is interactive); wasm-opt in build.sh still shrinks shipped index.wasm.
           scons platform=web target=template_release threads=yes \
-            optimize=speed module_3d_enabled=no module_physics_3d_enabled=no \
-            module_navigation_enabled=no module_xr_enabled=no \
-            module_basis_universal_enabled=no module_meshoptimizer_enabled=no \
-            disable_advanced_gui=no -j$(nproc)
+            optimize=speed \
+            module_3d_enabled=no \
+            module_physics_3d_enabled=no \
+            module_navigation_enabled=no \
+            module_xr_enabled=no \
+            module_basis_universal_enabled=no \
+            module_meshoptimizer_enabled=no \
+            module_lightmapper_rd_enabled=no \
+            module_raycast_enabled=no \
+            module_mobile_vr_enabled=no \
+            disable_advanced_gui=no \
+            -j$(nproc)
+
       - name: Package for Godot Exporter
         run: |
-          mkdir -p release
-          # 4.6 names these godot.web.template_release.wasm32.threads.wasm
-          # We rename them to standard names so the export command finds them.
-          find godot-source/bin/ -name "*.wasm" -exec cp {} release/web_release.wasm \;
-          find godot-source/bin/ -name "*.js" -exec cp {} release/web_release.js \;
-          cd release && zip -r ../web_release.zip .
-      - name: Release
+          set -euo pipefail
+          bin_dir="godot-source/bin"
+          # Godot 4.6 emits a single template zip in bin/ (see compiling_for_web docs); ship it as web_release.zip.
+          if [ -f "$bin_dir/godot.web.template_release.wasm32.zip" ]; then
+            src="$bin_dir/godot.web.template_release.wasm32.zip"
+          else
+            src="$(ls -1 "$bin_dir"/godot.web.template_release.wasm32*.zip 2>/dev/null | grep -vE '(debug|dlink)' | head -n1 || true)"
+          fi
+          if [ -z "${src:-}" ] || [ ! -f "$src" ]; then
+            echo "No godot.web.template_release.wasm32*.zip under $bin_dir"
+            ls -la "$bin_dir" || true
+            exit 1
+          fi
+          cp -f "$src" web_release.zip
+          ls -la web_release.zip
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v4.6-custom
           name: "Graphos Custom Engine 4.6"
+          body: |
+            Custom Godot 4.6-stable web export template (`web_release.zip`). Built with Emscripten **4.0.23**, `optimize=speed`, `threads=yes`. Stripped: 3D, Physics 3D, XR, Navigation, Lightmapper RD, Raycast, MeshOptimizer, Basis Universal, Mobile VR.
+
+            **Deploy order:** publish this asset first. `build.sh` copies it to `~/.local/share/godot/export_templates/4.6.stable/web_release.zip` (the archive itself, not extracted loose files).
           files: web_release.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
