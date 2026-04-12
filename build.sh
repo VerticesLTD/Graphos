@@ -45,7 +45,21 @@ if [ -n "${CUSTOM_ENGINE_URL}" ]; then
 else
 	echo "Using official Godot export templates (${GODOT_VERSION})…"
 	curl -fL -s "${OFFICIAL_EXPORT_TEMPLATES_URL}" -o export_templates.tpz
-	unzip -o -q export_templates.tpz -d "${HOME}/.local/share/godot/export_templates"
+	# .tpz is a zip; contents are NOT always rooted at ${V_DIR}/ — use a temp dir and copy
+	# the web zips into the path Godot expects (it checks both release and debug exist).
+	_tpz_unpack=$(mktemp -d)
+	unzip -o -q export_templates.tpz -d "${_tpz_unpack}"
+	_rel=$(find "${_tpz_unpack}" -name 'web_release.zip' -type f | head -n1)
+	_dbg=$(find "${_tpz_unpack}" -name 'web_debug.zip' -type f | head -n1)
+	if [ -z "${_rel}" ] || [ -z "${_dbg}" ]; then
+		echo "Could not find web_release.zip / web_debug.zip inside export_templates.tpz"
+		find "${_tpz_unpack}" -type f | head -80
+		exit 1
+	fi
+	mkdir -p "${TPL_ROOT}"
+	cp -f "${_rel}" "${TPL_ROOT}/web_release.zip"
+	cp -f "${_dbg}" "${TPL_ROOT}/web_debug.zip"
+	rm -rf "${_tpz_unpack}"
 	rm -f export_templates.tpz
 fi
 
