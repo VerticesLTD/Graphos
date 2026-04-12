@@ -1,7 +1,7 @@
 name: "Build Custom Godot 4.6 Engine"
 
 # Manual only: long compile (~tens of minutes) — uses Actions minutes. Prefer local SCons if you hit quotas.
-# Vercel/build.sh defaults to the small v4.6-custom web_release.zip; override with CUSTOM_ENGINE_URL if you publish elsewhere.
+# Output: web_release.zip on tag v4.6-custom (= Godot wasm32 template zip). build.sh copies it to export_templates/4.6.stable/ (see build.sh header).
 on:
   workflow_dispatch:
 
@@ -79,7 +79,7 @@ jobs:
           body: |
             Custom Godot 4.6-stable web export template (`web_release.zip`). Built with Emscripten **4.0.23**, `optimize=speed`, `threads=yes`. Stripped: 3D, Physics 3D, XR, Navigation, Lightmapper RD, Raycast, MeshOptimizer, Basis Universal, Mobile VR.
 
-            **Deploy order:** publish this asset first. `build.sh` copies it to `~/.local/share/godot/export_templates/4.6.stable/web_release.zip` (the archive itself, not extracted loose files).
+            **Deploy order:** publish this asset first. `build.sh` copies it to `~/.local/share/godot/export_templates/4.6.stable/web_release.zip` (the archive itself, not extracted). It also copies the same file to `web_debug.zip` so headless export passes the template check.
           files: web_release.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
