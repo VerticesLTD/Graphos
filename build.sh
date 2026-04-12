@@ -7,9 +7,13 @@ BASE_VERSION=$(echo "$GODOT_VERSION" | cut -d'-' -f1)
 V_DIR="${BASE_VERSION}.stable"
 BINARYEN_VERSION="version_116"
 
-# Custom web template from a GitHub Release (manual workflow: .github/workflows/build_custom_engine.yml).
-# Supports both: (1) legacy zip with loose web_release.wasm + web_release.js at root, (2) official Godot template zip as web_release.zip.
-CUSTOM_ENGINE_URL="https://github.com/VerticesLTD/Graphos/releases/download/v4.6-custom/web_release.zip"
+# Export templates (web):
+# - Default (unset): download official Godot .tpz from GitHub — stable for main / Vercel, no custom release required.
+# - Optional: set CUSTOM_ENGINE_URL (e.g. in Vercel env) to a Release asset: slim custom web_release.zip or legacy wasm+js zip.
+#   Build locally or on a branch workflow to avoid burning Actions minutes on long engine compiles.
+: "${CUSTOM_ENGINE_URL:=}"
+
+OFFICIAL_EXPORT_TEMPLATES_URL="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_export_templates.tpz"
 
 mkdir -p public
 
@@ -22,26 +26,31 @@ if [ ! -f godot.zip ]; then
     unzip -q godot.zip
 fi
 
-# DOWNLOAD THE CUSTOM WEB TEMPLATE
-echo "Fetching custom stripped 4.6 engine..."
-curl -fL -s "$CUSTOM_ENGINE_URL" -o custom_templates.zip
-
+# EXPORT TEMPLATES (official by default; custom only if CUSTOM_ENGINE_URL is set)
 TPL_ROOT="${HOME}/.local/share/godot/export_templates/${V_DIR}"
-mkdir -p "${TPL_ROOT}"
+mkdir -p "${HOME}/.local/share/godot/export_templates"
 
-# Old CI produced a tiny zip with only web_release.wasm + web_release.js (export expected them loose in TPL_ROOT).
-# New workflow uploads the real Godot bundle; that must stay named web_release.zip in TPL_ROOT.
-if unzip -l custom_templates.zip | grep -qE '[[:space:]]web_release\.wasm[[:space:]]*$' \
-	&& unzip -l custom_templates.zip | grep -qE '[[:space:]]web_release\.js[[:space:]]*$'; then
-	echo "Installing legacy loose web template (wasm + js)…"
-	unzip -o -q custom_templates.zip -d "${TPL_ROOT}"
+if [ -n "${CUSTOM_ENGINE_URL}" ]; then
+	echo "Using custom web template from CUSTOM_ENGINE_URL…"
+	curl -fL -s "${CUSTOM_ENGINE_URL}" -o custom_templates.zip
+	mkdir -p "${TPL_ROOT}"
+	if unzip -l custom_templates.zip | grep -qE '[[:space:]]web_release\.wasm[[:space:]]*$' \
+		&& unzip -l custom_templates.zip | grep -qE '[[:space:]]web_release\.js[[:space:]]*$'; then
+		echo "Installing legacy loose web template (wasm + js)…"
+		unzip -o -q custom_templates.zip -d "${TPL_ROOT}"
+	else
+		echo "Installing custom web_release.zip bundle…"
+		cp -f custom_templates.zip "${TPL_ROOT}/web_release.zip"
+	fi
 else
-	echo "Installing official web_release.zip bundle…"
-	cp -f custom_templates.zip "${TPL_ROOT}/web_release.zip"
+	echo "Using official Godot export templates (${GODOT_VERSION})…"
+	curl -fL -s "${OFFICIAL_EXPORT_TEMPLATES_URL}" -o export_templates.tpz
+	unzip -o -q export_templates.tpz -d "${HOME}/.local/share/godot/export_templates"
+	rm -f export_templates.tpz
 fi
 
 # --- 3. EXPORT PROJECT ---
-echo "Building Graphos with Custom Engine..."
+echo "Building Graphos for web…"
 ./${FILE_VERSION} --headless --export-release "web" public/index.html
 
 # --- 4. WASM OPTIMIZATION ---
@@ -63,5 +72,5 @@ echo "Optimizing index.wasm for MAXIMUM speed..."
     public/index.wasm -o public/index.wasm
 
 # --- 5. CLEANUP ---
-rm -rf godot.zip custom_templates.zip binaryen-${BINARYEN_VERSION} ${FILE_VERSION}
-echo "Build complete. Engine surgery successful."
+rm -rf godot.zip custom_templates.zip export_templates.tpz binaryen-${BINARYEN_VERSION} ${FILE_VERSION}
+echo "Build complete."
